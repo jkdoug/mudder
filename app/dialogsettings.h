@@ -105,6 +105,12 @@ private:
     QAction *m_addTrigger;
     QAction *m_addVariable;
 
+    bool m_showAccelerators;
+    bool m_showAliases;
+    bool m_showTimers;
+    bool m_showTriggers;
+    bool m_showVariables;
+
     Profile *m_profile;
 
     QStringList m_expanded;

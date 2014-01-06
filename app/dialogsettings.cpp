@@ -131,6 +131,12 @@ DialogSettings::DialogSettings(QWidget *parent) :
     menuFilterSetting->addAction(filterVariable);
     ui->filterSetting->setMenu(menuFilterSetting);
 
+    m_showAccelerators = true;
+    m_showAliases = true;
+    m_showTimers = true;
+    m_showTriggers = true;
+    m_showVariables = true;
+
     ui->settings->setColumnCount(3);
     ui->settings->setHeaderLabels(QStringList() << tr("Name") << tr("Value") << ("Sequence"));
     ui->settings->header()->resizeSection(0, 200);
@@ -162,6 +168,12 @@ void DialogSettings::load(Profile *profile)
     m_profile->copySettings(*profile);
 
     populateTree();
+
+    filterAccelerator(m_showAccelerators);
+    filterAlias(m_showAliases);
+    filterTimer(m_showTimers);
+    filterTrigger(m_showTriggers);
+    filterVariable(m_showVariables);
 
     clipboardChanged();
 }
@@ -320,26 +332,31 @@ QTreeWidgetItem *DialogSettings::parentGroup()
 
 void DialogSettings::filterAccelerator(bool checked)
 {
+    m_showAccelerators = checked;
     toggle(ui->settings->invisibleRootItem(), TAccelerator, checked);
 }
 
 void DialogSettings::filterAlias(bool checked)
 {
+    m_showAliases = checked;
     toggle(ui->settings->invisibleRootItem(), TAlias, checked);
 }
 
 void DialogSettings::filterTimer(bool checked)
 {
+    m_showTimers = checked;
     toggle(ui->settings->invisibleRootItem(), TTimer, checked);
 }
 
 void DialogSettings::filterTrigger(bool checked)
 {
+    m_showTriggers = checked;
     toggle(ui->settings->invisibleRootItem(), TTrigger, checked);
 }
 
 void DialogSettings::filterVariable(bool checked)
 {
+    m_showVariables = checked;
     toggle(ui->settings->invisibleRootItem(), TVariable, checked);
 }
 
