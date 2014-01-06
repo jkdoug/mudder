@@ -29,6 +29,7 @@ public:
 
     virtual const QString & name() const { return m_name; }
     void setName(const QString &name) { m_name = name; }
+    virtual QString fullName() const;
     Group *group() const;
     bool enabled() const;
     bool enabledFlag() const { return m_enabled; }
