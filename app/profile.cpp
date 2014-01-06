@@ -129,8 +129,6 @@ void Profile::copySettings(const Profile &rhs)
     Q_CHECK_PTR(m_rootGroup);
     *m_rootGroup = *rhs.m_rootGroup;
 
-    m_variables.clear();
-    remapVariables(m_rootGroup);
     initTimers();
 
     m_activeGroup = m_rootGroup;
@@ -147,19 +145,6 @@ void Profile::clone(const Profile &rhs)
 
     copyPreferences(rhs);
     copySettings(rhs);
-}
-
-void Profile::remapVariables(Group *group)
-{
-    foreach (Variable *variable, group->variables())
-    {
-        m_variables[variable->name()] = variable;
-    }
-
-    foreach (Group *child, group->groups())
-    {
-        remapVariables(child);
-    }
 }
 
 Profile & Profile::operator =(const Profile &rhs)
@@ -388,11 +373,18 @@ void Profile::addTrigger(Trigger *trigger)
     setDirty(true);
 }
 
-void Profile::addVariable(Variable *variable)
+void Profile::addVariable(Variable *variable, Group *parent)
 {
-    variable->setParent(activeGroup());
-    activeGroup()->addVariable(variable);
-    m_variables[variable->name()] = variable;
+    Q_ASSERT(variable != 0);
+
+    if (parent == 0)
+    {
+        parent = activeGroup();
+    }
+    Q_ASSERT(parent != 0);
+
+    variable->setParent(parent);
+    parent->addVariable(variable);
 
     setDirty(true);
 }
@@ -552,7 +544,6 @@ bool Profile::deleteVariable(Variable *variable)
     }
 
     bool result = parent->deleteVariable(variable);
-    result = m_variables.remove(variable->name()) && result;
 
     delete variable;
 
@@ -605,6 +596,15 @@ Group * Profile::findGroup(const QString &name, Group *parent)
     }
 
     return match;
+}
+
+Group * Profile::findParentGroup(const QString &name, Group *parent)
+{
+    QString cleanPath(QDir::cleanPath(name));
+    QStringList names(cleanPath.split('/', QString::SkipEmptyParts));
+    names.takeLast();
+
+    return findGroup(names.join('/'), parent);
 }
 
 Accelerator * Profile::findAccelerator(const QString &name, Group *parent)
@@ -791,15 +791,50 @@ Trigger * Profile::findTrigger(const QString &name, Group *parent)
     return 0;
 }
 
-Variable * Profile::findVariable(const QString &name)
+Variable * Profile::findVariable(const QString &name, Group *parent)
 {
-    VariableMap::const_iterator it = m_variables.find(name);
-    if (it == m_variables.end())
+    Group *parentGroup = (parent == 0) ? activeGroup() : parent;
+    Q_ASSERT(parentGroup != 0);
+
+    QString realName(QDir::cleanPath(name));
+    if (realName.isEmpty())
     {
         return 0;
     }
 
-    return it.value();
+    if (realName.contains('/'))
+    {
+        QStringList names(realName.split('/'));
+        realName = names.takeLast();
+
+        parentGroup = findGroup(names.join('/'), parent);
+        if (parentGroup == 0)
+        {
+            return 0;
+        }
+    }
+
+    foreach (Variable *variable, parentGroup->variables())
+    {
+        if (variable->name() == realName)
+        {
+            return variable;
+        }
+    }
+
+    if (!name.contains('/'))
+    {
+        foreach (Group *group, parentGroup->groups())
+        {
+            Variable *variable = findVariable(realName, group);
+            if (variable != 0)
+            {
+                return variable;
+            }
+        }
+    }
+
+    return 0;
 }
 
 bool Profile::existingGroup(Group *item, Group *parent)
@@ -994,10 +1029,30 @@ void Profile::setVariable(const QString &name, const QVariant &value)
         return;
     }
 
+    QString realName(QDir::cleanPath(name));
+    if (realName.isEmpty())
+    {
+        return;
+    }
+
+    Group *parentGroup = 0;
+    if (realName.contains('/'))
+    {
+        QStringList names(realName.split('/'));
+        realName = names.takeLast();
+
+        parentGroup = findGroup(names.join('/'));
+        if (parentGroup == 0)
+        {
+            return;
+        }
+    }
+
     variable = new Variable(this);
-    variable->setName(name);
+    variable->setName(realName);
     variable->setContents(value);
-    addVariable(variable);
+
+    addVariable(variable, parentGroup);
 }
 
 QVariant Profile::getVariable(const QString &name)
@@ -1128,8 +1183,6 @@ void Profile::fromXml(QXmlStreamReader &xml)
         }
     }
 
-    m_variables.clear();
-    remapVariables(m_rootGroup);
     initTimers();
 
     if (!warnings.isEmpty())
