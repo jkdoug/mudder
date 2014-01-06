@@ -663,19 +663,11 @@ inline lua_Number Engine::optionalNumber(lua_State *L, int arg, lua_Number def)
 
 inline bool Engine::optionalBoolean(lua_State *L, int arg, bool def)
 {
-    // Argument not present, take default
-    if (lua_gettop(L) < arg)
+    if (lua_isnoneornil(L, arg))
     {
         return def;
     }
 
-    // Nil will default
-    if (lua_isnil(L, arg))
-    {
-        return def;
-    }
-
-    // Try to convert boolean
     if (lua_isboolean(L, arg))
     {
         return lua_toboolean(L, arg);
@@ -2704,8 +2696,21 @@ int Engine::jsonEncode(lua_State *L)
         }
         else
         {
-            QJsonDocument json(QJsonDocument::fromVariant(var));
-            lua_pushstring(L, json.toJson(QJsonDocument::Compact));
+            switch (var.type())
+            {
+            case QVariant::Map:
+            case QVariant::List:
+            case QVariant::StringList:
+            {
+                QJsonDocument json(QJsonDocument::fromVariant(var));
+                lua_pushstring(L, json.toJson(QJsonDocument::Compact));
+            }
+                break;
+
+            default:
+                pushVariant(L, var);
+                break;
+            }
         }
     }
 
