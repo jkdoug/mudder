@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogSettings</class>
+ <widget class="QDialog" name="DialogSettings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>650</width>
+    <height>450</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Profile Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_6">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0">
+     <property name="spacing">
+      <number>4</number>
+     </property>
+     <item>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="handleWidth">
+        <number>3</number>
+       </property>
+       <property name="childrenCollapsible">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="layoutWidget">
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="plusMinusLayout" stretch="1,0,0,0,0,0,0,0">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="labelSettings">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Settings:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QToolButton" name="filterSetting">
+             <property name="text">
+              <string>Filter settings displayed in the tree view</string>
+             </property>
+             <property name="icon">
+              <iconset resource="mudder.qrc">
+               <normaloff>:/icons/list_filter</normaloff>:/icons/list_filter</iconset>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+E</string>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="copySetting">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Copy XML to the clipboard</string>
+             </property>
+             <property name="icon">
+              <iconset resource="mudder.qrc">
+               <normaloff>:/icons/copy</normaloff>:/icons/copy</iconset>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+C</string>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pasteSetting">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Paste settings from clipboard XML</string>
+             </property>
+             <property name="icon">
+              <iconset resource="mudder.qrc">
+               <normaloff>:/icons/paste</normaloff>:/icons/paste</iconset>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+E</string>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="editSetting">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="icon">
+              <iconset resource="mudder.qrc">
+               <normaloff>:/icons/list_edit</normaloff>:/icons/list_edit</iconset>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+E</string>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="addSetting">
+             <property name="icon">
+              <iconset resource="mudder.qrc">
+               <normaloff>:/icons/list_add</normaloff>:/icons/list_add</iconset>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+A</string>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="deleteSetting">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="icon">
+              <iconset resource="mudder.qrc">
+               <normaloff>:/icons/list_remove</normaloff>:/icons/list_remove</iconset>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+D</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTreeWidget" name="settings">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::WinPanel</enum>
+           </property>
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::MultiSelection</enum>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
+           </property>
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="columnCount">
+            <number>3</number>
+           </property>
+           <attribute name="headerMinimumSectionSize">
+            <number>120</number>
+           </attribute>
+           <column>
+            <property name="text">
+             <string notr="true">1</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string notr="true">2</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string notr="true">3</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>settings</tabstop>
+  <tabstop>editSetting</tabstop>
+  <tabstop>addSetting</tabstop>
+  <tabstop>deleteSetting</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
+ <resources>
+  <include location="mudder.qrc"/>
+ </resources>
+ <connections/>
+ <slots>
+  <slot>buttonBox_clicked(QAbstractButton*)</slot>
+ </slots>
+</ui>

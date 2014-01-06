@@ -1,0 +1,13 @@
+/*!
+    \page index.html
+    \startpage index.html Index
+    \title Mudder Guide
+    \brief All you ever wanted to know about how to use Mudder! (Yeah, right.)
+
+    Mudder is a slimmed down, powerful Telnet client designed for text gaming in the extreme.
+
+    Lua script reference:
+    \list
+        \li \l {Event Handlers}
+    \endlist
+*/

@@ -1,0 +1,9 @@
+project = Mudder
+description = Guide to using Mudder for online text gaming.
+
+outputdir = doc/html
+outputformats = HTML
+
+sourcedirs = doc
+
+sources.fileextensions = "*.qdoc"
