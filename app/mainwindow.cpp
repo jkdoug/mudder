@@ -901,7 +901,7 @@ void MainWindow::onCompileScript()
 void MainWindow::on_action_About_triggered()
 {
     QString msg(tr("<b>%1, Version %2</b>").arg(QApplication::applicationDisplayName()).arg(QApplication::applicationVersion()));
-    msg += tr("<p>Copyright (C) 2013 Jason K. Douglas<br/>Iasmos Talnara</p>");
+    msg += tr("<p>Copyright (C) 2014 Jason K. Douglas<br/><a href='mailto:larkin.dischai@gmail.com'>larkin.dischai@gmail.com</a></p>");
     msg += tr("<p>%1<br/>%2</p>").arg(LUA_COPYRIGHT).arg(LUA_AUTHORS);
 
     QMessageBox::about(this, tr("About"), msg);
