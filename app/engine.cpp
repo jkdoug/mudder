@@ -35,6 +35,34 @@
 #include <QUrl>
 #include <QVariantList>
 
+inline bool lua_isarray(lua_State *L, int arg)
+{
+    if (!lua_istable(L, arg))
+    {
+        return false;
+    }
+
+    lua_pushvalue(L, arg);
+    lua_pushnil(L);
+
+    while (lua_next(L, -2))
+    {
+        lua_pushvalue(L, -2);
+
+        if (!lua_isnumber(L, -1))
+        {
+            return false;
+        }
+
+        lua_pop(L, 2);
+    }
+
+    lua_pop(L, 1);
+
+    return true;
+}
+
+
 Engine::Engine(QObject *parent) :
     QObject(parent)
 {
@@ -568,6 +596,26 @@ inline QVariant Engine::checkVariant(lua_State *L, int arg, int type)
     else if (lua_isboolean(L, arg))
     {
         var = QVariant(lua_toboolean(L, arg) != 0);
+    }
+    else if (lua_isarray(L, arg))
+    {
+        QVariantList list;
+
+        lua_pushvalue(L, arg);
+        lua_pushnil(L);
+
+        while (lua_next(L, -2))
+        {
+            lua_pushvalue(L, -2);
+
+            list.insert(lua_tonumber(L, -1), checkVariant(L, -2));
+
+            lua_pop(L, 2);
+        }
+
+        lua_pop(L, 1);
+
+        var = list;
     }
     else if (lua_istable(L, arg))
     {
