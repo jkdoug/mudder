@@ -70,20 +70,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QKeySequenceWidget" name="key" native="true">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>100</width>
-           <height>20</height>
-          </size>
-         </property>
-        </widget>
+        <widget class="QKeySequenceEdit" name="key"/>
        </item>
       </layout>
      </item>
@@ -140,12 +127,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>QKeySequenceWidget</class>
-   <extends>QWidget</extends>
-   <header>qkeysequencewidget.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>LuaEdit</class>
    <extends>QTextEdit</extends>

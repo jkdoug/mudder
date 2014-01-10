@@ -11,8 +11,6 @@ DialogAccelerator::DialogAccelerator(Accelerator *accelerator, QWidget *parent) 
     Q_ASSERT(accelerator != 0);
     m_accelerator = accelerator;
 
-    ui->key->setClearButtonShow(QKeySequenceWidget::ShowRight);
-    ui->key->setClearButtonIcon(QIcon(":/icons/close"));
     ui->key->setKeySequence(m_accelerator->key());
 
     ui->name->setText(m_accelerator->name());
@@ -28,7 +26,7 @@ DialogAccelerator::DialogAccelerator(Accelerator *accelerator, QWidget *parent) 
     connect(ui->name, SIGNAL(textChanged(QString)), this, SLOT(changed()));
     connect(ui->script, SIGNAL(textChanged()), this, SLOT(changed()));
     connect(ui->enabled, SIGNAL(stateChanged(int)), this, SLOT(changed()));
-    connect(ui->key, SIGNAL(keySequenceAccepted(QKeySequence)), this, SLOT(changed()));
+    connect(ui->key, SIGNAL(keySequenceChanged(QKeySequence)), this, SLOT(changed()));
 }
 
 DialogAccelerator::~DialogAccelerator()

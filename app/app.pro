@@ -40,7 +40,6 @@ SOURCES += main.cpp\
     dialogtimer.cpp \
     dialogvariable.cpp \
     dialoggroup.cpp \
-    qkeysequencewidget.cpp \
     event.cpp \
     luahighlighter.cpp \
     luaedit.cpp \
@@ -84,8 +83,6 @@ HEADERS  += mainwindow.h \
     dialogtimer.h \
     dialogvariable.h \
     dialoggroup.h \
-    qkeysequencewidget_p.h \
-    qkeysequencewidget.h \
     xmlexception.h \
     event.h \
     luawrapper.h \
