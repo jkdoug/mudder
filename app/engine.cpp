@@ -1241,18 +1241,15 @@ int Engine::profileImportXml(lua_State *L)
     {
         QXmlStreamReader xml(tr("<%1>%2</%1>").arg("importXml").arg(checkString(L, 1)));
         p->appendXml(xml);
+        lua_pushboolean(L, true);
     }
     catch (XmlException *xe)
     {
-        QString err;
-        for (int w = 0; w < xe->warnings().size(); w++)
-        {
-            err += QString(" %1;").arg(xe->warnings().at(w));
-        }
-        return luaL_error(L, tr("invalid XML: %1").arg(err).toLatin1().data());
+        delete xe;
+        lua_pushboolean(L, false);
     }
 
-    return 0;
+    return 1;
 }
 
 
