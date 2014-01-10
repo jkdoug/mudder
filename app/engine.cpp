@@ -150,6 +150,7 @@ void Engine::initialize(Console *c, const QString &script)
     Q_ASSERT(loadResource(m_global, ":/lua/string_trim") == LUA_OK);
     Q_ASSERT(loadResource(m_global, ":/lua/string_wrap") == LUA_OK);
     Q_ASSERT(loadResource(m_global, ":/lua/table_contains") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/table_copy") == LUA_OK);
     Q_ASSERT(loadResource(m_global, ":/lua/table_ordered") == LUA_OK);
     Q_ASSERT(loadResource(m_global, ":/lua/table_print") == LUA_OK);
     Q_ASSERT(loadResource(m_global, ":/lua/table_size") == LUA_OK);

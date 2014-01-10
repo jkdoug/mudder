@@ -54,6 +54,7 @@
         <file alias="string_split">lua/string_split.lua</file>
         <file alias="string_wrap">lua/string_wrap.lua</file>
         <file alias="table_ordered">lua/table_ordered.lua</file>
+        <file alias="table_copy">lua/table_copy.lua</file>
     </qresource>
     <qresource prefix="/schema">
         <file alias="profile">profile.xsd</file>
