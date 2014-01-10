@@ -255,24 +255,32 @@ void MainWindow::createScriptDock()
     QAction *actionNew = new QAction(tr("&New"), scriptWin);
     actionNew->setIcon(QIcon(":/icons/small_new"));
     actionNew->setToolTip(tr("Create a new script"));
+    actionNew->setShortcut(QKeySequence::New);
+    actionNew->setShortcutContext(Qt::WindowShortcut);
     scriptBar->addAction(actionNew);
     connect(actionNew, SIGNAL(triggered()), this, SLOT(onNewScript()));
 
     QAction *actionOpen = new QAction(tr("&Open"), scriptWin);
     actionOpen->setIcon(QIcon(":/icons/small_open"));
     actionOpen->setToolTip(tr("Load script file from disk"));
+    actionOpen->setShortcut(QKeySequence::Open);
+    actionOpen->setShortcutContext(Qt::WindowShortcut);
     scriptBar->addAction(actionOpen);
     connect(actionOpen, SIGNAL(triggered()), this, SLOT(onOpenScript()));
 
     m_actionScriptSave = new QAction(tr("&Save"), scriptWin);
     m_actionScriptSave->setIcon(QIcon(":/icons/small_save"));
     m_actionScriptSave->setToolTip(tr("Save script to disk"));
+    m_actionScriptSave->setShortcut(QKeySequence::Save);
+    m_actionScriptSave->setShortcutContext(Qt::WindowShortcut);
     scriptBar->addAction(m_actionScriptSave);
     connect(m_actionScriptSave, SIGNAL(triggered()), this, SLOT(onSaveScript()));
 
     m_actionScriptSaveAs = new QAction(tr("Save &As"), scriptWin);
     m_actionScriptSaveAs->setIcon(QIcon(":/icons/small_save_as"));
     m_actionScriptSaveAs->setToolTip(tr("Save script to disk with a new name"));
+    m_actionScriptSaveAs->setShortcut(QKeySequence::SaveAs);
+    m_actionScriptSaveAs->setShortcutContext(Qt::WindowShortcut);
     scriptBar->addAction(m_actionScriptSaveAs);
     connect(m_actionScriptSaveAs, SIGNAL(triggered()), this, SLOT(onSaveScriptAs()));
 
@@ -865,7 +873,6 @@ void MainWindow::onSaveScript()
 {
     LuaScript *script = activeScriptEditor();
     Q_ASSERT(script != 0);
-    Q_ASSERT(!script->filename().isEmpty());
 
     saveScript(script->filename());
 
@@ -874,12 +881,7 @@ void MainWindow::onSaveScript()
 
 void MainWindow::onSaveScriptAs()
 {
-    LuaScript *script = activeScriptEditor();
-    Q_ASSERT(script != 0);
-
-    saveScript();
-
-    updateActions();
+    onSaveScript();
 }
 
 void MainWindow::onCompileScript()
