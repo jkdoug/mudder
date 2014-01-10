@@ -379,7 +379,6 @@ void Console::startEngine(bool restart)
     if (!restart)
     {
         colorNote("limegreen", QColor(), tr("Hello, Fodder! This is Mudder %1").arg(QApplication::applicationVersion()));
-        document()->appendLink("Web site\n", "http://lusternia.game-host.org", QColor(Qt::blue));
     }
 
     QString script;
@@ -698,7 +697,7 @@ void Console::systemInfo(const QString &txt)
     QColor fgMessage(Qt::white);
     QColor bgMessage(Qt::black);
 
-    systemPrefix("INFO");
+//    systemPrefix("INFO");
     colorNote(fgMessage, bgMessage, txt);
 }
 
@@ -707,7 +706,7 @@ void Console::systemWarn(const QString &txt)
     QColor fgMessage("darkorange");
     QColor bgMessage(0x28, 0x28, 0x28);
 
-    systemPrefix("WARN");
+//    systemPrefix("WARN");
     colorNote(fgMessage, bgMessage, txt);
 }
 
@@ -716,7 +715,7 @@ void Console::systemErr(const QString &txt)
     QColor fgMessage("silver");
     QColor bgMessage("darkred");
 
-    systemPrefix("OOPS");
+//    systemPrefix("OOPS");
     colorNote(fgMessage, bgMessage, txt);
 }
 
