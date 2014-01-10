@@ -198,66 +198,93 @@ void Group::merge(const Group &rhs)
 
 void Group::addGroup(Group *group)
 {
+    m_sortAccelerators = true;
+    m_sortAliases = true;
+    m_sortTimers = true;
+    m_sortTriggers = true;
+    m_sortVariables = true;
+
     m_groups.append(group);
 }
 
 void Group::addAccelerator(Accelerator *accelerator)
 {
     m_sortAccelerators = true;
+
     m_accelerators.append(accelerator);
 }
 
 void Group::addAlias(Alias *alias)
 {
     m_sortAliases = true;
+
     m_aliases.append(alias);
 }
 
 void Group::addTimer(Timer *timer)
 {
     m_sortTimers = true;
+
     m_timers.append(timer);
 }
 
 void Group::addTrigger(Trigger *trigger)
 {
     m_sortTriggers = true;
+
     m_triggers.append(trigger);
 }
 
 void Group::addVariable(Variable *variable)
 {
     m_sortVariables = true;
+
     m_variables.append(variable);
 }
 
 bool Group::deleteGroup(Group *group)
 {
+    m_sortAccelerators = true;
+    m_sortAliases = true;
+    m_sortTimers = true;
+    m_sortTriggers = true;
+    m_sortVariables = true;
+
     return m_groups.removeOne(group);
 }
 
 bool Group::deleteAccelerator(Accelerator *accelerator)
 {
+    m_sortAccelerators = true;
+
     return m_accelerators.removeOne(accelerator);
 }
 
 bool Group::deleteAlias(Alias *alias)
 {
+    m_sortAliases = true;
+
     return m_aliases.removeOne(alias);
 }
 
 bool Group::deleteTimer(Timer *timer)
 {
+    m_sortTimers = true;
+
     return m_timers.removeOne(timer);
 }
 
 bool Group::deleteTrigger(Trigger *trigger)
 {
+    m_sortTriggers = true;
+
     return m_triggers.removeOne(trigger);
 }
 
 bool Group::deleteVariable(Variable *variable)
 {
+    m_sortVariables = true;
+
     return m_variables.removeOne(variable);
 }
 
