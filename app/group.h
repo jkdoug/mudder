@@ -22,7 +22,6 @@
 #ifndef GROUP_H
 #define GROUP_H
 
-#include "profileitem.h"
 #include <QList>
 #include <QObject>
 #include <QString>
@@ -30,11 +29,12 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
-class Accelerator;
-class Alias;
-class Timer;
-class Trigger;
-class Variable;
+#include "profileitem.h"
+#include "accelerator.h"
+#include "alias.h"
+#include "timer.h"
+#include "trigger.h"
+#include "variable.h"
 
 class Group : public ProfileItem
 {
