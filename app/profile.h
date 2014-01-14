@@ -173,6 +173,7 @@ public:
     bool deleteTrigger(Trigger *trigger);
     bool deleteVariable(Variable *variable);
 
+    Group *createGroup(const QString &name, Group *parent = 0);
     Group *findGroup(const QString &name, Group *parent = 0);
     Group *findParentGroup(const QString &name, Group *parent = 0);
     Accelerator *findAccelerator(const QString &name, Group *parent = 0);

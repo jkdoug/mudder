@@ -552,6 +552,62 @@ bool Profile::deleteVariable(Variable *variable)
     return result;
 }
 
+Group * Profile::createGroup(const QString &name, Group *parent)
+{
+    QString cleanPath(QDir::cleanPath(name));
+    Group *start = parent;
+    if (start == 0)
+    {
+        if (cleanPath.startsWith('/'))
+        {
+            start = rootGroup();
+            cleanPath.remove(0, 1);
+        }
+        else
+        {
+            start = activeGroup();
+        }
+    }
+    Q_ASSERT(start != 0);
+
+    if (cleanPath.isEmpty())
+    {
+        return start;
+    }
+
+    QStringList names(cleanPath.split('/', QString::SkipEmptyParts));
+    Group *match = 0;
+    for (int n = 0; n < names.size(); n++)
+    {
+        match = 0;
+        foreach (Group *group, start->groups())
+        {
+            if (names.at(n).compare(group->name(), Qt::CaseInsensitive) == 0)
+            {
+                start = match = group;
+                break;
+            }
+        }
+
+        if (match == 0)
+        {
+            for (int nn = n; nn < names.size(); nn++)
+            {
+                Group *newGroup = new Group(start);
+                newGroup->setName(names.at(nn));
+                start->addGroup(newGroup);
+
+                start = match = newGroup;
+
+                setDirty(true);
+            }
+            break;
+        }
+    }
+
+    return match;
+}
+
 Group * Profile::findGroup(const QString &name, Group *parent)
 {
     QString cleanPath(QDir::cleanPath(name));
@@ -1041,9 +1097,10 @@ void Profile::setVariable(const QString &name, const QVariant &value)
         QStringList names(realName.split('/'));
         realName = names.takeLast();
 
-        parentGroup = findGroup(names.join('/'));
+        parentGroup = createGroup(names.join('/'));
         if (parentGroup == 0)
         {
+            qDebug() << "setVariable: no group (should never happen)";
             return;
         }
     }
