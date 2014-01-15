@@ -71,7 +71,6 @@ private:
     QVariant m_contents;
 };
 
-typedef QMap<QString, Variable *> VariableMap;
 typedef QList<Variable *> VariableList;
 
 #endif // VARIABLE_H

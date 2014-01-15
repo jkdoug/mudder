@@ -1309,7 +1309,7 @@ Accelerator * Engine::acceleratorNew(lua_State *L)
         return 0;
     }
 
-    Accelerator *accelerator = p->findAccelerator(name, p->rootGroup());
+    Accelerator *accelerator = p->findAccelerator(name);
     if (accelerator)
     {
         luaL_error(L, tr("cannot create duplicate accelerator with name '%1'").arg(name).toLatin1().data());
@@ -1443,7 +1443,7 @@ Alias * Engine::aliasNew(lua_State *L)
         return 0;
     }
 
-    Alias *alias = p->findAlias(name, p->rootGroup());
+    Alias *alias = p->findAlias(name);
     if (alias)
     {
         luaL_error(L, tr("cannot create duplicate alias with name '%1'").arg(name).toLatin1().data());
@@ -2011,7 +2011,7 @@ Timer * Engine::timerNew(lua_State *L)
         return 0;
     }
 
-    Timer *timer = p->findTimer(name, p->rootGroup());
+    Timer *timer = p->findTimer(name);
     if (timer)
     {
         luaL_error(L, tr("cannot create duplicate timer with name '%1'").arg(name).toLatin1().data());
@@ -2148,7 +2148,7 @@ Trigger * Engine::triggerNew(lua_State *L)
         return 0;
     }
 
-    Trigger *trigger = p->findTrigger(name, p->rootGroup());
+    Trigger *trigger = p->findTrigger(name);
     if (trigger)
     {
         luaL_error(L, tr("cannot create duplicate trigger with name '%1'").arg(name).toLatin1().data());

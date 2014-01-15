@@ -132,6 +132,7 @@ void Profile::copySettings(const Profile &rhs)
     initTimers();
 
     m_activeGroup = m_rootGroup;
+    m_namedItems = rhs.m_namedItems;
 
     setDirty(true);
 }
@@ -305,7 +306,7 @@ void Profile::setInputFont(const QString &name, int size, bool antiAlias)
 
 void Profile::uplevelGroup()
 {
-    Group *group = m_activeGroup->group();
+    Group *group = activeGroup()->group();
     if (group == 0)
     {
         group = rootGroup();
@@ -331,44 +332,92 @@ void Profile::initTimers(Group *group)
     }
 }
 
-void Profile::addGroup(Group *group)
+void Profile::addGroup(Group *group, Group *parent)
 {
-    group->setParent(activeGroup());
-    activeGroup()->addGroup(group);
+    Q_ASSERT(group != 0);
+
+    if (parent == 0)
+    {
+        parent = activeGroup();
+    }
+    Q_ASSERT(parent != 0);
+
+    group->setParent(parent);
+    parent->addGroup(group);
     setActiveGroup(group);
 
     setDirty(true);
 }
 
-void Profile::addAccelerator(Accelerator *accelerator)
+void Profile::addAccelerator(Accelerator *accelerator, Group *parent)
 {
-    accelerator->setParent(activeGroup());
-    activeGroup()->addAccelerator(accelerator);
+    Q_ASSERT(accelerator != 0);
+
+    if (parent == 0)
+    {
+        parent = activeGroup();
+    }
+    Q_ASSERT(parent != 0);
+
+    accelerator->setParent(parent);
+    parent->addAccelerator(accelerator);
+
+    m_namedItems.insert(accelerator->name(), accelerator);
 
     setDirty(true);
 }
 
-void Profile::addAlias(Alias *alias)
+void Profile::addAlias(Alias *alias, Group *parent)
 {
-    alias->setParent(activeGroup());
-    activeGroup()->addAlias(alias);
+    Q_ASSERT(alias != 0);
+
+    if (parent == 0)
+    {
+        parent = activeGroup();
+    }
+    Q_ASSERT(parent != 0);
+
+    alias->setParent(parent);
+    parent->addAlias(alias);
+
+    m_namedItems.insert(alias->name(), alias);
 
     setDirty(true);
 }
 
-void Profile::addTimer(Timer *timer)
+void Profile::addTimer(Timer *timer, Group *parent)
 {
-    timer->setParent(activeGroup());
+    Q_ASSERT(timer != 0);
+
+    if (parent == 0)
+    {
+        parent = activeGroup();
+    }
+    Q_ASSERT(parent != 0);
+
+    timer->setParent(parent);
     timer->setProfile(this);
-    activeGroup()->addTimer(timer);
+    parent->addTimer(timer);
+
+    m_namedItems.insert(timer->name(), timer);
 
     setDirty(true);
 }
 
-void Profile::addTrigger(Trigger *trigger)
+void Profile::addTrigger(Trigger *trigger, Group *parent)
 {
-    trigger->setParent(activeGroup());
-    activeGroup()->addTrigger(trigger);
+    Q_ASSERT(trigger != 0);
+
+    if (parent == 0)
+    {
+        parent = activeGroup();
+    }
+    Q_ASSERT(parent != 0);
+
+    trigger->setParent(parent);
+    parent->addTrigger(trigger);
+
+    m_namedItems.insert(trigger->name(), trigger);
 
     setDirty(true);
 }
@@ -412,6 +461,31 @@ bool Profile::deleteGroup(Group *group)
         setActiveGroup(parent);
     }
 
+    foreach (Group *child, group->groups())
+    {
+        deleteGroup(child);
+    }
+    foreach (Accelerator *accelerator, group->accelerators())
+    {
+        deleteAccelerator(accelerator);
+    }
+    foreach (Alias *alias, group->aliases())
+    {
+        deleteAlias(alias);
+    }
+    foreach (Timer *timer, group->timers())
+    {
+        deleteTimer(timer);
+    }
+    foreach (Trigger *trigger, group->triggers())
+    {
+        deleteTrigger(trigger);
+    }
+    foreach (Variable *variable, group->variables())
+    {
+        deleteVariable(variable);
+    }
+
     bool result = parent->deleteGroup(group);
 
     delete group;
@@ -438,6 +512,8 @@ bool Profile::deleteAccelerator(Accelerator *accelerator)
         qDebug() << "deleteAccelerator, invalid parent";
         return false;
     }
+
+    m_namedItems.remove(accelerator->name());
 
     bool result = parent->deleteAccelerator(accelerator);
 
@@ -466,6 +542,8 @@ bool Profile::deleteAlias(Alias *alias)
         return false;
     }
 
+    m_namedItems.remove(alias->name());
+
     bool result = parent->deleteAlias(alias);
 
     delete alias;
@@ -490,6 +568,8 @@ bool Profile::deleteTimer(Timer *timer)
         qDebug() << "deleteTimer, invalid parent";
         return false;
     }
+
+    m_namedItems.remove(timer->name());
 
     bool result = parent->deleteTimer(timer);
 
@@ -517,6 +597,8 @@ bool Profile::deleteTrigger(Trigger *trigger)
         qDebug() << "deleteTrigger, invalid parent";
         return false;
     }
+
+    m_namedItems.remove(trigger->name());
 
     bool result = parent->deleteTrigger(trigger);
 
@@ -608,6 +690,27 @@ Group * Profile::createGroup(const QString &name, Group *parent)
     return match;
 }
 
+template <class T>
+T * Profile::findItem(const QString &name) const
+{
+    QString realName(QDir::cleanPath(name));
+    if (realName.isEmpty())
+    {
+        return 0;
+    }
+
+    QStringList names(realName.split('/'));
+    realName = names.takeLast();
+
+    QMap<QString, ProfileItem *>::const_iterator it = m_namedItems.find(realName);
+    if (it != m_namedItems.end())
+    {
+        return qobject_cast<T *>(it.value());
+    }
+
+    return 0;
+}
+
 Group * Profile::findGroup(const QString &name, Group *parent)
 {
     QString cleanPath(QDir::cleanPath(name));
@@ -663,188 +766,24 @@ Group * Profile::findParentGroup(const QString &name, Group *parent)
     return findGroup(names.join('/'), parent);
 }
 
-Accelerator * Profile::findAccelerator(const QString &name, Group *parent)
+Accelerator * Profile::findAccelerator(const QString &name)
 {
-    Group *parentGroup = (parent == 0) ? activeGroup() : parent;
-    Q_ASSERT(parentGroup != 0);
-
-    QString realName(QDir::cleanPath(name));
-    if (realName.isEmpty())
-    {
-        return 0;
-    }
-
-    if (realName.contains('/'))
-    {
-        QStringList names(realName.split('/'));
-        realName = names.takeLast();
-
-        parentGroup = findGroup(names.join('/'), parent);
-        if (parentGroup == 0)
-        {
-            return 0;
-        }
-    }
-
-    foreach (Accelerator *accelerator, parentGroup->accelerators())
-    {
-        if (accelerator->name() == realName)
-        {
-            return accelerator;
-        }
-    }
-
-    if (!name.contains('/'))
-    {
-        foreach (Group *group, parentGroup->groups())
-        {
-            Accelerator *accelerator = findAccelerator(realName, group);
-            if (accelerator != 0)
-            {
-                return accelerator;
-            }
-        }
-    }
-
-    return 0;
+    return findItem<Accelerator>(name);
 }
 
-Alias * Profile::findAlias(const QString &name, Group *parent)
+Alias * Profile::findAlias(const QString &name)
 {
-    Group *parentGroup = (parent == 0) ? activeGroup() : parent;
-    Q_ASSERT(parentGroup != 0);
-
-    QString realName(QDir::cleanPath(name));
-    if (realName.isEmpty())
-    {
-        return 0;
-    }
-
-    if (realName.contains('/'))
-    {
-        QStringList names(realName.split('/'));
-        realName = names.takeLast();
-
-        parentGroup = findGroup(names.join('/'), parent);
-        if (parentGroup == 0)
-        {
-            return 0;
-        }
-    }
-
-    foreach (Alias *alias, parentGroup->aliases())
-    {
-        if (alias->name() == realName)
-        {
-            return alias;
-        }
-    }
-
-    if (!name.contains('/'))
-    {
-        foreach (Group *group, parentGroup->groups())
-        {
-            Alias *alias = findAlias(realName, group);
-            if (alias != 0)
-            {
-                return alias;
-            }
-        }
-    }
-
-    return 0;
+    return findItem<Alias>(name);
 }
 
-Timer * Profile::findTimer(const QString &name, Group *parent)
+Timer * Profile::findTimer(const QString &name)
 {
-    Group *parentGroup = (parent == 0) ? activeGroup() : parent;
-    Q_ASSERT(parentGroup != 0);
-
-    QString realName(QDir::cleanPath(name));
-    if (realName.isEmpty())
-    {
-        return 0;
-    }
-
-    if (realName.contains('/'))
-    {
-        QStringList names(realName.split('/'));
-        realName = names.takeLast();
-
-        parentGroup = findGroup(names.join('/'), parent);
-        if (parentGroup == 0)
-        {
-            return 0;
-        }
-    }
-
-    foreach (Timer *timer, parentGroup->timers())
-    {
-        if (timer->name() == realName)
-        {
-            return timer;
-        }
-    }
-
-    if (!name.contains('/'))
-    {
-        foreach (Group *group, parentGroup->groups())
-        {
-            Timer *timer = findTimer(realName, group);
-            if (timer != 0)
-            {
-                return timer;
-            }
-        }
-    }
-
-    return 0;
+    return findItem<Timer>(name);
 }
 
-Trigger * Profile::findTrigger(const QString &name, Group *parent)
+Trigger * Profile::findTrigger(const QString &name)
 {
-    Group *parentGroup = (parent == 0) ? activeGroup() : parent;
-    Q_ASSERT(parentGroup != 0);
-
-    QString realName(QDir::cleanPath(name));
-    if (realName.isEmpty())
-    {
-        return 0;
-    }
-
-    if (realName.contains('/'))
-    {
-        QStringList names(realName.split('/'));
-        realName = names.takeLast();
-
-        parentGroup = findGroup(names.join('/'), parent);
-        if (parentGroup == 0)
-        {
-            return 0;
-        }
-    }
-
-    foreach (Trigger *trigger, parentGroup->triggers())
-    {
-        if (trigger->name() == realName)
-        {
-            return trigger;
-        }
-    }
-
-    if (!name.contains('/'))
-    {
-        foreach (Group *group, parentGroup->groups())
-        {
-            Trigger *trigger = findTrigger(realName, group);
-            if (trigger != 0)
-            {
-                return trigger;
-            }
-        }
-    }
-
-    return 0;
+    return findItem<Trigger>(name);
 }
 
 Variable * Profile::findVariable(const QString &name, Group *parent)
@@ -891,6 +830,11 @@ Variable * Profile::findVariable(const QString &name, Group *parent)
     }
 
     return 0;
+}
+
+bool Profile::existingName(const QString &name) const
+{
+    return m_namedItems.find(name) != m_namedItems.end();
 }
 
 bool Profile::existingGroup(Group *item, Group *parent)
@@ -1019,7 +963,7 @@ bool Profile::enableGroup(const QString &name, bool flag)
 
 bool Profile::enableAccelerator(const QString &name, bool flag)
 {
-    Accelerator *accelerator = findAccelerator(name, rootGroup());
+    Accelerator *accelerator = findAccelerator(name);
     if (accelerator == 0)
     {
         return false;
@@ -1032,7 +976,7 @@ bool Profile::enableAccelerator(const QString &name, bool flag)
 
 bool Profile::enableAlias(const QString &name, bool flag)
 {
-    Alias *alias = findAlias(name, rootGroup());
+    Alias *alias = findAlias(name);
     if (alias == 0)
     {
         return false;
@@ -1045,7 +989,7 @@ bool Profile::enableAlias(const QString &name, bool flag)
 
 bool Profile::enableTimer(const QString &name, bool flag)
 {
-    Timer *timer = findTimer(name, rootGroup());
+    Timer *timer = findTimer(name);
     if (timer == 0)
     {
         return false;
@@ -1058,7 +1002,7 @@ bool Profile::enableTimer(const QString &name, bool flag)
 
 bool Profile::enableTrigger(const QString &name, bool flag)
 {
-    Trigger *trigger = findTrigger(name, rootGroup());
+    Trigger *trigger = findTrigger(name);
     if (trigger == 0)
     {
         return false;
@@ -1100,7 +1044,6 @@ void Profile::setVariable(const QString &name, const QVariant &value)
         parentGroup = createGroup(names.join('/'));
         if (parentGroup == 0)
         {
-            qDebug() << "setVariable: no group (should never happen)";
             return;
         }
     }
@@ -1228,7 +1171,8 @@ void Profile::fromXml(QXmlStreamReader &xml)
             {
                 try
                 {
-                    m_rootGroup->fromXml(xml, "settings");
+//                    m_rootGroup->fromXml(xml, "settings");
+                    appendXml(xml);
                 }
                 catch (XmlException *xe)
                 {
@@ -1571,9 +1515,233 @@ void Profile::readLogging(QXmlStreamReader &xml)
     }
 }
 
+void Profile::readGroup(QXmlStreamReader &xml, const QString &element)
+{
+    QStringList warnings;
+
+    if (element.compare("group") == 0)
+    {
+        Group *group = new Group(this);
+        foreach (QXmlStreamAttribute attrib, xml.attributes())
+        {
+            if (attrib.name().compare("name") == 0)
+            {
+                QString val(attrib.value().toString());
+                if (val.isEmpty())
+                {
+                    warnings.append(tr("XML: Line %1; invalid or missing 'name' attribute").arg(xml.lineNumber()));
+                }
+                group->setName(val);
+            }
+            else if (attrib.name().compare("enabled") == 0)
+            {
+                bool val = attrib.value().compare("n", Qt::CaseInsensitive) != 0;
+                group->enable(val);
+            }
+            else
+            {
+                warnings.append(tr("XML: Line %1; unknown attribute: %2").arg(xml.lineNumber()).arg(attrib.name().toString()));
+            }
+        }
+
+        if (!warnings.isEmpty())
+        {
+            delete group;
+            throw new XmlException(warnings);
+        }
+
+        Group *lookup = findGroup(group->name(), activeGroup());
+        if (lookup)
+        {
+            lookup->enable(group->enabledFlag());
+            lookup->group()->deleteGroup(lookup);
+            delete group;
+            group = lookup;
+        }
+
+        addGroup(group);
+    }
+    else
+    {
+        setActiveGroup(rootGroup());
+    }
+}
+
+void Profile::readAccelerator(QXmlStreamReader &xml)
+{
+    Accelerator *accelerator = 0;
+    try
+    {
+        int line = xml.lineNumber();
+
+        accelerator = new Accelerator(this);
+        Q_CHECK_PTR(accelerator);
+        accelerator->fromXml(xml);
+
+        Accelerator *lookup = findAccelerator(accelerator->name());
+        if (lookup)
+        {
+            *lookup = *accelerator;
+            lookup->group()->deleteAccelerator(lookup);
+            delete accelerator;
+            accelerator = lookup;
+        }
+        else if (existingName(accelerator->name()))
+        {
+            delete accelerator;
+            throw new XmlException(tr("XML: Line %1; duplicate name: %2").arg(line).arg(accelerator->name()));
+        }
+
+        addAccelerator(accelerator);
+    }
+    catch (XmlException *xe)
+    {
+        delete accelerator;
+        throw xe;
+    }
+}
+
+void Profile::readAlias(QXmlStreamReader &xml)
+{
+    Alias *alias = 0;
+    try
+    {
+        int line = xml.lineNumber();
+
+        alias = new Alias(this);
+        Q_CHECK_PTR(alias);
+        alias->fromXml(xml);
+
+        Alias *lookup = findAlias(alias->name());
+        if (lookup)
+        {
+            *lookup = *alias;
+            lookup->group()->deleteAlias(lookup);
+            delete alias;
+            alias = lookup;
+        }
+        else if (existingName(alias->name()))
+        {
+            delete alias;
+            throw new XmlException(tr("XML: Line %1; duplicate name: %2").arg(line).arg(alias->name()));
+        }
+
+        addAlias(alias);
+    }
+    catch (XmlException *xe)
+    {
+        delete alias;
+        throw xe;
+    }
+}
+
+void Profile::readTimer(QXmlStreamReader &xml)
+{
+    Timer *timer = 0;
+    try
+    {
+        int line = xml.lineNumber();
+
+        timer = new Timer(this);
+        Q_CHECK_PTR(timer);
+        timer->fromXml(xml);
+
+        Timer *lookup = findTimer(timer->name());
+        if (lookup)
+        {
+            *lookup = *timer;
+            lookup->group()->deleteTimer(lookup);
+            delete timer;
+            timer = lookup;
+        }
+        else if (existingName(timer->name()))
+        {
+            delete timer;
+            throw new XmlException(tr("XML: Line %1; duplicate name: %2").arg(line).arg(timer->name()));
+        }
+
+        addTimer(timer);
+    }
+    catch (XmlException *xe)
+    {
+        delete timer;
+        throw xe;
+    }
+}
+
+void Profile::readTrigger(QXmlStreamReader &xml)
+{
+    Trigger *trigger = 0;
+    try
+    {
+        int line = xml.lineNumber();
+
+        trigger = new Trigger(this);
+        Q_CHECK_PTR(trigger);
+        trigger->fromXml(xml);
+
+        Trigger *lookup = findTrigger(trigger->name());
+        if (lookup)
+        {
+            *lookup = *trigger;
+            lookup->group()->deleteTrigger(lookup);
+            delete trigger;
+            trigger = lookup;
+        }
+        else if (existingName(trigger->name()))
+        {
+            delete trigger;
+            throw new XmlException(tr("XML: Line %1; duplicate name: %2").arg(line).arg(trigger->name()));
+        }
+
+        addTrigger(trigger);
+    }
+    catch (XmlException *xe)
+    {
+        delete trigger;
+        throw xe;
+    }
+}
+
+void Profile::readVariable(QXmlStreamReader &xml)
+{
+    Variable *variable = 0;
+    try
+    {
+        int line = xml.lineNumber();
+
+        variable = new Variable(this);
+        Q_CHECK_PTR(variable);
+        variable->fromXml(xml);
+
+        Variable *lookup = findVariable(variable->name());
+        if (lookup)
+        {
+            *lookup = *variable;
+            lookup->group()->deleteVariable(lookup);
+            delete variable;
+            variable = lookup;
+        }
+        else if (existingName(variable->name()))
+        {
+            delete variable;
+            throw new XmlException(tr("XML: Line %1; duplicate name: %2").arg(line).arg(variable->name()));
+        }
+
+        addVariable(variable);
+    }
+    catch (XmlException *xe)
+    {
+        delete variable;
+        throw xe;
+    }
+}
+
 void Profile::appendXml(QXmlStreamReader &xml)
 {
     QStringList warnings;
+
+    setActiveGroup(rootGroup());
 
     while (!xml.atEnd())
     {
@@ -1583,176 +1751,93 @@ void Profile::appendXml(QXmlStreamReader &xml)
         {
             if (xml.name() == "accelerator")
             {
-                Accelerator *accelerator = 0;
                 try
                 {
-                    accelerator = new Accelerator(this);
-                    Q_CHECK_PTR(accelerator);
-                    accelerator->fromXml(xml);
-
-                    Accelerator *lookup = findAccelerator(accelerator->name(), rootGroup());
-                    if (lookup)
-                    {
-                        *lookup = *accelerator;
-                        delete accelerator;
-                    }
-                    else
-                    {
-                        addAccelerator(accelerator);
-                    }
+                    readAccelerator(xml);
                 }
                 catch (XmlException *xe)
                 {
                     warnings.append(xe->warnings());
 
                     delete xe;
-                    delete accelerator;
                 }
             }
             else if (xml.name() == "alias")
             {
-                Alias *alias = 0;
                 try
                 {
-                    alias = new Alias(this);
-                    Q_CHECK_PTR(alias);
-                    alias->fromXml(xml);
-
-                    Alias *lookup = findAlias(alias->name(), rootGroup());
-                    if (lookup)
-                    {
-                        *lookup = *alias;
-                        delete alias;
-                    }
-                    else
-                    {
-                        addAlias(alias);
-                    }
+                    readAlias(xml);
                 }
                 catch (XmlException *xe)
                 {
                     warnings.append(xe->warnings());
 
                     delete xe;
-                    delete alias;
                 }
             }
             else if (xml.name() == "group")
             {
-                Group *group = 0;
                 try
                 {
-                    group = new Group(this);
-                    Q_CHECK_PTR(group);
-                    group->fromXml(xml);
-
-                    warnings.append(group->warnings());
-
-                    Group *lookup = findGroup(group->name(), activeGroup());
-                    if (lookup)
-                    {
-                        lookup->merge(*group);
-                        delete group;
-                    }
-                    else
-                    {
-                        addGroup(group);
-                    }
+                    readGroup(xml);
                 }
                 catch (XmlException *xe)
                 {
                     warnings.append(xe->warnings());
 
                     delete xe;
-                    delete group;
                 }
             }
             else if (xml.name() == "timer")
             {
-                Timer *timer = 0;
                 try
                 {
-                    timer = new Timer(this);
-                    Q_CHECK_PTR(timer);
-                    timer->fromXml(xml);
-
-                    Timer *lookup = findTimer(timer->name(), rootGroup());
-                    if (lookup)
-                    {
-                        *lookup = *timer;
-                        delete timer;
-                    }
-                    else
-                    {
-                        addTimer(timer);
-                    }
+                    readTimer(xml);
                 }
                 catch (XmlException *xe)
                 {
                     warnings.append(xe->warnings());
 
                     delete xe;
-                    delete timer;
                 }
             }
             else if (xml.name() == "trigger")
             {
-                Trigger *trigger = 0;
                 try
                 {
-                    trigger = new Trigger(this);
-                    Q_CHECK_PTR(trigger);
-                    trigger->fromXml(xml);
-
-                    Trigger *lookup = findTrigger(trigger->name(), rootGroup());
-                    if (lookup)
-                    {
-                        *lookup = *trigger;
-                        delete trigger;
-                    }
-                    else
-                    {
-                        addTrigger(trigger);
-                    }
+                    readTrigger(xml);
                 }
                 catch (XmlException *xe)
                 {
                     warnings.append(xe->warnings());
 
                     delete xe;
-                    delete trigger;
                 }
             }
             else if (xml.name() == "variable")
             {
-                Variable *variable = 0;
                 try
                 {
-                    variable = new Variable(this);
-                    Q_CHECK_PTR(variable);
-                    variable->fromXml(xml);
-
-                    Variable *lookup = findVariable(variable->name());
-                    if (lookup)
-                    {
-                        *lookup = *variable;
-                        delete variable;
-                    }
-                    else
-                    {
-                        addVariable(variable);
-                    }
+                    readVariable(xml);
                 }
                 catch (XmlException *xe)
                 {
                     warnings.append(xe->warnings());
 
                     delete xe;
-                    delete variable;
                 }
             }
         }
+        else if (xml.isEndElement())
+        {
+            if (xml.name() == "group")
+            {
+                uplevelGroup();
+            }
+        }
     }
+
+    setActiveGroup(rootGroup());
 
     if (!warnings.isEmpty())
     {

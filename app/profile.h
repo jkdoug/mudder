@@ -32,6 +32,7 @@
 #include <QColor>
 #include <QDebug>
 #include <QFont>
+#include <QMap>
 #include <QObject>
 #include <QString>
 #include <QVariant>
@@ -159,11 +160,11 @@ public:
     void uplevelGroup();
     void setActiveGroup(Group *group) { m_activeGroup = group; }
 
-    void addGroup(Group *group);
-    void addAccelerator(Accelerator *accelerator);
-    void addAlias(Alias *alias);
-    void addTimer(Timer *timer);
-    void addTrigger(Trigger *trigger);
+    void addGroup(Group *group, Group *parent = 0);
+    void addAccelerator(Accelerator *accelerator, Group *parent = 0);
+    void addAlias(Alias *alias, Group *parent = 0);
+    void addTimer(Timer *timer, Group *parent = 0);
+    void addTrigger(Trigger *trigger, Group *parent = 0);
     void addVariable(Variable *variable, Group *parent = 0);
 
     bool deleteGroup(Group *group);
@@ -174,14 +175,16 @@ public:
     bool deleteVariable(Variable *variable);
 
     Group *createGroup(const QString &name, Group *parent = 0);
+    template <class T> T *findItem(const QString &name) const;
     Group *findGroup(const QString &name, Group *parent = 0);
     Group *findParentGroup(const QString &name, Group *parent = 0);
-    Accelerator *findAccelerator(const QString &name, Group *parent = 0);
-    Alias *findAlias(const QString &name, Group *parent = 0);
-    Timer *findTimer(const QString &name, Group *parent = 0);
-    Trigger *findTrigger(const QString &name, Group *parent = 0);
+    Accelerator *findAccelerator(const QString &name);
+    Alias *findAlias(const QString &name);
+    Timer *findTimer(const QString &name);
+    Trigger *findTrigger(const QString &name);
     Variable *findVariable(const QString &name, Group *parent = 0);
 
+    bool existingName(const QString &name) const;
     bool existingGroup(Group *item, Group *parent = 0);
     bool existingAccelerator(Accelerator *item, Group *parent = 0);
     bool existingAlias(Alias *item, Group *parent = 0);
@@ -219,6 +222,13 @@ private:
     void readDisplay(QXmlStreamReader &xml);
     void readColors(QXmlStreamReader &xml);
     void readLogging(QXmlStreamReader &xml);
+
+    void readGroup(QXmlStreamReader &xml, const QString &element = "group");
+    void readAccelerator(QXmlStreamReader &xml);
+    void readAlias(QXmlStreamReader &xml);
+    void readTimer(QXmlStreamReader &xml);
+    void readTrigger(QXmlStreamReader &xml);
+    void readVariable(QXmlStreamReader &xml);
 
     QString m_name;
     QString m_filename;
@@ -258,7 +268,7 @@ private:
     Group *m_rootGroup;
     Group *m_activeGroup;
 
-    VariableMap m_variables;
+    QMap<QString, ProfileItem *> m_namedItems;
 };
 
 #endif // PROFILE_H
