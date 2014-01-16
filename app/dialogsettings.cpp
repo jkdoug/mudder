@@ -54,6 +54,10 @@ DialogSettings::DialogSettings(QWidget *parent) :
 
     m_profile = 0;
 
+    ui->copySetting->setShortcut(QKeySequence(QKeySequence::Copy));
+    ui->deleteSetting->setShortcut(QKeySequence(QKeySequence::Delete));
+    ui->pasteSetting->setShortcut(QKeySequence(QKeySequence::Paste));
+
     m_addAccelerator = new QAction(tr("A&ccelerator"), this);
     m_addAccelerator->setStatusTip(tr("Create a new key accelerator"));
     m_addAccelerator->setIcon(QIcon(":/icons/accelerator"));
@@ -256,9 +260,10 @@ void DialogSettings::updateItem(QTreeWidgetItem *node, ProfileItem *item)
 
 void DialogSettings::on_settings_itemSelectionChanged()
 {
+    ui->copySetting->setEnabled(ui->settings->selectedItems().count() > 0);
+    ui->cutSetting->setEnabled(ui->settings->selectedItems().count() > 0);
     ui->deleteSetting->setEnabled(ui->settings->selectedItems().count() > 0);
     ui->editSetting->setEnabled(ui->settings->selectedItems().count() == 1);
-    ui->copySetting->setEnabled(ui->settings->selectedItems().count() > 0);
 }
 
 void DialogSettings::toggle(QTreeWidgetItem *item, ItemType type, bool flag)
@@ -524,114 +529,72 @@ void DialogSettings::on_editSetting_clicked()
 
 void DialogSettings::on_deleteSetting_clicked()
 {
-    QTreeWidgetItem *item = ui->settings->currentItem();
-    if (!item)
+    QList<QTreeWidgetItem *> items(ui->settings->selectedItems());
+    if (items.isEmpty())
     {
         ui->deleteSetting->setEnabled(false);
         return;
     }
 
-    ItemType type = (ItemType)item->type();
-    ProfileItem *obj = qvariant_cast<ProfileItem *>(item->data(0, SETTINGS_ROLE_ITEM));
-
-    QString title(tr("Delete Setting"));
+    QString title(tr("Confirm Delete"));
     QString msg;
-    Group *parentGroup = 0;
-
-    Group *group = 0;
-    Accelerator *accelerator = 0;
-    Alias *alias = 0;
-    Timer *timer = 0;
-    Trigger *trigger = 0;
-    Variable *variable = 0;
-
-    switch (type)
+    if (items.size() == 1)
     {
-        case TGroup:
-        {
-            group = qobject_cast<Group *>(obj);
-            parentGroup = qobject_cast<Group *>(group->parent());
-            if (group->children().isEmpty())
-            {
-                msg = QString("Are you sure you want to remove the group named '%1?'").arg(group->name());
-            }
-            else
-            {
-                msg = QString("Are you sure you want to remove the group named '%1' and everything in it?").arg(group->name());
-                title = tr("Delete Settings");
-            }
-        }
-        break;
-
-        case TAccelerator:
-        {
-            accelerator = qobject_cast<Accelerator *>(obj);
-            parentGroup = accelerator->group();
-            msg = QString("Are you sure you want to remove the accelerator named '%1?'").arg(accelerator->name());
-        }
-        break;
-
-        case TAlias:
-        {
-            alias = qobject_cast<Alias *>(obj);
-            parentGroup = alias->group();
-            msg = QString("Are you sure you want to remove the alias named '%1?'").arg(alias->name());
-        }
-        break;
-
-        case TTimer:
-        {
-            timer = qobject_cast<Timer *>(obj);
-            parentGroup = timer->group();
-            msg = QString("Are you sure you want to remove the timer named '%1?'").arg(timer->name());
-        }
-        break;
-
-        case TTrigger:
-        {
-            trigger = qobject_cast<Trigger *>(obj);
-            parentGroup = trigger->group();
-            msg = QString("Are you sure you want to remove the trigger named '%1?'").arg(trigger->name());
-        }
-        break;
-
-        case TVariable:
-        {
-            variable = qobject_cast<Variable *>(obj);
-            parentGroup = variable->group();
-            msg = QString("Are you sure you want to remove the variable named '%1?'").arg(variable->name());
-        }
-        break;
+        msg = tr("Are you sure you want to remove this setting?");
+    }
+    else
+    {
+        msg = tr("Are you sure you want to remove %1 settings?").arg(items.size());
     }
 
     if (QMessageBox::question(this, title, msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
     {
-        delete item;
+        ui->settings->clearSelection();
+        ui->settings->setCurrentItem(0);
 
-        if (group)
+        foreach (QTreeWidgetItem *item, items)
         {
-            m_expanded.removeOne(group->path());
-            profile()->deleteGroup(group);
-        }
-        else if (accelerator)
-        {
-            profile()->deleteAccelerator(accelerator);
-        }
-        else if (alias)
-        {
-            profile()->deleteAlias(alias);
-        }
-        else if (timer)
-        {
-            profile()->deleteTimer(timer);
-        }
-        else if (trigger)
-        {
-            profile()->deleteTrigger(trigger);
-        }
-        else if (variable)
-        {
-            profile()->deleteVariable(variable);
+            ProfileItem *obj = qvariant_cast<ProfileItem *>(item->data(0, SETTINGS_ROLE_ITEM));
+            if (obj == 0)
+            {
+                qDebug() << "deleteSetting: null object";
+                delete item;
+                continue;
+            }
+
+            ItemType itemType = (ItemType)item->type();
+            switch (itemType)
+            {
+            case TAccelerator:
+                profile()->deleteAccelerator(qobject_cast<Accelerator *>(obj));
+                break;
+
+            case TAlias:
+                profile()->deleteAlias(qobject_cast<Alias *>(obj));
+                break;
+
+            case TGroup:
+            {
+                Group *group = qobject_cast<Group *>(obj);
+                m_expanded.removeOne(group->path());
+                profile()->deleteGroup(group);
+            }
+                break;
+
+            case TTimer:
+                profile()->deleteTimer(qobject_cast<Timer *>(obj));
+                break;
+
+            case TTrigger:
+                profile()->deleteTrigger(qobject_cast<Trigger *>(obj));
+                break;
+
+            case TVariable:
+                profile()->deleteVariable(qobject_cast<Variable *>(obj));
+                break;
+            }
+
+            delete item;
         }
     }
 }
@@ -918,4 +881,10 @@ void DialogSettings::on_pasteSetting_clicked()
         delete xe;
         ui->pasteSetting->setEnabled(false);
     }
+}
+
+void DialogSettings::on_cutSetting_clicked()
+{
+    on_copySetting_clicked();
+    on_deleteSetting_clicked();
 }

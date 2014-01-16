@@ -84,6 +84,8 @@ private slots:
 
     void clipboardChanged();
 
+    void on_cutSetting_clicked();
+
 private:
     void populateTree();
     void populateBranch(QTreeWidgetItem *parent, Group *group);
