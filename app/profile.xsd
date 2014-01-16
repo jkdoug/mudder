@@ -57,9 +57,27 @@
   </xs:complexType>
 
   <xs:complexType name="groupItem">
-    <xs:complexContent>
-      <xs:extension base="profileItem" />
-    </xs:complexContent>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="accelerator" />
+      <xs:element ref="alias" />
+      <xs:element ref="group" />
+      <xs:element ref="timer" />
+      <xs:element ref="trigger" />
+      <xs:element ref="variable" />
+    </xs:choice>
+    <xs:attribute name="enabled" type="boolString" use="optional" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="settingsItem">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="accelerator" />
+      <xs:element ref="alias" />
+      <xs:element ref="group" />
+      <xs:element ref="timer" />
+      <xs:element ref="trigger" />
+      <xs:element ref="variable" />
+    </xs:choice>
   </xs:complexType>
 
   <xs:complexType name="timerItem">
@@ -133,12 +151,11 @@
 
   <xs:element name="group" type="groupItem" />
 
+  <xs:element name="settings" type="settingsItem" />
+
   <xs:element name="timer" type="timerItem" />
 
   <xs:element name="trigger" type="triggerItem" />
 
   <xs:element name="variable" type="variableItem" />
-
-  <!-- Add child items to settings, if possible/necessary -->
-  <xs:element name="settings" />
 </xs:schema>
