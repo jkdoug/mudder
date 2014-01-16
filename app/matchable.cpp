@@ -158,7 +158,7 @@ void Matchable::toXml(QXmlStreamWriter &xml)
     {
         xml.writeAttribute("keep_evaluating", "y");
     }
-    if (caseSensitive())
+    if (!caseSensitive())
     {
         xml.writeAttribute("ignore_case", "y");
     }
@@ -185,7 +185,7 @@ void Matchable::fromXml(QXmlStreamReader &xml)
     }
 
     setKeepEvaluating(xml.attributes().value("keep_evaluating").compare("y", Qt::CaseInsensitive) == 0);
-    setCaseSensitive(xml.attributes().value("ignore_case").compare("y", Qt::CaseInsensitive) == 0);
+    setCaseSensitive(xml.attributes().value("ignore_case").compare("y", Qt::CaseInsensitive) != 0);
 
     try
     {
