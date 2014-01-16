@@ -175,13 +175,12 @@ public:
     bool deleteVariable(Variable *variable);
 
     Group *createGroup(const QString &name, Group *parent = 0);
-    template <class T> T *findItem(const QString &name) const;
     Group *findGroup(const QString &name, Group *parent = 0);
     Group *findParentGroup(const QString &name, Group *parent = 0);
-    Accelerator *findAccelerator(const QString &name);
-    Alias *findAlias(const QString &name);
-    Timer *findTimer(const QString &name);
-    Trigger *findTrigger(const QString &name);
+    Accelerator *findAccelerator(const QString &name, Group *parent = 0);
+    Alias *findAlias(const QString &name, Group *parent = 0);
+    Timer *findTimer(const QString &name, Group *parent = 0);
+    Trigger *findTrigger(const QString &name, Group *parent = 0);
     Variable *findVariable(const QString &name, Group *parent = 0);
 
     bool existingName(const QString &name) const;
@@ -267,8 +266,6 @@ private:
 
     Group *m_rootGroup;
     Group *m_activeGroup;
-
-    QMap<QString, ProfileItem *> m_namedItems;
 };
 
 #endif // PROFILE_H

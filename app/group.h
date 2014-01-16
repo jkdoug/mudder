@@ -92,7 +92,6 @@ public:
     const QList<Variable *> & sortedVariables();
 
     virtual void toXml(QXmlStreamWriter &xml, const QString &element);
-    virtual void fromXml(QXmlStreamReader &xml, const QString &element);
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml);
 
