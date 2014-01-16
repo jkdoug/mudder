@@ -203,6 +203,8 @@ public:
     static int connect(lua_State *L);
     static int disconnect(lua_State *L);
 
+    static int version(lua_State *L);
+
     static int playSound(lua_State *L);
 
 private:

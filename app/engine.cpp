@@ -26,6 +26,7 @@
 #include "matchable.h"
 #include "profile.h"
 #include "xmlexception.h"
+#include <QApplication>
 #include <QDebug>
 #include <QDomDocument>
 #include <QJsonDocument>
@@ -118,6 +119,7 @@ void Engine::initialize(Console *c, const QString &script)
     lua_register(m_global, "Send", Engine::send);
     lua_register(m_global, "Execute", Engine::sendAlias);
     lua_register(m_global, "SendGmcp", Engine::sendGmcp);
+    lua_register(m_global, "SendGMCP", Engine::sendGmcp);
     lua_register(m_global, "Simulate", Engine::simulate);
 
     lua_register(m_global, "OpenLog", Engine::openLog);
@@ -131,11 +133,15 @@ void Engine::initialize(Console *c, const QString &script)
     lua_register(m_global, "DeleteVariable", Engine::deleteVariable);
 
     lua_register(m_global, "JsonDecode", Engine::jsonDecode);
+    lua_register(m_global, "JSONDecode", Engine::jsonDecode);
     lua_register(m_global, "JsonEncode", Engine::jsonEncode);
+    lua_register(m_global, "JSONEncode", Engine::jsonEncode);
 
     lua_register(m_global, "IsConnected", Engine::isConnected);
     lua_register(m_global, "Connect", Engine::connect);
     lua_register(m_global, "Disconnect", Engine::disconnect);
+
+    lua_register(m_global, "Version", Engine::version);
 
     lua_register(m_global, "PlaySound", Engine::playSound);
 
@@ -2740,6 +2746,13 @@ int Engine::disconnect(lua_State *L)
     c->disconnectFromServer();
 
     return 0;
+}
+
+int Engine::version(lua_State *L)
+{
+    lua_pushstring(L, QApplication::applicationVersion().toLatin1().data());
+
+    return 1;
 }
 
 int Engine::playSound(lua_State *L)
