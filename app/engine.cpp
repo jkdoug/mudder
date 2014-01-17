@@ -2674,12 +2674,27 @@ int Engine::jsonDecode(lua_State *L)
     {
         lua_pushnil(L);
     }
+    else if (lua_isnumber(L, 1))
+    {
+        lua_pushnumber(L, checkNumber(L, 1));
+    }
+    else if (lua_isboolean(L, 1))
+    {
+        lua_pushboolean(L, lua_toboolean(L, 1));
+    }
     else
     {
         QString data(checkString(L, 1));
         QJsonDocument doc(QJsonDocument::fromJson(data.toUtf8()));
 
-        pushVariant(L, doc);
+        if (doc.isEmpty())
+        {
+            lua_pushstring(L, data.toLatin1().data());
+        }
+        else
+        {
+            pushVariant(L, doc);
+        }
     }
 
     return 1;
