@@ -35,6 +35,9 @@ class Executable : public ProfileItem
     Q_OBJECT
 
     Q_PROPERTY(QString contents READ contents WRITE setContents)
+    Q_PROPERTY(int executionCount READ executionCount)
+    Q_PROPERTY(double totalTime READ totalTime)
+    Q_PROPERTY(double averageTime READ averageTime)
 
 public:
     explicit Executable(QObject *parent = 0);
@@ -48,6 +51,10 @@ public:
     const QString & contents() const { return m_contents; }
     void setContents(const QString &contents) { m_contents = contents; }
 
+    int executionCount() const { return m_executionCount; }
+    double totalTime() const { return m_totalTime; }
+    double averageTime() const { return m_averageTime; }
+
     bool execute(Engine *e);
 
     virtual void toXml(QXmlStreamWriter &xml);
@@ -58,6 +65,10 @@ protected:
 
 private:
     QString m_contents;
+
+    int m_executionCount;
+    double m_totalTime;
+    double m_averageTime;
 };
 
 #endif // EXECUTABLE_H

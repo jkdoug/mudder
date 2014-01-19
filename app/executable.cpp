@@ -23,11 +23,15 @@
 #include "engine.h"
 #include "xmlexception.h"
 #include <QDebug>
+#include <QElapsedTimer>
 #include <QStringList>
 
 Executable::Executable(QObject *parent) :
     ProfileItem(parent)
 {
+    m_executionCount = 0;
+    m_totalTime = 0.0;
+    m_averageTime = 0.0;
 }
 
 Executable::Executable(const Executable &rhs, QObject *parent) :
@@ -68,11 +72,29 @@ void Executable::clone(const Executable &rhs)
     ProfileItem::clone(rhs);
 
     m_contents = rhs.m_contents;
+
+    m_executionCount = rhs.m_executionCount;
+    m_totalTime = rhs.m_totalTime;
+    m_averageTime = rhs.m_averageTime;
 }
 
 bool Executable::execute(Engine *e)
 {
-    return contents().isEmpty() || e->execute(contents(), this);
+    if (contents().isEmpty())
+    {
+        return true;
+    }
+
+    QElapsedTimer timer;
+    timer.start();
+
+    bool result = e->execute(contents(), this);
+
+    m_executionCount++;
+    m_totalTime = m_totalTime + timer.elapsed() / 1000.0;
+    m_averageTime = m_totalTime / m_executionCount;
+
+    return result;
 }
 
 void Executable::toXml(QXmlStreamWriter &xml)
