@@ -43,7 +43,7 @@ void ConsoleDocumentLayout::draw(QPainter *painter, const PaintContext &context)
 {
     // TODO: optimize this
 
-//    clearLayouts();
+    clearLayouts();
 
     QRectF r(context.clip);
 
@@ -52,8 +52,16 @@ void ConsoleDocumentLayout::draw(QPainter *painter, const PaintContext &context)
     QTextBlock textBlock(bottomBlock(context.cursorPosition));
     while (y > 0 && textBlock.isValid())
     {
-        QTextLayout * textLayout = new QTextLayout(textBlock);
-        m_layouts.insert(textBlock, textLayout);
+        QTextLayout * textLayout = 0;
+        if (m_layouts.contains(textBlock))
+        {
+            textLayout = m_layouts[textBlock];
+        }
+        else
+        {
+            textLayout = new QTextLayout(textBlock);
+            m_layouts.insert(textBlock, textLayout);
+        }
 
         textLayout->beginLayout();
 
