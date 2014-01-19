@@ -22,6 +22,11 @@ DialogTrigger::DialogTrigger(Trigger *trigger, QWidget *parent) :
     ui->repeat->setChecked(m_trigger->repeat());
     ui->omit->setChecked(m_trigger->omit());
 
+    ui->timesEvaluated->setText(QLocale::system().toString(m_trigger->evalCount()));
+    ui->timesFired->setText(QLocale::system().toString(m_trigger->matchCount()));
+    ui->lastFired->setText(m_trigger->lastMatched().toString(Qt::SystemLocaleShortDate));
+    ui->avgTime->setText(QString::number(m_trigger->averageTime()));
+
     ui->script->setPlainText(m_trigger->contents());
 
     m_ok = ui->buttonBox->button(QDialogButtonBox::Ok);
