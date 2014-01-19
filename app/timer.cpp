@@ -44,8 +44,6 @@ Timer::Timer(const Timer &rhs, QObject *parent) :
 {
     m_timer = new QTimer(this);
 
-    m_firedCount = 0;
-
     clone(rhs);
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(fire()));
@@ -95,6 +93,8 @@ void Timer::clone(const Timer &rhs)
     m_profile = rhs.m_profile;
 
     m_once = rhs.m_once;
+
+    m_firedCount = rhs.m_firedCount;
 
     setInterval(rhs.interval());
 }

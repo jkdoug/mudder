@@ -28,6 +28,11 @@ DialogAlias::DialogAlias(Alias *alias, QWidget *parent) :
 
     ui->script->setPlainText(m_alias->contents());
 
+    ui->timesEvaluated->setText(QLocale::system().toString(m_alias->evalCount()));
+    ui->timesFired->setText(QLocale::system().toString(m_alias->matchCount()));
+    ui->lastFired->setText(m_alias->lastMatched().toString(Qt::SystemLocaleShortDate));
+    ui->avgTime->setText(QString::number(m_alias->averageTime()));
+
     m_ok = ui->buttonBox->button(QDialogButtonBox::Ok);
 
     changed();

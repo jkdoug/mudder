@@ -19,6 +19,9 @@ DialogAccelerator::DialogAccelerator(Accelerator *accelerator, QWidget *parent) 
 
     ui->script->setPlainText(m_accelerator->contents());
 
+    ui->timesFired->setText(QLocale::system().toString(m_accelerator->executionCount()));
+    ui->avgTime->setText(QString::number(m_accelerator->averageTime()));
+
     m_ok = ui->buttonBox->button(QDialogButtonBox::Ok);
 
     changed();

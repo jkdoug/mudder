@@ -18,6 +18,9 @@ DialogTimer::DialogTimer(Timer *timer, QWidget *parent) :
 
     ui->script->setPlainText(m_timer->contents());
 
+    ui->timesFired->setText(QLocale::system().toString(m_timer->firedCount()));
+    ui->avgTime->setText(QString::number(m_timer->averageTime()));
+
     m_ok = ui->buttonBox->button(QDialogButtonBox::Ok);
 
     changed();
