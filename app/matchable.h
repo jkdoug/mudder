@@ -64,6 +64,7 @@ public:
     int matchEnd() const;
     const QDateTime & lastMatched() const { return m_lastMatched; }
     int matchCount() const { return m_matchCount; }
+    int evalCount() const { return m_evalCount; }
     bool keepEvaluating() const { return m_keepEvaluating; }
     void setKeepEvaluating(bool flag) { m_keepEvaluating = flag; }
     bool caseSensitive() const { return !m_regex.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption); }
@@ -88,6 +89,7 @@ private:
 
     QDateTime m_lastMatched;
     int m_matchCount;
+    int m_evalCount;
 
     bool m_keepEvaluating;
 };

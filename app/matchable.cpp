@@ -30,6 +30,7 @@ Matchable::Matchable(QObject *parent) :
 {
     m_match = 0;
     m_matchCount = 0;
+    m_evalCount = 0;
     m_keepEvaluating = false;
 
     setCaseSensitive(true);
@@ -91,6 +92,7 @@ void Matchable::clone(const Matchable &rhs)
 
     m_lastMatched = rhs.m_lastMatched;
     m_matchCount = rhs.m_matchCount;
+    m_evalCount = rhs.m_evalCount;
 
     m_keepEvaluating = rhs.m_keepEvaluating;
 }
@@ -132,6 +134,8 @@ void Matchable::setCaseSensitive(bool flag)
 
 bool Matchable::match(const QString &str, int offset)
 {
+    m_evalCount++;
+
     m_match = new QRegularExpressionMatch(m_regex.match(str, offset));
     if (m_match->hasMatch())
     {
