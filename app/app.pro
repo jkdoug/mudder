@@ -55,7 +55,8 @@ SOURCES += main.cpp\
     consoledisplay.cpp \
     textdocument.cpp \
     textblockdata.cpp \
-    consoledocumentlayout.cpp
+    consoledocumentlayout.cpp \
+    dialogglobal.cpp
 
 HEADERS  += mainwindow.h \
     profile.h \
@@ -102,7 +103,7 @@ HEADERS  += mainwindow.h \
     textdocument.h \
     textblockdata.h \
     consoledocumentlayout.h \
-    fixed.h
+    dialogglobal.h
 
 FORMS    += mainwindow.ui \
     console.ui \
@@ -114,7 +115,8 @@ FORMS    += mainwindow.ui \
     dialogaccelerator.ui \
     dialogtimer.ui \
     dialogvariable.ui \
-    dialoggroup.ui
+    dialoggroup.ui \
+    dialogglobal.ui
 
 RESOURCES += \
     mudder.qrc

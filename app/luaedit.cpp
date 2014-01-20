@@ -4,6 +4,7 @@
 
 #include <QDebug>
 #include <QPainter>
+#include <QSettings>
 #include <QString>
 #include <QTextBlock>
 
@@ -15,6 +16,17 @@ LuaEdit::LuaEdit(QWidget *parent) :
 
     m_countCache.first = -1;
     m_countCache.second = -1;
+
+    QSettings settings;
+
+    bool antiAlias = settings.value("GlobalFontAntialias", true).toBool();
+    QString fontName(settings.value("GlobalFontName", "Consolas").toString());
+    int fontSize = settings.value("GlobalFontSize", 9).toInt();
+
+    QFont font(fontName, fontSize);
+    font.setStyleHint(QFont::TypeWriter);
+    font.setStyleStrategy(antiAlias?QFont::PreferAntialias:QFont::NoAntialias);
+    setFont(font);
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));

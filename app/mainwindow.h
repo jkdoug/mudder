@@ -107,6 +107,7 @@ private slots:
     void on_action_SaveAs_triggered();
     void on_action_Close_triggered();
     void on_action_Exit_triggered();
+    void on_action_GlobalPreferences_triggered();
     void on_action_Preferences_triggered();
     void on_action_Settings_triggered();
     void on_action_Reload_triggered();

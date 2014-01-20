@@ -78,6 +78,8 @@
     <addaction name="action_Save"/>
     <addaction name="action_SaveAs"/>
     <addaction name="separator"/>
+    <addaction name="action_GlobalPreferences"/>
+    <addaction name="separator"/>
     <addaction name="action_Close"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -417,6 +419,21 @@
    </property>
    <property name="text">
     <string>&amp;Mapper</string>
+   </property>
+  </action>
+  <action name="action_GlobalPreferences">
+   <property name="icon">
+    <iconset resource="mudder.qrc">
+     <normaloff>:/icons/preferences</normaloff>:/icons/preferences</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Global Preferences...</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit global application preferences</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
    </property>
   </action>
  </widget>

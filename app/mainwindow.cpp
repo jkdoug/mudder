@@ -23,6 +23,7 @@
 #include "ui_mainwindow.h"
 #include "console.h"
 #include "dialogconnect.h"
+#include "dialogglobal.h"
 #include "dialogprofile.h"
 #include "dialogsettings.h"
 #include "engine.h"
@@ -283,6 +284,16 @@ void MainWindow::createScriptDock()
     m_actionScriptSaveAs->setShortcutContext(Qt::WindowShortcut);
     scriptBar->addAction(m_actionScriptSaveAs);
     connect(m_actionScriptSaveAs, SIGNAL(triggered()), this, SLOT(onSaveScriptAs()));
+
+    scriptBar->addSeparator();
+
+    QAction *actionPreferences = new QAction(tr("&Global Preferences"), scriptWin);
+    actionPreferences->setIcon(QIcon(":/icons/preferences"));
+    actionPreferences->setToolTip(tr("Edit global application preferences"));
+    actionPreferences->setShortcut(QKeySequence("Ctrl+G"));
+    actionPreferences->setShortcutContext(Qt::WindowShortcut);
+    scriptBar->addAction(actionPreferences);
+    connect(actionPreferences, SIGNAL(triggered()), this, SLOT(on_action_GlobalPreferences_triggered()));
 
     scriptBar->addSeparator();
 
@@ -707,6 +718,19 @@ void MainWindow::on_action_Close_triggered()
 void MainWindow::on_action_Exit_triggered()
 {
     close();
+}
+
+void MainWindow::on_action_GlobalPreferences_triggered()
+{
+    DialogGlobal *dlg = new DialogGlobal(this);
+    if (dlg->exec() == QDialog::Accepted)
+    {
+        foreach (QMdiSubWindow *win, m_mdiScript->subWindowList())
+        {
+            win->widget()->setFont(dlg->editorFont());
+            win->widget()->update();
+        }
+    }
 }
 
 void MainWindow::on_action_Preferences_triggered()
