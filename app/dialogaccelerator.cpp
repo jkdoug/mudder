@@ -60,5 +60,7 @@ void DialogAccelerator::accept()
 
     m_accelerator->setContents(ui->script->toPlainText());
 
+    m_accelerator->setFailed(false);
+
     QDialog::accept();
 }

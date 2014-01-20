@@ -84,5 +84,7 @@ void DialogTrigger::accept()
 
     m_trigger->setContents(ui->script->toPlainText());
 
+    m_trigger->setFailed(false);
+
     QDialog::accept();
 }

@@ -31,7 +31,7 @@ public:
     void setName(const QString &name) { m_name = name; }
     virtual QString fullName() const;
     Group *group() const;
-    bool enabled() const;
+    virtual bool enabled() const;
     bool enabledFlag() const { return m_enabled; }
     virtual void enable(bool flag = true) { m_enabled = flag; }
     virtual int sequence() const { return m_sequence; }

@@ -85,5 +85,7 @@ void DialogAlias::accept()
 
     m_alias->setContents(ui->script->toPlainText());
 
+    m_alias->setFailed(false);
+
     QDialog::accept();
 }

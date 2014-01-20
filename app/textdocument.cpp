@@ -253,14 +253,16 @@ void TextDocument::clear()
     m_cursor->setCharFormat(m_formatCurrent);
 }
 
-void TextDocument::appendLink(const QString &text, const QString &link, const QColor &fg, const QColor &bg)
+void TextDocument::appendLink(const QString &text, const QString &link, const QColor &fg, const QColor &bg, const QString &tip)
 {
     QTextCharFormat previousFormat(m_cursor->charFormat());
 
     QTextCharFormat format;
     format.setForeground(fg);
     format.setBackground(bg);
+    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     format.setAnchor(true);
+    format.setAnchorName(tip);
     format.setAnchorHref(link);
     m_cursor->mergeCharFormat(format);
 

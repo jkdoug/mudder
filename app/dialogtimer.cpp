@@ -61,5 +61,7 @@ void DialogTimer::accept()
 
     m_timer->setContents(ui->script->toPlainText());
 
+    m_timer->setFailed(false);
+
     QDialog::accept();
 }

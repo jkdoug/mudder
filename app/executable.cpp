@@ -73,9 +73,16 @@ void Executable::clone(const Executable &rhs)
 
     m_contents = rhs.m_contents;
 
+    m_failed = rhs.m_failed;
+
     m_executionCount = rhs.m_executionCount;
     m_totalTime = rhs.m_totalTime;
     m_averageTime = rhs.m_averageTime;
+}
+
+bool Executable::enabled() const
+{
+    return !failed() && ProfileItem::enabled();
 }
 
 bool Executable::execute(Engine *e)

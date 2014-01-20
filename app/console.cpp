@@ -29,6 +29,7 @@
 #include "textblockdata.h"
 #include "textdocument.h"
 #include "xmlexception.h"
+#include <QAction>
 #include <QApplication>
 #include <QDateTime>
 #include <QDesktopServices>
@@ -36,8 +37,10 @@
 #include <QFileDialog>
 #include <QJsonDocument>
 #include <QJsonParseError>
+#include <QMenu>
 #include <QMessageBox>
 #include <QTextBlock>
+#include <QToolTip>
 #include <QUrl>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
@@ -379,6 +382,7 @@ void Console::startEngine(bool restart)
     if (!restart)
     {
         colorNote("limegreen", QColor(), tr("Hello, Fodder! This is Mudder %1").arg(QApplication::applicationVersion()));
+        hyperlink("Test link\n", Qt::blue, QColor(), new Hyperlink("Click here to test", QUrl(QString("alias://foo")), this));
     }
 
     QString script;
@@ -439,8 +443,8 @@ bool Console::loadProfile(const QString &filename)
         profile()->setDirty(false);
     }
 
-    m_document->setFont(profile()->outputFont());
-    m_document->setCommandColor(profile()->commandForeground(), profile()->commandBackground());
+    document()->setFont(profile()->outputFont());
+    document()->setCommandColor(profile()->commandForeground(), profile()->commandBackground());
 
     QApplication::restoreOverrideCursor();
     return true;
@@ -508,7 +512,7 @@ QFont Console::outputFont() const
 
 void Console::setOutputFont(const QFont &font)
 {
-    m_document->setFont(font);
+    document()->setFont(font);
 
     ui->output->update();
     ui->scrollback->update();
@@ -558,13 +562,14 @@ void Console::scrollTo(int line)
 QString Console::startLog(const QString &filename, bool append)
 {
     QFileInfo logInfo;
-    logInfo.setCaching(false);
     QString logFilename(filename);
     if (logFilename.isEmpty())
     {
         logFilename = profile()->logFilename();
         logInfo = QFileInfo(QDir(profile()->logDirectory()), logFilename);
     }
+
+    logInfo.setCaching(false);
 
     if (logInfo.suffix().isEmpty())
     {
@@ -645,7 +650,7 @@ QString Console::startLog(const QString &filename, bool append)
 
     emit logOpened(logInfo.filePath());
 
-    m_logPosition = m_document->characterCount() - 1;
+    m_logPosition = document()->characterCount() - 1;
 
     return QString();
 }
@@ -739,7 +744,7 @@ bool Console::processKey(const QKeySequence &key, Group *base)
             if (!accelerator->execute(engine()))
             {
                 profile()->setActiveGroup(previousGroup);
-                accelerator->enable(false);
+                accelerator->setFailed(true);
                 continue;
             }
 
@@ -791,7 +796,7 @@ bool Console::processAliases(const QString &cmd)
         if (!alias->regex().isValid())
         {
             systemErr(tr("Alias %1: %2 (column %3)").arg(alias->name()).arg(alias->regex().errorString()).arg(alias->regex().patternErrorOffset()));
-            alias->enable(false);
+            alias->setFailed(true);
             continue;
         }
 
@@ -801,7 +806,7 @@ bool Console::processAliases(const QString &cmd)
 
             if (alias->echo())
             {
-                m_document->command(cmd);
+                document()->command(cmd);
 
                 logLatest();
             }
@@ -813,7 +818,7 @@ bool Console::processAliases(const QString &cmd)
             if (!alias->execute(engine()))
             {
                 profile()->setActiveGroup(previousGroup);
-                alias->enable(false);
+                alias->setFailed(true);
 
                 if (!alias->keepEvaluating())
                 {
@@ -862,7 +867,7 @@ bool Console::processTriggers(const QString &text)
             if (!trigger->regex().isValid())
             {
                 systemErr(tr("Trigger %1: %2 (column %3)").arg(trigger->name()).arg(trigger->regex().errorString()).arg(trigger->regex().patternErrorOffset()));
-                trigger->enable(false);
+                trigger->setFailed(true);
                 break;
             }
 
@@ -878,7 +883,7 @@ bool Console::processTriggers(const QString &text)
                 if (!trigger->execute(engine()))
                 {
                     profile()->setActiveGroup(previousGroup);
-                    trigger->enable(false);
+                    trigger->setFailed(true);
                     keepEvaluating = false;
                     break;
                 }
@@ -897,7 +902,7 @@ bool Console::processTriggers(const QString &text)
             }
 
             pos = trigger->matchEnd();
-            qDebug() << "  pos" << pos;
+//            qDebug() << "  pos" << pos;
         }
 
         if (matched && !keepEvaluating)
@@ -936,7 +941,7 @@ void Console::send(const QString &cmd, bool show)
     connection()->send(cmd);
     if (show)
     {
-        m_document->command(cmd);
+        document()->command(cmd);
 
         logLatest();
     }
@@ -966,6 +971,8 @@ void Console::colorNote(const QColor &fg, const QColor &bg, const QString &text)
 int Console::hyperlink(const QString &str, const QColor &fg, const QColor &bg, Hyperlink *info)
 {
     Q_ASSERT(info != 0);
+
+    document()->appendLink(str, info->link().toString(), fg, bg, info->hint());
 
 //    ui->output->hyperlink(fg, bg, str, info->link().toUrl(), info->hint());
 
@@ -1077,21 +1084,72 @@ void Console::closeEvent(QCloseEvent *e)
 
 void Console::mouseMoveEvent(QMouseEvent *e)
 {
-    qDebug() << "mouseMove (console)";
+    qDebug() << "mouseMove" << e->pos();
+
+    if (!document())
+    {
+        return;
+    }
+
+    if (m_mousePressed)
+    {
+        int pos = document()->documentLayout()->hitTest(e->pos(), Qt::FuzzyHit);
+        if (pos < 0)
+        {
+            e->ignore();
+            return;
+        }
+
+        m_selectionEnd = pos;
+
+        document()->select(m_selectionStart, m_selectionEnd);
+
+        if (e->y() < 10)
+        {
+            scrollUp(1);
+        }
+        else if (e->y() > height() - 10)
+        {
+            scrollDown(1);
+        }
+    }
+    else
+    {
+        QString anchor(document()->documentLayout()->anchorAt(e->pos()));
+        qDebug() << "anchor" << anchor;
+        if (anchor != m_linkHovered)
+        {
+
+            m_linkHovered = anchor;
+
+            if (m_linkHovered.isEmpty())
+            {
+                QToolTip::hideText();
+                setCursor(Qt::IBeamCursor);
+            }
+            else
+            {
+                QToolTip::showText(e->globalPos(), "Test hint\nhttp://google.com");
+                setCursor(Qt::PointingHandCursor);
+            }
+        }
+    }
+
+    e->accept();
 }
 
 void Console::mousePressEvent(QMouseEvent *e)
 {
-    if (!m_document)
+    if (!document())
     {
         return;
     }
 
     if (e->button() == Qt::LeftButton)
     {
-        m_clickPos = m_document->documentLayout()->hitTest(e->pos(), Qt::ExactHit);
+        m_clickPos = document()->documentLayout()->hitTest(e->pos(), Qt::ExactHit);
 
-        int pos = m_document->documentLayout()->hitTest(e->pos(), Qt::FuzzyHit);
+        int pos = document()->documentLayout()->hitTest(e->pos(), Qt::FuzzyHit);
         if (pos < 0)
         {
             return;
@@ -1107,7 +1165,69 @@ void Console::mousePressEvent(QMouseEvent *e)
 
 void Console::mouseReleaseEvent(QMouseEvent *e)
 {
-    qDebug() << "mouseRelease (console)";
+//    QPoint pt(textCursor(e->pos()));
+//    handleMouseEvent(e, pt);
+
+    if (document() && e->button() == Qt::RightButton)
+    {
+        QMenu *popup = new QMenu(this);
+
+        if (document()->hasSelection())
+        {
+            QAction *actionCopy = new QAction(tr("&Copy"), this);
+            actionCopy->setStatusTip(tr("Copy selected text to clipboard"));
+            connect(actionCopy, SIGNAL(triggered()), this, SLOT(copy()));
+
+            QAction *actionCopyHtml = new QAction(tr("Copy as &HTML"), this);
+            actionCopyHtml->setStatusTip(tr("Copy selected text to clipboard as HTML"));
+            connect(actionCopyHtml, SIGNAL(triggered()), this, SLOT(copyHtml()));
+
+            QAction *actionSelectNone = new QAction(tr("Select &None"), this);
+            actionSelectNone->setStatusTip(tr("Removes the current text selection"));
+            connect(actionSelectNone, SIGNAL(triggered()), document(), SLOT(selectNone()));
+
+            popup->addAction(actionCopy);
+            popup->addAction(actionCopyHtml);
+            popup->addSeparator();
+            popup->addAction(actionSelectNone);
+        }
+
+        QAction *actionSelectAll = new QAction(tr("Select &All"), this);
+        actionSelectAll->setStatusTip(tr("Select all buffered output text"));
+        connect(actionSelectAll, SIGNAL(triggered()), document(), SLOT(selectAll()));
+
+        QAction *actionClearBuffer = new QAction(tr("C&lear output buffer"), this);
+        actionClearBuffer->setStatusTip(tr("Deletes all text stored in the output text buffer"));
+        connect(actionClearBuffer, SIGNAL(triggered()), document(), SLOT(clear()));
+
+        popup->addAction(actionSelectAll);
+        popup->addSeparator();
+        popup->addAction(actionClearBuffer);
+
+        popup->popup(mapToGlobal(e->pos()), popup->actions().at(0));
+    }
+    else if (e->button() == Qt::MiddleButton)
+    {
+        scrollTo(document()->blockCount());
+    }
+    else if (e->button() == Qt::LeftButton)
+    {
+        qDebug() << "mouseRelease" << m_selectionStart << m_selectionEnd;
+
+        // TODO: don't clear selection when clicking within the selected text?
+        if (document()->documentLayout()->hitTest(e->pos(), Qt::ExactHit) == m_clickPos)
+        {
+            document()->selectNone();
+
+            m_selectionStart = 0;
+            m_selectionEnd = 0;
+        }
+
+        m_mousePressed = false;
+        m_clickPos = -1;
+    }
+
+    e->accept();
 }
 
 void Console::wheelEvent(QWheelEvent *e)

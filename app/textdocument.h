@@ -28,7 +28,7 @@ public:
     QString toHtml(int start, int stop, const QColor &fg = QColor(), const QColor &bg = QColor(), const QFont &font = QFont());
     QString toHtml(const QTextCursor &cur = QTextCursor(), const QColor &fg = QColor(), const QColor &bg = QColor(), const QFont &font = QFont());
 
-    void appendLink(const QString &text, const QString &link, const QColor &fg = QColor(), const QColor &bg = QColor());
+    void appendLink(const QString &text, const QString &link, const QColor &fg = QColor(), const QColor &bg = QColor(), const QString &tip = QString());
 
     void dump();
 

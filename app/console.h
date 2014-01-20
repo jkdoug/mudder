@@ -67,8 +67,8 @@ public:
     Profile * profile() { return m_profile; }
     Engine * engine() { return m_engine; }
 
-    DialogProfile *preferences();
-    DialogSettings *settings();
+    DialogProfile * preferences();
+    DialogSettings * settings();
 
     bool isConnected() const { return m_connection->isConnected(); }
     void connectToServer();

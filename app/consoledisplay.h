@@ -32,7 +32,6 @@
 #include <QWidget>
 
 class Console;
-//class ConsoleDocumentLayout;
 class QAbstractTextDocumentLayout;
 class QMouseEvent;
 class QPaintEvent;
@@ -45,7 +44,7 @@ public:
     explicit ConsoleDisplay(QWidget *parent = 0);
 
     void setConsole(Console *console) { m_console = console; }
-    void setDocument(TextDocument *doc);
+    void setDocument(TextDocument *doc) { m_document = doc; }
 
     void setScrollLines(int lines) { m_scrollLines = lines; }
     int scrollLines() const { return m_scrollLines; }
@@ -57,17 +56,14 @@ public slots:
     void copyHtml();
 
 protected:
-//    virtual void mousePressEvent(QMouseEvent *e);
-//    virtual void mouseReleaseEvent(QMouseEvent *e);
-//    virtual void mouseMoveEvent(QMouseEvent *e);
     virtual void paintEvent(QPaintEvent *e);
 
     Console * console() const { return m_console; }
+    TextDocument * document() const { return m_document; }
 
 private:
     Console *m_console;
     TextDocument *m_document;
-//    ConsoleDocumentLayout *m_layoutDoc;
 
     int m_scrollLines;
 };

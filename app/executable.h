@@ -35,6 +35,7 @@ class Executable : public ProfileItem
     Q_OBJECT
 
     Q_PROPERTY(QString contents READ contents WRITE setContents)
+    Q_PROPERTY(bool failed READ failed WRITE setFailed)
     Q_PROPERTY(int executionCount READ executionCount)
     Q_PROPERTY(double totalTime READ totalTime)
     Q_PROPERTY(double averageTime READ averageTime)
@@ -51,9 +52,14 @@ public:
     const QString & contents() const { return m_contents; }
     void setContents(const QString &contents) { m_contents = contents; }
 
+    bool failed() const { return m_failed; }
+    void setFailed(bool flag = true) { m_failed = flag; }
+
     int executionCount() const { return m_executionCount; }
     double totalTime() const { return m_totalTime; }
     double averageTime() const { return m_averageTime; }
+
+    virtual bool enabled() const;
 
     bool execute(Engine *e);
 
@@ -65,6 +71,8 @@ protected:
 
 private:
     QString m_contents;
+
+    bool m_failed;
 
     int m_executionCount;
     double m_totalTime;
