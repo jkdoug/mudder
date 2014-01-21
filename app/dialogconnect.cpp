@@ -21,9 +21,9 @@
 
 #include "dialogconnect.h"
 #include "ui_dialogconnect.h"
+#include "options.h"
 
 #include <QMessageBox>
-#include <QSettings>
 
 DialogConnect::DialogConnect(QWidget *parent) :
     QDialog(parent),
@@ -51,11 +51,10 @@ void DialogConnect::accept()
 
 void DialogConnect::load()
 {
-    QSettings settings;
-    ui->name->setText(settings.value("Defaults/ProfileName", "").toString());
-    ui->address->setText(settings.value("Defaults/HostAddress", "lusternia.com").toString());
-    ui->port->setText(settings.value("Defaults/HostPort", 23).toString());
-    ui->connect->setChecked(settings.value("Defaults/AutoConnect", true).toBool());
+    ui->name->setText(Options::value("Default/ProfileName").toString());
+    ui->address->setText(Options::value("Default/HostAddress", "lusternia.com").toString());
+    ui->port->setText(Options::value("Default/HostPort", 23).toString());
+    ui->connect->setChecked(Options::value("Default/AutoConnect", true).toBool());
 }
 
 void DialogConnect::save()
@@ -65,11 +64,10 @@ void DialogConnect::save()
     m_port = ui->port->text().toInt();
     m_connect = ui->connect->isChecked();
 
-    QSettings settings;
-    settings.setValue("Defaults/ProfileName", m_name);
-    settings.setValue("Defaults/HostAddress", m_address);
-    settings.setValue("Defaults/HostPort", m_port);
-    settings.setValue("Defaults/AutoConnect", m_connect);
+    Options::setValue("Default/ProfileName", m_name);
+    Options::setValue("Default/HostAddress", m_address);
+    Options::setValue("Default/HostPort", m_port);
+    Options::setValue("Default/AutoConnect", m_connect);
 }
 
 bool DialogConnect::validate()

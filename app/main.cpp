@@ -20,13 +20,10 @@
 
 
 #include "mainwindow.h"
+#include "options.h"
 #include <QApplication>
 #include <QDateTime>
 #include <QDebug>
-#include <QFile>
-#include <QSettings>
-#include <QSqlDatabase>
-#include <QSqlError>
 
 int main(int argc, char *argv[])
 {
@@ -35,8 +32,7 @@ int main(int argc, char *argv[])
     a.setApplicationVersion("0.3");
     a.setOrganizationName("Iasmos");
 
-    QSettings settings;
-    settings.setValue("LastRun", QDateTime::currentDateTime());
+    Options::setValue("LastRun", QDateTime::currentDateTime());
 
     MainWindow w;
     w.show();

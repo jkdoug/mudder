@@ -21,36 +21,32 @@
 */
 
 
-#ifndef DIALOGGLOBAL_H
-#define DIALOGGLOBAL_H
+#ifndef OPTIONS_H
+#define OPTIONS_H
 
-#include <QDialog>
 #include <QFont>
+#include <QObject>
+#include <QSettings>
 
-namespace Ui {
-class DialogGlobal;
-}
-
-class DialogGlobal : public QDialog
+class Options : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit DialogGlobal(QWidget *parent = 0);
-    ~DialogGlobal();
+    static QVariant value(const QString &key, const QVariant &def = QVariant());
+    static void setValue(const QString &key, const QVariant &value);
+
+    static QFont editorFont();
+    static void setEditorFont(const QFont &font);
 
 private:
-    void load();
-    void save();
-    bool validate();
+    explicit Options(QObject *parent = 0);
+    Q_DISABLE_COPY(Options)
 
-    Ui::DialogGlobal *ui;
+    static QFont loadFont(const QString &key, const QFont &def = QFont());
+    static void saveFont(const QString &key, const QFont &font);
 
-public slots:
-    virtual void accept();
-
-private slots:
-    void on_pageList_currentRowChanged(int currentRow);
+    static QSettings m_settings;
 };
 
-#endif // DIALOGGLOBAL_H
+#endif // OPTIONS_H

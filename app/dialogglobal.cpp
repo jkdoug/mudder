@@ -24,6 +24,7 @@
 #include <QSettings>
 #include "dialogglobal.h"
 #include "ui_dialogglobal.h"
+#include "options.h"
 
 DialogGlobal::DialogGlobal(QWidget *parent) :
     QDialog(parent),
@@ -58,28 +59,22 @@ void DialogGlobal::accept()
 
 void DialogGlobal::load()
 {
-    QSettings settings;
+    QFont font(Options::editorFont());
 
-    bool antiAlias = settings.value("GlobalFontAntialias", true).toBool();
-    QFont font(settings.value("GlobalFontName", "Consolas").toString(), settings.value("GlobalFontSize", 9).toInt());
-    font.setStyleHint(QFont::TypeWriter);
     ui->comboEditorFont->setCurrentFont(font);
     ui->comboEditorFontSize->setCurrentIndex(font.pointSize() - 6);
-    ui->checkEditorAntiAliased->setChecked(antiAlias);
+    ui->checkEditorAntiAliased->setChecked(font.styleStrategy() & QFont::PreferAntialias);
 }
 
 void DialogGlobal::save()
 {
     bool antiAlias = ui->checkEditorAntiAliased->isChecked();
-    m_editorFont = ui->comboEditorFont->currentFont();
-    m_editorFont.setStyleHint(QFont::TypeWriter, antiAlias?QFont::PreferAntialias:QFont::NoAntialias);
-    m_editorFont.setPointSize(ui->comboEditorFontSize->currentText().toInt());
 
-    QSettings settings;
+    QFont font(ui->comboEditorFont->currentFont());
+    font.setStyleHint(QFont::TypeWriter, antiAlias?QFont::PreferAntialias:QFont::NoAntialias);
+    font.setPointSize(ui->comboEditorFontSize->currentText().toInt());
 
-    settings.setValue("GlobalFontName", m_editorFont.family());
-    settings.setValue("GlobalFontSize", m_editorFont.pointSize());
-    settings.setValue("GlobalFontAntialias", antiAlias);
+    Options::setEditorFont(font);
 }
 
 bool DialogGlobal::validate()

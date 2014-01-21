@@ -28,6 +28,7 @@
 #include "dialogsettings.h"
 #include "engine.h"
 #include "luascript.h"
+#include "options.h"
 #include "mapengine.h"
 #include "xmlexception.h"
 #include <QApplication>
@@ -68,9 +69,8 @@ MainWindow::MainWindow(QWidget *parent) :
     updateActions();
     updateRecentFiles();
 
-    QSettings settings;
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("state").toByteArray());
+    restoreGeometry(Options::value("MainWindow/Geometry").toByteArray());
+    restoreState(Options::value("MainWindow/State").toByteArray());
 }
 
 MainWindow::~MainWindow()
@@ -123,9 +123,8 @@ void MainWindow::scriptWindowActivated(QMdiSubWindow *win)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    QSettings settings;
-    settings.setValue("geometry", saveGeometry());
-    settings.setValue("state", saveState());
+    Options::setValue("MainWindow/Geometry", saveGeometry());
+    Options::setValue("MainWindow/State", saveState());
 
     // Check for unsaved profiles and prompt to save first
     QList<QMdiSubWindow *> wins = ui->mdiArea->subWindowList();
@@ -318,12 +317,11 @@ void MainWindow::loadProfile(const QString &filename)
     }
     else
     {
-        QSettings settings;
-        QStringList files(settings.value("RecentFileList").toStringList());
+        QStringList files(Options::value("RecentFileList").toStringList());
 
         files.removeAll(filename);
 
-        settings.setValue("RecentFileList", files);
+        Options::setValue("RecentFileList", files);
 
         updateRecentFiles();
 
@@ -399,12 +397,11 @@ void MainWindow::loadScript(const QString &filename)
     LuaScript *script = new LuaScript(this);
     if (!script->load(filename))
     {
-        QSettings settings;
-        QStringList files(settings.value("RecentFileList").toStringList());
+        QStringList files(Options::value("RecentFileList").toStringList());
 
         files.removeAll(filename);
 
-        settings.setValue("RecentFileList", files);
+        Options::setValue("RecentFileList", files);
 
         updateRecentFiles();
 
@@ -453,8 +450,7 @@ void MainWindow::saveScript(const QString &filename)
 
 void MainWindow::setCurrentFile(const QString &filename)
 {
-    QSettings settings;
-    QStringList files(settings.value("RecentFileList").toStringList());
+    QStringList files(Options::value("RecentFileList").toStringList());
 
     files.removeAll(filename);
     files.prepend(filename);
@@ -464,7 +460,7 @@ void MainWindow::setCurrentFile(const QString &filename)
         files.removeLast();
     }
 
-    settings.setValue("RecentFileList", files);
+    Options::setValue("RecentFileList", files);
 
     updateRecentFiles();
 }
@@ -539,8 +535,7 @@ void MainWindow::updateActions()
 
 void MainWindow::updateRecentFiles()
 {
-    QSettings settings;
-    QStringList files(settings.value("RecentFileList").toStringList());
+    QStringList files(Options::value("RecentFileList").toStringList());
 
     int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
 
@@ -727,7 +722,7 @@ void MainWindow::on_action_GlobalPreferences_triggered()
     {
         foreach (QMdiSubWindow *win, m_mdiScript->subWindowList())
         {
-            win->widget()->setFont(dlg->editorFont());
+            win->widget()->setFont(Options::editorFont());
             win->widget()->update();
         }
     }

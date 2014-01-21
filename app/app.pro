@@ -56,7 +56,8 @@ SOURCES += main.cpp\
     textdocument.cpp \
     textblockdata.cpp \
     consoledocumentlayout.cpp \
-    dialogglobal.cpp
+    dialogglobal.cpp \
+    options.cpp
 
 HEADERS  += mainwindow.h \
     profile.h \
@@ -103,7 +104,8 @@ HEADERS  += mainwindow.h \
     textdocument.h \
     textblockdata.h \
     consoledocumentlayout.h \
-    dialogglobal.h
+    dialogglobal.h \
+    options.h
 
 FORMS    += mainwindow.ui \
     console.ui \
