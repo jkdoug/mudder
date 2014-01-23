@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network xml xmlpatterns multimedia sql
+QT       += core gui network xml xmlpatterns multimedia printsupport sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -42,8 +42,6 @@ SOURCES += main.cpp\
     dialoggroup.cpp \
     event.cpp \
     luahighlighter.cpp \
-    luaedit.cpp \
-    lualinenumberarea.cpp \
     hyperlink.cpp \
     luascript.cpp \
     maproom.cpp \
@@ -57,7 +55,8 @@ SOURCES += main.cpp\
     textblockdata.cpp \
     consoledocumentlayout.cpp \
     dialogglobal.cpp \
-    options.cpp
+    options.cpp \
+    codeeditor.cpp
 
 HEADERS  += mainwindow.h \
     profile.h \
@@ -90,8 +89,6 @@ HEADERS  += mainwindow.h \
     luawrapper.h \
     luawrapperutils.h \
     luahighlighter.h \
-    luaedit.h \
-    lualinenumberarea.h \
     hyperlink.h \
     luascript.h \
     maproom.h \
@@ -105,7 +102,8 @@ HEADERS  += mainwindow.h \
     textblockdata.h \
     consoledocumentlayout.h \
     dialogglobal.h \
-    options.h
+    options.h \
+    codeeditor.h
 
 FORMS    += mainwindow.ui \
     console.ui \

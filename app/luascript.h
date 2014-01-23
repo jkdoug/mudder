@@ -24,9 +24,9 @@
 
 #include <QString>
 #include <QWidget>
-#include "luaedit.h"
+#include "codeeditor.h"
 
-class LuaScript : public LuaEdit
+class LuaScript : public CodeEditor
 {
     Q_OBJECT
 public:

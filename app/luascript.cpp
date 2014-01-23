@@ -20,14 +20,16 @@
 
 
 #include "luascript.h"
+#include "luahighlighter.h"
 #include <QApplication>
 #include <QByteArray>
 #include <QFile>
 #include <QFileInfo>
 
 LuaScript::LuaScript(QWidget *parent) :
-    LuaEdit(parent)
+    CodeEditor(parent)
 {
+    setSyntaxHighlighter(new LuaHighlighter());
 }
 
 bool LuaScript::load(const QString &filename)

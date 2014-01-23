@@ -159,7 +159,7 @@
     </widget>
    </item>
    <item>
-    <widget class="LuaEdit" name="script"/>
+    <widget class="CodeEditor" name="script"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -264,9 +264,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LuaEdit</class>
-   <extends>QTextEdit</extends>
-   <header>luaedit.h</header>
+   <class>CodeEditor</class>
+   <extends>QPlainTextEdit</extends>
+   <header>codeeditor.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
