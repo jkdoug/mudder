@@ -1,6 +1,7 @@
 #include "dialogtimer.h"
 #include "ui_dialogtimer.h"
 #include "timer.h"
+#include "luahighlighter.h"
 
 DialogTimer::DialogTimer(Timer *timer, QWidget *parent) :
     QDialog(parent),
@@ -17,6 +18,7 @@ DialogTimer::DialogTimer(Timer *timer, QWidget *parent) :
     ui->once->setChecked(m_timer->once());
 
     ui->script->setPlainText(m_timer->contents());
+    ui->script->setSyntaxHighlighter(new LuaHighlighter());
 
     ui->timesFired->setText(QLocale::system().toString(m_timer->firedCount()));
     ui->avgTime->setText(QString::number(m_timer->averageTime()));

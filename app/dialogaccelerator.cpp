@@ -1,6 +1,7 @@
 #include "dialogaccelerator.h"
 #include "ui_dialogaccelerator.h"
 #include "accelerator.h"
+#include "luahighlighter.h"
 
 DialogAccelerator::DialogAccelerator(Accelerator *accelerator, QWidget *parent) :
     QDialog(parent),
@@ -18,6 +19,7 @@ DialogAccelerator::DialogAccelerator(Accelerator *accelerator, QWidget *parent) 
     ui->enabled->setChecked(m_accelerator->enabledFlag());
 
     ui->script->setPlainText(m_accelerator->contents());
+    ui->script->setSyntaxHighlighter(new LuaHighlighter());
 
     ui->timesFired->setText(QLocale::system().toString(m_accelerator->executionCount()));
     ui->avgTime->setText(QString::number(m_accelerator->averageTime()));

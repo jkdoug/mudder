@@ -1,8 +1,7 @@
 #include "dialogalias.h"
 #include "ui_dialogalias.h"
-
 #include "alias.h"
-#include "luaedit.h"
+#include "luahighlighter.h"
 
 DialogAlias::DialogAlias(Alias *alias, QWidget *parent) :
     QDialog(parent),
@@ -27,6 +26,7 @@ DialogAlias::DialogAlias(Alias *alias, QWidget *parent) :
     ui->echo->setChecked(m_alias->echo());
 
     ui->script->setPlainText(m_alias->contents());
+    ui->script->setSyntaxHighlighter(new LuaHighlighter());
 
     ui->timesEvaluated->setText(QLocale::system().toString(m_alias->evalCount()));
     ui->timesFired->setText(QLocale::system().toString(m_alias->matchCount()));

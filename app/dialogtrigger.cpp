@@ -1,6 +1,7 @@
 #include "dialogtrigger.h"
 #include "ui_dialogtrigger.h"
 #include "trigger.h"
+#include "luahighlighter.h"
 
 DialogTrigger::DialogTrigger(Trigger *trigger, QWidget *parent) :
     QDialog(parent),
@@ -28,6 +29,7 @@ DialogTrigger::DialogTrigger(Trigger *trigger, QWidget *parent) :
     ui->avgTime->setText(QString::number(m_trigger->averageTime()));
 
     ui->script->setPlainText(m_trigger->contents());
+    ui->script->setSyntaxHighlighter(new LuaHighlighter());
 
     m_ok = ui->buttonBox->button(QDialogButtonBox::Ok);
 

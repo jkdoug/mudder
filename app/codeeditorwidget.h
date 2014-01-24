@@ -21,39 +21,39 @@
 */
 
 
-#ifndef OPTIONS_H
-#define OPTIONS_H
+#ifndef CODEEDITORWIDGET_H
+#define CODEEDITORWIDGET_H
 
-#include <QFont>
-#include <QObject>
-#include <QSettings>
+#include "codeeditor.h"
+#include <QPrinter>
+#include <QWidget>
 
-class Options : public QObject
+struct CodeEditorWidgetData;
+
+class CodeEditorWidget : public CodeEditor
 {
     Q_OBJECT
-
 public:
-    static QVariant value(const QString &key, const QVariant &def = QVariant());
-    static void setValue(const QString &key, const QVariant &value);
+    explicit CodeEditorWidget(QWidget *parent = 0);
+    ~CodeEditorWidget();
 
-    static QFont editorFont();
-    static void setEditorFont(const QFont &font);
+    bool loadFile(const QString &path);
+    bool saveFile(QString path = QString());
 
-    static QString homePath();
+    QString fileName() const;
 
-    enum { MaxRecentFiles = 5 };
-    static QStringList recentFileList();
-    static void addRecentFile(const QString &fileName);
-    static void removeRecentFile(const QString &fileName);
+    bool isModified() const;
+
+private slots:
+    void handleFileChange(const QString &path);
+
+signals:
+    void fileNameChanged(const QString &path);
 
 private:
-    explicit Options(QObject *parent = 0);
-    Q_DISABLE_COPY(Options)
+    bool maybeSave();
 
-    static QFont loadFont(const QString &key, const QFont &def = QFont());
-    static void saveFont(const QString &key, const QFont &font);
-
-    static QSettings m_settings;
+    CodeEditorWidgetData *d;
 };
 
-#endif // OPTIONS_H
+#endif // CODEEDITORWIDGET_H

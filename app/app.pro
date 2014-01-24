@@ -56,7 +56,9 @@ SOURCES += main.cpp\
     consoledocumentlayout.cpp \
     dialogglobal.cpp \
     options.cpp \
-    codeeditor.cpp
+    codeeditor.cpp \
+    codeeditorwidget.cpp \
+    codeeditorwindow.cpp
 
 HEADERS  += mainwindow.h \
     profile.h \
@@ -103,7 +105,9 @@ HEADERS  += mainwindow.h \
     consoledocumentlayout.h \
     dialogglobal.h \
     options.h \
-    codeeditor.h
+    codeeditor.h \
+    codeeditorwidget.h \
+    codeeditorwindow.h
 
 FORMS    += mainwindow.ui \
     console.ui \

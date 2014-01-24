@@ -32,6 +32,7 @@
 #include <QString>
 #include <QWidget>
 #include "mapwidget.h"
+#include "options.h"
 
 namespace Ui {
 class MainWindow;
@@ -132,8 +133,7 @@ private:
 
     MapWidget *m_mapper;
 
-    enum { MaxRecentFiles = 5 };
-    QAction *m_recentFileActs[MaxRecentFiles];
+    QAction *m_recentFileActs[Options::MaxRecentFiles];
     QSignalMapper *m_recentSignalMapper;
 };
 

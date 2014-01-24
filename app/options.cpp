@@ -22,6 +22,7 @@
 
 
 #include "options.h"
+#include <QApplication>
 #include <QDebug>
 #include <QDir>
 
@@ -30,7 +31,6 @@ QSettings Options::m_settings(QSettings::IniFormat, QSettings::UserScope, "Mudde
 Options::Options(QObject *parent) :
     QObject(parent)
 {
-    qDebug() << "options constructor";
 }
 
 QVariant Options::value(const QString &key, const QVariant &def)
@@ -56,6 +56,40 @@ QFont Options::editorFont()
 void Options::setEditorFont(const QFont &font)
 {
     saveFont("Editor", font);
+}
+
+QString Options::homePath()
+{
+    return QDir::homePath() + QDir::separator() + QApplication::applicationName();
+}
+
+QStringList Options::recentFileList()
+{
+    return value("RecentFileList").toStringList();
+}
+
+void Options::addRecentFile(const QString &fileName)
+{
+    QStringList files(recentFileList());
+
+    files.removeAll(fileName);
+    files.prepend(fileName);
+
+    while (files.size() > Options::MaxRecentFiles)
+    {
+        files.removeLast();
+    }
+
+    setValue("RecentFileList", files);
+}
+
+void Options::removeRecentFile(const QString &fileName)
+{
+    QStringList files(recentFileList());
+
+    files.removeAll(fileName);
+
+    setValue("RecentFileList", files);
 }
 
 QFont Options::loadFont(const QString &key, const QFont &def)

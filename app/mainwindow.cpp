@@ -21,6 +21,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "codeeditorwindow.h"
 #include "console.h"
 #include "dialogconnect.h"
 #include "dialogglobal.h"
@@ -49,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_recentSignalMapper = new QSignalMapper(this);
     QMenu *mru = new QMenu(this);
     ui->action_RecentFiles->setMenu(mru);
-    for (int i = 0; i < MaxRecentFiles; i++)
+    for (int i = 0; i < Options::MaxRecentFiles; i++)
     {
         m_recentFileActs[i] = new QAction(this);
         m_recentFileActs[i]->setVisible(false);
@@ -202,7 +203,8 @@ Console * MainWindow::activeConsole()
 
 QMdiSubWindow * MainWindow::activeScriptWindow()
 {
-    return m_mdiScript->currentSubWindow();
+    return 0;
+//    return m_mdiScript->currentSubWindow();
 }
 
 LuaScript * MainWindow::activeScriptEditor()
@@ -237,74 +239,76 @@ void MainWindow::createMapDock()
 
 void MainWindow::createScriptDock()
 {
-    QMainWindow *scriptWin = new QMainWindow(this);
-    ui->scriptDock->setWidget(scriptWin);
+    ui->scriptDock->setWidget(new CodeEditorWindow(this));
 
-    m_mdiScript = new QMdiArea(scriptWin);
-    m_mdiScript->setDocumentMode(true);
-    m_mdiScript->setViewMode(QMdiArea::TabbedView);
-    m_mdiScript->setTabsClosable(true);
-    m_mdiScript->setTabsMovable(true);
-    scriptWin->setCentralWidget(m_mdiScript);
-    connect(m_mdiScript, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(scriptWindowActivated(QMdiSubWindow*)));
+//    QMainWindow *scriptWin = new QMainWindow(this);
+//    ui->scriptDock->setWidget(scriptWin);
 
-    QToolBar *scriptBar = new QToolBar(scriptWin);
-    scriptBar->setIconSize(QSize(16, 16));
-    scriptWin->addToolBar(scriptBar);
+//    m_mdiScript = new QMdiArea(scriptWin);
+//    m_mdiScript->setDocumentMode(true);
+//    m_mdiScript->setViewMode(QMdiArea::TabbedView);
+//    m_mdiScript->setTabsClosable(true);
+//    m_mdiScript->setTabsMovable(true);
+//    scriptWin->setCentralWidget(m_mdiScript);
+//    connect(m_mdiScript, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(scriptWindowActivated(QMdiSubWindow*)));
 
-    QAction *actionNew = new QAction(tr("&New"), scriptWin);
-    actionNew->setIcon(QIcon(":/icons/small_new"));
-    actionNew->setToolTip(tr("Create a new script"));
-    actionNew->setShortcut(QKeySequence::New);
-    actionNew->setShortcutContext(Qt::WindowShortcut);
-    scriptBar->addAction(actionNew);
-    connect(actionNew, SIGNAL(triggered()), this, SLOT(onNewScript()));
+//    QToolBar *scriptBar = new QToolBar(scriptWin);
+//    scriptBar->setIconSize(QSize(16, 16));
+//    scriptWin->addToolBar(scriptBar);
 
-    QAction *actionOpen = new QAction(tr("&Open"), scriptWin);
-    actionOpen->setIcon(QIcon(":/icons/small_open"));
-    actionOpen->setToolTip(tr("Load script file from disk"));
-    actionOpen->setShortcut(QKeySequence::Open);
-    actionOpen->setShortcutContext(Qt::WindowShortcut);
-    scriptBar->addAction(actionOpen);
-    connect(actionOpen, SIGNAL(triggered()), this, SLOT(onOpenScript()));
+//    QAction *actionNew = new QAction(tr("&New"), scriptWin);
+//    actionNew->setIcon(QIcon(":/icons/small_new"));
+//    actionNew->setToolTip(tr("Create a new script"));
+//    actionNew->setShortcut(QKeySequence::New);
+//    actionNew->setShortcutContext(Qt::WindowShortcut);
+//    scriptBar->addAction(actionNew);
+//    connect(actionNew, SIGNAL(triggered()), this, SLOT(onNewScript()));
 
-    m_actionScriptSave = new QAction(tr("&Save"), scriptWin);
-    m_actionScriptSave->setIcon(QIcon(":/icons/small_save"));
-    m_actionScriptSave->setToolTip(tr("Save script to disk"));
-    m_actionScriptSave->setShortcut(QKeySequence::Save);
-    m_actionScriptSave->setShortcutContext(Qt::WindowShortcut);
-    scriptBar->addAction(m_actionScriptSave);
-    connect(m_actionScriptSave, SIGNAL(triggered()), this, SLOT(onSaveScript()));
+//    QAction *actionOpen = new QAction(tr("&Open"), scriptWin);
+//    actionOpen->setIcon(QIcon(":/icons/small_open"));
+//    actionOpen->setToolTip(tr("Load script file from disk"));
+//    actionOpen->setShortcut(QKeySequence::Open);
+//    actionOpen->setShortcutContext(Qt::WindowShortcut);
+//    scriptBar->addAction(actionOpen);
+//    connect(actionOpen, SIGNAL(triggered()), this, SLOT(onOpenScript()));
 
-    m_actionScriptSaveAs = new QAction(tr("Save &As"), scriptWin);
-    m_actionScriptSaveAs->setIcon(QIcon(":/icons/small_save_as"));
-    m_actionScriptSaveAs->setToolTip(tr("Save script to disk with a new name"));
-    m_actionScriptSaveAs->setShortcut(QKeySequence::SaveAs);
-    m_actionScriptSaveAs->setShortcutContext(Qt::WindowShortcut);
-    scriptBar->addAction(m_actionScriptSaveAs);
-    connect(m_actionScriptSaveAs, SIGNAL(triggered()), this, SLOT(onSaveScriptAs()));
+//    m_actionScriptSave = new QAction(tr("&Save"), scriptWin);
+//    m_actionScriptSave->setIcon(QIcon(":/icons/small_save"));
+//    m_actionScriptSave->setToolTip(tr("Save script to disk"));
+//    m_actionScriptSave->setShortcut(QKeySequence::Save);
+//    m_actionScriptSave->setShortcutContext(Qt::WindowShortcut);
+//    scriptBar->addAction(m_actionScriptSave);
+//    connect(m_actionScriptSave, SIGNAL(triggered()), this, SLOT(onSaveScript()));
 
-    scriptBar->addSeparator();
+//    m_actionScriptSaveAs = new QAction(tr("Save &As"), scriptWin);
+//    m_actionScriptSaveAs->setIcon(QIcon(":/icons/small_save_as"));
+//    m_actionScriptSaveAs->setToolTip(tr("Save script to disk with a new name"));
+//    m_actionScriptSaveAs->setShortcut(QKeySequence::SaveAs);
+//    m_actionScriptSaveAs->setShortcutContext(Qt::WindowShortcut);
+//    scriptBar->addAction(m_actionScriptSaveAs);
+//    connect(m_actionScriptSaveAs, SIGNAL(triggered()), this, SLOT(onSaveScriptAs()));
 
-    QAction *actionPreferences = new QAction(tr("&Global Preferences"), scriptWin);
-    actionPreferences->setIcon(QIcon(":/icons/preferences"));
-    actionPreferences->setToolTip(tr("Edit global application preferences"));
-    actionPreferences->setShortcut(QKeySequence("Ctrl+G"));
-    actionPreferences->setShortcutContext(Qt::WindowShortcut);
-    scriptBar->addAction(actionPreferences);
-    connect(actionPreferences, SIGNAL(triggered()), this, SLOT(on_action_GlobalPreferences_triggered()));
+//    scriptBar->addSeparator();
 
-    scriptBar->addSeparator();
+//    QAction *actionPreferences = new QAction(tr("&Global Preferences"), scriptWin);
+//    actionPreferences->setIcon(QIcon(":/icons/preferences"));
+//    actionPreferences->setToolTip(tr("Edit global application preferences"));
+//    actionPreferences->setShortcut(QKeySequence("Ctrl+G"));
+//    actionPreferences->setShortcutContext(Qt::WindowShortcut);
+//    scriptBar->addAction(actionPreferences);
+//    connect(actionPreferences, SIGNAL(triggered()), this, SLOT(on_action_GlobalPreferences_triggered()));
 
-    m_actionScriptCompile = new QAction(tr("&Compile"), scriptWin);
-    m_actionScriptCompile->setIcon(QIcon(":/icons/compile"));
-    m_actionScriptCompile->setToolTip(tr("Compile script to check for errors"));
-    scriptBar->addAction(m_actionScriptCompile);
-    connect(m_actionScriptCompile, SIGNAL(triggered()), this, SLOT(onCompileScript()));
+//    scriptBar->addSeparator();
 
-    QTabBar *mdiTabBar = m_mdiScript->findChild<QTabBar *>();
-    Q_ASSERT(mdiTabBar != 0);
-    mdiTabBar->setExpanding(false);
+//    m_actionScriptCompile = new QAction(tr("&Compile"), scriptWin);
+//    m_actionScriptCompile->setIcon(QIcon(":/icons/compile"));
+//    m_actionScriptCompile->setToolTip(tr("Compile script to check for errors"));
+//    scriptBar->addAction(m_actionScriptCompile);
+//    connect(m_actionScriptCompile, SIGNAL(triggered()), this, SLOT(onCompileScript()));
+
+//    QTabBar *mdiTabBar = m_mdiScript->findChild<QTabBar *>();
+//    Q_ASSERT(mdiTabBar != 0);
+//    mdiTabBar->setExpanding(false);
 }
 
 void MainWindow::loadProfile(const QString &filename)
@@ -317,12 +321,7 @@ void MainWindow::loadProfile(const QString &filename)
     }
     else
     {
-        QStringList files(Options::value("RecentFileList").toStringList());
-
-        files.removeAll(filename);
-
-        Options::setValue("RecentFileList", files);
-
+        Options::removeRecentFile(filename);
         updateRecentFiles();
 
         console->systemErr("Failed to load profile");
@@ -450,17 +449,7 @@ void MainWindow::saveScript(const QString &filename)
 
 void MainWindow::setCurrentFile(const QString &filename)
 {
-    QStringList files(Options::value("RecentFileList").toStringList());
-
-    files.removeAll(filename);
-    files.prepend(filename);
-
-    while (files.size() > MaxRecentFiles)
-    {
-        files.removeLast();
-    }
-
-    Options::setValue("RecentFileList", files);
+    Options::addRecentFile(filename);
 
     updateRecentFiles();
 }
@@ -479,7 +468,7 @@ void MainWindow::addWindow(QWidget *widget, const QString &name, const QIcon &ic
     }
     else if (widget->inherits("LuaScript"))
     {
-        m_mdiScript->addSubWindow(win);
+//        m_mdiScript->addSubWindow(win);
     }
 
     win->showMaximized();
@@ -520,13 +509,13 @@ void MainWindow::updateActions()
     }
 
 
-    bool hasScript = !m_mdiScript->subWindowList().isEmpty();
-    bool isScriptDirty = activeScriptEditor() && activeScriptEditor()->document()->isModified();
-    bool isScriptEmpty = !activeScriptEditor() || activeScriptEditor()->document()->isEmpty();
+//    bool hasScript = !m_mdiScript->subWindowList().isEmpty();
+//    bool isScriptDirty = activeScriptEditor() && activeScriptEditor()->document()->isModified();
+//    bool isScriptEmpty = !activeScriptEditor() || activeScriptEditor()->document()->isEmpty();
 
-    m_actionScriptSave->setEnabled(hasScript && isScriptDirty);
-    m_actionScriptSaveAs->setEnabled(hasScript);
-    m_actionScriptCompile->setEnabled(!isScriptEmpty);
+//    m_actionScriptSave->setEnabled(hasScript && isScriptDirty);
+//    m_actionScriptSaveAs->setEnabled(hasScript);
+//    m_actionScriptCompile->setEnabled(!isScriptEmpty);
 
     ui->action_ScriptEditor->setChecked(ui->scriptDock->isVisible());
 
@@ -535,9 +524,9 @@ void MainWindow::updateActions()
 
 void MainWindow::updateRecentFiles()
 {
-    QStringList files(Options::value("RecentFileList").toStringList());
+    QStringList files(Options::recentFileList());
 
-    int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
+    int numRecentFiles = files.size();
 
     for (int i = 0; i < numRecentFiles; ++i)
     {
@@ -546,7 +535,7 @@ void MainWindow::updateRecentFiles()
         m_recentSignalMapper->setMapping(m_recentFileActs[i], files[i]);
     }
 
-    for (int j = numRecentFiles; j < MaxRecentFiles; ++j)
+    for (int j = numRecentFiles; j < Options::MaxRecentFiles; ++j)
     {
         m_recentFileActs[j]->setVisible(false);
     }
@@ -717,15 +706,15 @@ void MainWindow::on_action_Exit_triggered()
 
 void MainWindow::on_action_GlobalPreferences_triggered()
 {
-    DialogGlobal *dlg = new DialogGlobal(this);
-    if (dlg->exec() == QDialog::Accepted)
-    {
-        foreach (QMdiSubWindow *win, m_mdiScript->subWindowList())
-        {
-            win->widget()->setFont(Options::editorFont());
-            win->widget()->update();
-        }
-    }
+//    DialogGlobal *dlg = new DialogGlobal(this);
+//    if (dlg->exec() == QDialog::Accepted)
+//    {
+//        foreach (QMdiSubWindow *win, m_mdiScript->subWindowList())
+//        {
+//            win->widget()->setFont(Options::editorFont());
+//            win->widget()->update();
+//        }
+//    }
 }
 
 void MainWindow::on_action_Preferences_triggered()
