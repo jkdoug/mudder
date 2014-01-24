@@ -72,7 +72,6 @@
      <string>&amp;File</string>
     </property>
     <addaction name="action_NewProfile"/>
-    <addaction name="action_NewScript"/>
     <addaction name="action_Open"/>
     <addaction name="action_RecentFiles"/>
     <addaction name="action_Save"/>
@@ -343,7 +342,7 @@
     <string>Edit profile settings, such as aliases and triggers</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+G</string>
+    <string>F5</string>
    </property>
   </action>
   <action name="action_About">
@@ -382,14 +381,6 @@
    </property>
    <property name="toolTip">
     <string>Toggle the script editor dockable window.</string>
-   </property>
-  </action>
-  <action name="action_NewScript">
-   <property name="text">
-    <string>New Script</string>
-   </property>
-   <property name="toolTip">
-    <string>Create a new Lua script</string>
    </property>
   </action>
   <action name="action_Reload">

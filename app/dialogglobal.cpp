@@ -59,7 +59,7 @@ void DialogGlobal::accept()
 
 void DialogGlobal::load()
 {
-    QFont font(Options::editorFont());
+    QFont font(OPTIONS->editorFont());
 
     ui->comboEditorFont->setCurrentFont(font);
     ui->comboEditorFontSize->setCurrentIndex(font.pointSize() - 6);
@@ -74,7 +74,7 @@ void DialogGlobal::save()
     font.setStyleHint(QFont::TypeWriter, antiAlias?QFont::PreferAntialias:QFont::NoAntialias);
     font.setPointSize(ui->comboEditorFontSize->currentText().toInt());
 
-    Options::setEditorFont(font);
+    OPTIONS->setEditorFont(font);
 }
 
 bool DialogGlobal::validate()

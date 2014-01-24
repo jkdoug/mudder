@@ -33,27 +33,34 @@ class Options : public QObject
     Q_OBJECT
 
 public:
-    static QVariant value(const QString &key, const QVariant &def = QVariant());
-    static void setValue(const QString &key, const QVariant &value);
+    static Options * P();
 
-    static QFont editorFont();
-    static void setEditorFont(const QFont &font);
+    QVariant value(const QString &key, const QVariant &def = QVariant());
+    void setValue(const QString &key, const QVariant &value);
 
-    static QString homePath();
+    QFont editorFont();
+    void setEditorFont(const QFont &font);
+
+    QString homePath();
 
     enum { MaxRecentFiles = 5 };
-    static QStringList recentFileList();
-    static void addRecentFile(const QString &fileName);
-    static void removeRecentFile(const QString &fileName);
+    QStringList recentFileList();
+    void addRecentFile(const QString &fileName);
+    void removeRecentFile(const QString &fileName);
+
+signals:
+    void recentFilesChanged(const QStringList &fileNames);
 
 private:
     explicit Options(QObject *parent = 0);
     Q_DISABLE_COPY(Options)
 
-    static QFont loadFont(const QString &key, const QFont &def = QFont());
-    static void saveFont(const QString &key, const QFont &font);
+    QFont loadFont(const QString &key, const QFont &def = QFont());
+    void saveFont(const QString &key, const QFont &font);
 
-    static QSettings m_settings;
+    QSettings m_settings;
 };
+
+#define OPTIONS (Options::P())
 
 #endif // OPTIONS_H

@@ -26,11 +26,16 @@
 #include <QDebug>
 #include <QDir>
 
-QSettings Options::m_settings(QSettings::IniFormat, QSettings::UserScope, "Mudder");
-
 Options::Options(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_settings(QSettings::IniFormat, QSettings::UserScope, "Mudder")
 {
+}
+
+Options * Options::P()
+{
+    static Options instance;
+    return &instance;
 }
 
 QVariant Options::value(const QString &key, const QVariant &def)
@@ -81,6 +86,8 @@ void Options::addRecentFile(const QString &fileName)
     }
 
     setValue("RecentFileList", files);
+
+    emit recentFilesChanged(files);
 }
 
 void Options::removeRecentFile(const QString &fileName)
@@ -90,6 +97,8 @@ void Options::removeRecentFile(const QString &fileName)
     files.removeAll(fileName);
 
     setValue("RecentFileList", files);
+
+    emit recentFilesChanged(files);
 }
 
 QFont Options::loadFont(const QString &key, const QFont &def)

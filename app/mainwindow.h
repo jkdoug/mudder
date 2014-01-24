@@ -66,9 +66,6 @@ private:
     QMdiSubWindow * activeWindow();
     Console * activeConsole();
 
-    QMdiSubWindow * activeScriptWindow();
-    LuaScript *activeScriptEditor();
-
     void createMapDock();
     void createScriptDock();
 
@@ -76,33 +73,24 @@ private:
     void saveProfile(const QString &filename = QString());
 
     void loadScript(const QString &filename);
-    void saveScript(const QString &filename = QString());
-
-    void setCurrentFile(const QString &filename);
 
     void addWindow(QWidget *widget, const QString &name, const QIcon &icon = QIcon());
 
     void updateActions();
-    void updateRecentFiles();
     void updateTitle();
 
 private slots:
     void onProfileChanged();
-    void onScriptChanged();
     void onRecentFile(const QString &filename);
+    void onRecentFilesChanged(const QStringList &fileNames);
 
     void onImportMap();
 
-    void onNewScript();
-    void onOpenScript();
-    void onSaveScript();
-    void onSaveScriptAs();
     void onCompileScript();
 
     void on_action_Connect_triggered(bool checked);
     void on_action_Log_triggered(bool checked);
     void on_action_NewProfile_triggered();
-    void on_action_NewScript_triggered();
     void on_action_Open_triggered();
     void on_action_Save_triggered();
     void on_action_SaveAs_triggered();

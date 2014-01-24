@@ -43,7 +43,6 @@ SOURCES += main.cpp\
     event.cpp \
     luahighlighter.cpp \
     hyperlink.cpp \
-    luascript.cpp \
     maproom.cpp \
     maparea.cpp \
     mapexit.cpp \
@@ -58,7 +57,9 @@ SOURCES += main.cpp\
     options.cpp \
     codeeditor.cpp \
     codeeditorwidget.cpp \
-    codeeditorwindow.cpp
+    codeeditorwindow.cpp \
+    xmlhighlighter.cpp \
+    syntaxhighlighter.cpp
 
 HEADERS  += mainwindow.h \
     profile.h \
@@ -92,7 +93,6 @@ HEADERS  += mainwindow.h \
     luawrapperutils.h \
     luahighlighter.h \
     hyperlink.h \
-    luascript.h \
     maproom.h \
     maparea.h \
     mapexit.h \
@@ -107,7 +107,9 @@ HEADERS  += mainwindow.h \
     options.h \
     codeeditor.h \
     codeeditorwidget.h \
-    codeeditorwindow.h
+    codeeditorwindow.h \
+    xmlhighlighter.h \
+    syntaxhighlighter.h
 
 FORMS    += mainwindow.ui \
     console.ui \

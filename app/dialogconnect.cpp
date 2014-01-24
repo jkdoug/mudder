@@ -51,10 +51,10 @@ void DialogConnect::accept()
 
 void DialogConnect::load()
 {
-    ui->name->setText(Options::value("Default/ProfileName").toString());
-    ui->address->setText(Options::value("Default/HostAddress", "lusternia.com").toString());
-    ui->port->setText(Options::value("Default/HostPort", 23).toString());
-    ui->connect->setChecked(Options::value("Default/AutoConnect", true).toBool());
+    ui->name->setText(OPTIONS->value("Default/ProfileName").toString());
+    ui->address->setText(OPTIONS->value("Default/HostAddress", "lusternia.com").toString());
+    ui->port->setText(OPTIONS->value("Default/HostPort", 23).toString());
+    ui->connect->setChecked(OPTIONS->value("Default/AutoConnect", true).toBool());
 }
 
 void DialogConnect::save()
@@ -64,10 +64,10 @@ void DialogConnect::save()
     m_port = ui->port->text().toInt();
     m_connect = ui->connect->isChecked();
 
-    Options::setValue("Default/ProfileName", m_name);
-    Options::setValue("Default/HostAddress", m_address);
-    Options::setValue("Default/HostPort", m_port);
-    Options::setValue("Default/AutoConnect", m_connect);
+    OPTIONS->setValue("Default/ProfileName", m_name);
+    OPTIONS->setValue("Default/HostAddress", m_address);
+    OPTIONS->setValue("Default/HostPort", m_port);
+    OPTIONS->setValue("Default/AutoConnect", m_connect);
 }
 
 bool DialogConnect::validate()

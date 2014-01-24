@@ -39,6 +39,8 @@ public:
     QString defaultPath() const;
     void setDefaultPath(const QString &path);
 
+    bool loadFile(const QString &fileName);
+
 public slots:
     void actionNew();
     void actionOpen();

@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
         connect(m_recentFileActs[i], SIGNAL(triggered()), m_recentSignalMapper, SLOT(map()));
     }
     connect(m_recentSignalMapper, SIGNAL(mapped(QString)), this, SLOT(onRecentFile(QString)));
+    connect(OPTIONS, SIGNAL(recentFilesChanged(QStringList)), this, SLOT(onRecentFilesChanged(QStringList)));
 
     QTabBar *mdiTabBar = ui->mdiArea->findChild<QTabBar *>();
     Q_ASSERT(mdiTabBar != 0);
@@ -68,10 +69,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     updateTitle();
     updateActions();
-    updateRecentFiles();
 
-    restoreGeometry(Options::value("MainWindow/Geometry").toByteArray());
-    restoreState(Options::value("MainWindow/State").toByteArray());
+    onRecentFilesChanged(OPTIONS->recentFileList());
+
+    restoreGeometry(OPTIONS->value("MainWindow/Geometry").toByteArray());
+    restoreState(OPTIONS->value("MainWindow/State").toByteArray());
 }
 
 MainWindow::~MainWindow()
@@ -124,8 +126,8 @@ void MainWindow::scriptWindowActivated(QMdiSubWindow *win)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    Options::setValue("MainWindow/Geometry", saveGeometry());
-    Options::setValue("MainWindow/State", saveState());
+    OPTIONS->setValue("MainWindow/Geometry", saveGeometry());
+    OPTIONS->setValue("MainWindow/State", saveState());
 
     // Check for unsaved profiles and prompt to save first
     QList<QMdiSubWindow *> wins = ui->mdiArea->subWindowList();
@@ -196,23 +198,6 @@ Console * MainWindow::activeConsole()
     if (win)
     {
         return qobject_cast<Console *>(win->widget());
-    }
-
-    return 0;
-}
-
-QMdiSubWindow * MainWindow::activeScriptWindow()
-{
-    return 0;
-//    return m_mdiScript->currentSubWindow();
-}
-
-LuaScript * MainWindow::activeScriptEditor()
-{
-    QMdiSubWindow *win = activeScriptWindow();
-    if (win)
-    {
-        return qobject_cast<LuaScript *>(win->widget());
     }
 
     return 0;
@@ -316,13 +301,12 @@ void MainWindow::loadProfile(const QString &filename)
     Console *console = new Console(this);
     if (console->loadProfile(filename))
     {
-        setCurrentFile(filename);
+        OPTIONS->addRecentFile(filename);
         statusBar()->showMessage(tr("Profile loaded"), 2000);
     }
     else
     {
-        Options::removeRecentFile(filename);
-        updateRecentFiles();
+        OPTIONS->removeRecentFile(filename);
 
         console->systemErr("Failed to load profile");
     }
@@ -386,72 +370,21 @@ void MainWindow::saveProfile(const QString &filename)
             return;
         }
 
-        setCurrentFile(fileSave);
+        OPTIONS->addRecentFile(fileSave);
         statusBar()->showMessage(tr("Profile saved"), 2000);
     }
 }
 
-void MainWindow::loadScript(const QString &filename)
+void MainWindow::loadScript(const QString &fileName)
 {
-    LuaScript *script = new LuaScript(this);
-    if (!script->load(filename))
+    CodeEditorWindow * editor = qobject_cast<CodeEditorWindow *>(ui->scriptDock->widget());
+    if (editor->loadFile(fileName))
     {
-        QStringList files(Options::value("RecentFileList").toStringList());
-
-        files.removeAll(filename);
-
-        Options::setValue("RecentFileList", files);
-
-        updateRecentFiles();
-
-        QMessageBox::critical(this, tr("File Error"), tr("Failed to load script file."));
-
-        delete script;
-        return;
-    }
-
-    if (!ui->scriptDock->isVisible())
-    {
-        ui->scriptDock->show();
-    }
-
-    setCurrentFile(filename);
-    statusBar()->showMessage(tr("Script loaded"), 2000);
-
-    connect(script->document(), SIGNAL(contentsChanged()), this, SLOT(onScriptChanged()));
-
-    addWindow(script, QFileInfo(filename).fileName());
-}
-
-void MainWindow::saveScript(const QString &filename)
-{
-    LuaScript *script = activeScriptEditor();
-    Q_ASSERT(script != 0);
-
-    QString fileSave(filename);
-    if (fileSave.isEmpty())
-    {
-        fileSave = QFileDialog::getSaveFileName(this, tr("Save Script"), script->filename(), tr("Lua script files (*.lua);;All files (*)"));
-    }
-
-    if (!fileSave.isEmpty())
-    {
-        if (!script->save(fileSave))
+        if (!ui->scriptDock->isVisible())
         {
-            QMessageBox::critical(this, tr("Script Error"), tr("Unable to save file to disk."));
-            return;
+            ui->scriptDock->show();
         }
-
-        setCurrentFile(fileSave);
-        statusBar()->showMessage(tr("Script saved"), 2000);
     }
-}
-
-void MainWindow::setCurrentFile(const QString &filename)
-{
-    Options::addRecentFile(filename);
-
-    updateRecentFiles();
 }
 
 void MainWindow::addWindow(QWidget *widget, const QString &name, const QIcon &icon)
@@ -462,14 +395,7 @@ void MainWindow::addWindow(QWidget *widget, const QString &name, const QIcon &ic
     win->setWindowIcon(icon);
     win->setAttribute(Qt::WA_DeleteOnClose);
 
-    if (widget->inherits("Console"))
-    {
-        ui->mdiArea->addSubWindow(win);
-    }
-    else if (widget->inherits("LuaScript"))
-    {
-//        m_mdiScript->addSubWindow(win);
-    }
+    ui->mdiArea->addSubWindow(win);
 
     win->showMaximized();
 }
@@ -522,27 +448,6 @@ void MainWindow::updateActions()
     ui->action_Mapper->setChecked(ui->mapDock->isVisible());
 }
 
-void MainWindow::updateRecentFiles()
-{
-    QStringList files(Options::recentFileList());
-
-    int numRecentFiles = files.size();
-
-    for (int i = 0; i < numRecentFiles; ++i)
-    {
-        m_recentFileActs[i]->setText(tr("&%1 %2").arg(i + 1).arg(QFileInfo(files[i]).fileName()));
-        m_recentFileActs[i]->setVisible(true);
-        m_recentSignalMapper->setMapping(m_recentFileActs[i], files[i]);
-    }
-
-    for (int j = numRecentFiles; j < Options::MaxRecentFiles; ++j)
-    {
-        m_recentFileActs[j]->setVisible(false);
-    }
-
-    ui->action_RecentFiles->setVisible(numRecentFiles > 0);
-}
-
 void MainWindow::updateTitle()
 {
     static QString appTitle(tr("%1 %2").arg(QApplication::applicationName()).arg(QApplication::applicationVersion()));
@@ -576,11 +481,6 @@ void MainWindow::onProfileChanged()
 {
     updateActions();
     updateTitle();
-}
-
-void MainWindow::onScriptChanged()
-{
-    updateActions();
 }
 
 void MainWindow::on_action_Connect_triggered(bool checked)
@@ -647,16 +547,6 @@ void MainWindow::on_action_NewProfile_triggered()
         updateTitle();
     }
     delete dlg;
-}
-
-void MainWindow::on_action_NewScript_triggered()
-{
-    if (!ui->scriptDock->isVisible())
-    {
-        ui->scriptDock->show();
-    }
-
-    onNewScript();
 }
 
 void MainWindow::on_action_Open_triggered()
@@ -802,6 +692,25 @@ void MainWindow::onRecentFile(const QString &filename)
     }
 }
 
+void MainWindow::onRecentFilesChanged(const QStringList &fileNames)
+{
+    int numRecentFiles = fileNames.size();
+
+    for (int i = 0; i < numRecentFiles; ++i)
+    {
+        m_recentFileActs[i]->setText(tr("&%1 %2").arg(i + 1).arg(QFileInfo(fileNames[i]).fileName()));
+        m_recentFileActs[i]->setVisible(true);
+        m_recentSignalMapper->setMapping(m_recentFileActs[i], fileNames[i]);
+    }
+
+    for (int j = numRecentFiles; j < Options::MaxRecentFiles; ++j)
+    {
+        m_recentFileActs[j]->setVisible(false);
+    }
+
+    ui->action_RecentFiles->setVisible(numRecentFiles > 0);
+}
+
 void MainWindow::onImportMap()
 {
     Console *console = activeConsole();
@@ -855,57 +764,20 @@ void MainWindow::onImportMap()
     QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::onNewScript()
-{
-    static int num = 0;
-    LuaScript *script = new LuaScript(this);
-    addWindow(script, tr("(untitled-%1)").arg(++num));
-
-    connect(script->document(), SIGNAL(contentsChanged()), this, SLOT(onScriptChanged()));
-
-    updateActions();
-}
-
-void MainWindow::onOpenScript()
-{
-    QString filename(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), tr("Lua script files (*.lua);;All files (*)")));
-    if (filename.isEmpty())
-    {
-        return;
-    }
-
-    loadScript(filename);
-}
-
-void MainWindow::onSaveScript()
-{
-    LuaScript *script = activeScriptEditor();
-    Q_ASSERT(script != 0);
-
-    saveScript(script->filename());
-
-    updateActions();
-}
-
-void MainWindow::onSaveScriptAs()
-{
-    onSaveScript();
-}
-
 void MainWindow::onCompileScript()
 {
-    LuaScript *script = activeScriptEditor();
-    Q_ASSERT(script != 0);
+//    LuaScript *script = activeScriptEditor();
+//    Q_ASSERT(script != 0);
 
-    QString errMessage;
-    if (!Engine::compile(script->document()->toPlainText(), tr("Script Editor"), &errMessage))
-    {
-        QMessageBox::warning(this, tr("Compile Error"), errMessage);
-    }
-    else
-    {
-        QMessageBox::information(this, tr("Compiled"), tr("I'm making a note here: huge success."));
-    }
+//    QString errMessage;
+//    if (!Engine::compile(script->document()->toPlainText(), tr("Script Editor"), &errMessage))
+//    {
+//        QMessageBox::warning(this, tr("Compile Error"), errMessage);
+//    }
+//    else
+//    {
+//        QMessageBox::information(this, tr("Compiled"), tr("I'm making a note here: huge success."));
+//    }
 }
 
 void MainWindow::on_action_About_triggered()

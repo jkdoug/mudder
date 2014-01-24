@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     a.setApplicationVersion("0.3");
     a.setOrganizationName("Iasmos");
 
-    Options::setValue("LastRun", QDateTime::currentDateTime());
+    OPTIONS->setValue("LastRun", QDateTime::currentDateTime());
 
     MainWindow w;
     w.show();

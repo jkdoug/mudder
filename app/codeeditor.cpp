@@ -110,7 +110,7 @@ CodeEditor::CodeEditor(QWidget *parent) :
     connect(this, SIGNAL(updateRequest(const QRect &, int)), this, SLOT(updateLineNumberArea(const QRect &, int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
 
-    setFont(Options::editorFont());
+    setFont(OPTIONS->editorFont());
 
     updateLineNumberAreaWidth(0);
 }
@@ -191,34 +191,34 @@ void CodeEditor::updateCursorPosition()
 
     setExtraSelections(extraSelections);
 
-    CodeBlockData *data = static_cast<CodeBlockData *>(textCursor().block().userData());
-    if (data)
-    {
-        QVector<BraceInfo *> infos(data->braces());
-        int pos = textCursor().block().position();
+//    CodeBlockData *data = static_cast<CodeBlockData *>(textCursor().block().userData());
+//    if (data)
+//    {
+//        QVector<BraceInfo *> infos(data->braces());
+//        int pos = textCursor().block().position();
 
-        for (int index = 0; index < infos.size(); index++)
-        {
-            BraceInfo *info = infos.at(index);
+//        for (int index = 0; index < infos.size(); index++)
+//        {
+//            BraceInfo *info = infos.at(index);
 
-            int currentPos = textCursor().position() - textCursor().block().position();
+//            int currentPos = textCursor().position() - textCursor().block().position();
 
-            if (info->position == currentPos - 1 && info->left)
-            {
-                if (matchLeftBrace(textCursor().block(), index + 1, info->character))
-                {
-                    createBraceSelection(pos + info->position);
-                }
-            }
-            else if (info->position == currentPos - 1 && !info->left)
-            {
-                if (matchRightBrace(textCursor().block(), index - 1, info->character))
-                {
-                    createBraceSelection(pos + info->position);
-                }
-            }
-        }
-    }
+//            if (info->position == currentPos - 1 && info->left)
+//            {
+//                if (matchLeftBrace(textCursor().block(), index + 1, info->character))
+//                {
+//                    createBraceSelection(pos + info->position);
+//                }
+//            }
+//            else if (info->position == currentPos - 1 && !info->left)
+//            {
+//                if (matchRightBrace(textCursor().block(), index - 1, info->character))
+//                {
+//                    createBraceSelection(pos + info->position);
+//                }
+//            }
+//        }
+//    }
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int newBlockCount)
