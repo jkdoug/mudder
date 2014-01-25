@@ -51,10 +51,6 @@ public:
 
     QAbstractTextDocumentLayout * documentLayout();
 
-public slots:
-    void copy();
-    void copyHtml();
-
 protected:
     virtual void paintEvent(QPaintEvent *e);
 

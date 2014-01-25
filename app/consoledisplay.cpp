@@ -24,7 +24,6 @@
 #include "textdocument.h"
 #include <QAbstractTextDocumentLayout>
 #include <QApplication>
-#include <QClipboard>
 #include <QDebug>
 #include <QPainter>
 #include <QPaintEvent>
@@ -54,22 +53,6 @@ QAbstractTextDocumentLayout * ConsoleDisplay::documentLayout()
     }
 
     return document()->documentLayout();
-}
-
-void ConsoleDisplay::copy()
-{
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(document()->toPlainText());
-
-    document()->selectNone();
-}
-
-void ConsoleDisplay::copyHtml()
-{
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(document()->toHtml());
-
-    document()->selectNone();
 }
 
 void ConsoleDisplay::paintEvent(QPaintEvent *e)

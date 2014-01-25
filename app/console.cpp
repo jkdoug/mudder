@@ -31,6 +31,7 @@
 #include "xmlexception.h"
 #include <QAction>
 #include <QApplication>
+#include <QClipboard>
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QElapsedTimer>
@@ -168,6 +169,22 @@ void Console::updateScroll()
     {
         ui->scrollbar->setValue(ui->scrollbar->maximum());
     }
+}
+
+void Console::copy()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(document()->toPlainText());
+
+    document()->selectNone();
+}
+
+void Console::copyHtml()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(document()->toHtml());
+
+    document()->selectNone();
 }
 
 void Console::logLatest()
@@ -1094,8 +1111,6 @@ void Console::closeEvent(QCloseEvent *e)
 
 void Console::mouseMoveEvent(QMouseEvent *e)
 {
-    qDebug() << "mouseMove" << e->pos();
-
     if (!document())
     {
         return;
@@ -1222,8 +1237,6 @@ void Console::mouseReleaseEvent(QMouseEvent *e)
     }
     else if (e->button() == Qt::LeftButton)
     {
-        qDebug() << "mouseRelease" << m_selectionStart << m_selectionEnd;
-
         // TODO: don't clear selection when clicking within the selected text?
         if (document()->documentLayout()->hitTest(e->pos(), Qt::ExactHit) == m_clickPos)
         {

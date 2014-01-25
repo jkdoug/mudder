@@ -165,6 +165,9 @@ public slots:
     void outputFontChanged();
     void updateScroll();
 
+    void copy();
+    void copyHtml();
+
 private:
     void logLatest();
 
