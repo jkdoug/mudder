@@ -32,6 +32,7 @@ Executable::Executable(QObject *parent) :
     m_executionCount = 0;
     m_totalTime = 0.0;
     m_averageTime = 0.0;
+    m_failed = false;
 }
 
 Executable::Executable(const Executable &rhs, QObject *parent) :
