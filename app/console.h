@@ -98,6 +98,8 @@ public:
     void scrollUp(int lines);
     void scrollDown(int lines);
     void scrollTo(int line);
+    void scrollToTop();
+    void scrollToBottom();
 
     QTextStream & log() { return m_log; }
     bool isLogging() const { return m_log.device() != 0 && !m_logPaused; }

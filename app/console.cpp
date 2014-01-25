@@ -559,6 +559,16 @@ void Console::scrollTo(int line)
     }
 }
 
+void Console::scrollToTop()
+{
+    scrollTo(ui->scrollbar->minimum());
+}
+
+void Console::scrollToBottom()
+{
+    scrollTo(ui->scrollbar->maximum());
+}
+
 QString Console::startLog(const QString &filename, bool append)
 {
     QFileInfo logInfo;

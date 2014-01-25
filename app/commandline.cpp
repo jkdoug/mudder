@@ -92,7 +92,7 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
             }
             else if (e->modifiers().testFlag(Qt::ControlModifier))
             {
-//                console()->scrollTo(console()->buffer()->length());
+                console()->scrollToBottom();
             }
             else
             {
@@ -130,7 +130,7 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
         case Qt::Key_Escape:
             if (e->modifiers() == 0)
             {
-//                console()->scrollTo(console()->buffer()->length());
+                console()->scrollToBottom();
                 e->accept();
                 return;
             }
