@@ -1183,8 +1183,6 @@ void Console::mousePressEvent(QMouseEvent *e)
         m_mousePressed = true;
         m_selectionStart = pos;
         m_selectionEnd = pos;
-
-        qDebug() << "mousePress" << m_selectionStart << m_selectionEnd;
     }
 }
 
