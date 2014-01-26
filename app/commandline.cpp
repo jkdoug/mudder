@@ -226,6 +226,10 @@ void CommandLine::send()
         txt = txt.remove(0, prefix.length());
         emit script(txt);
     }
+    else if (txt.isEmpty())
+    {
+        emit command("");
+    }
     else
     {
         QString sep(console()->profile()->commandSeparator() + QString("\n"));
