@@ -327,7 +327,7 @@
     <string>Edit profile details and preferences</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+D</string>
+    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="action_Settings">
@@ -413,6 +413,9 @@
    </property>
   </action>
   <action name="action_GlobalPreferences">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="mudder.qrc">
      <normaloff>:/icons/preferences</normaloff>:/icons/preferences</iconset>

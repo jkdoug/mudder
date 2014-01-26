@@ -180,7 +180,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="connection">
         <property name="sizePolicy">
@@ -208,6 +208,9 @@
             <string>Host</string>
            </property>
            <layout class="QFormLayout" name="formLayout_2">
+            <property name="labelAlignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
             <item row="0" column="0">
              <widget class="QLabel" name="labelName">
               <property name="text">
@@ -329,17 +332,40 @@
            <property name="title">
             <string>Output Font</string>
            </property>
-           <layout class="QFormLayout" name="formLayout">
-            <property name="labelAlignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-            <item row="0" column="0">
-             <widget class="QLabel" name="labelOutputFont">
+           <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0,0" columnminimumwidth="60,0,23,60">
+            <item row="0" column="2">
+             <widget class="QLabel" name="labelOutputFontSize">
               <property name="text">
-               <string>Family:</string>
+               <string>Size:</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="checkOutputAntiAliased">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="labelOutputAntiAliased">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Anti-aliased:</string>
               </property>
              </widget>
             </item>
@@ -362,32 +388,18 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="labelOutputFontSize">
+            <item row="0" column="0">
+             <widget class="QLabel" name="labelOutputFont">
               <property name="text">
-               <string>Point size:</string>
+               <string>Family:</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="0" column="3">
              <widget class="QComboBox" name="comboOutputFontSize"/>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="labelOutputAntiAliased">
-              <property name="text">
-               <string>Anti-aliased:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="checkOutputAntiAliased">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
             </item>
            </layout>
           </widget>
@@ -397,20 +409,7 @@
            <property name="title">
             <string>Input Font</string>
            </property>
-           <layout class="QFormLayout" name="formLayout_4">
-            <property name="labelAlignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-            <item row="0" column="0">
-             <widget class="QLabel" name="labelInputFont">
-              <property name="text">
-               <string>Family:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
+           <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1,0,0" columnminimumwidth="60,0,23,60">
             <item row="0" column="1">
              <widget class="QFontComboBox" name="comboInputFont">
               <property name="editable">
@@ -430,32 +429,54 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="labelInputFontSize">
+            <item row="2" column="0">
+             <widget class="QLabel" name="labelInputAntiAliased">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="text">
-               <string>Point size:</string>
+               <string>Anti-aliased:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="labelInputFont">
+              <property name="text">
+               <string>Family:</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="comboInputFontSize"/>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="labelInputAntiAliased">
-              <property name="text">
-               <string>Anti-aliased:</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="1">
              <widget class="QCheckBox" name="checkInputAntiAliased">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="text">
                <string/>
               </property>
              </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="labelInputFontSize">
+              <property name="text">
+               <string>Size:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QComboBox" name="comboInputFontSize"/>
             </item>
            </layout>
           </widget>
@@ -520,12 +541,12 @@
            <property name="title">
             <string>Colors</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="2">
-             <widget class="QLineEdit" name="editCommandSample">
+           <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0,0" columnminimumwidth="56,0,20,20">
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="editNoteSample">
               <property name="minimumSize">
                <size>
-                <width>150</width>
+                <width>0</width>
                 <height>23</height>
                </size>
               </property>
@@ -547,14 +568,7 @@ background-color: rgb(85, 170, 255);</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="labelCommandColors">
-              <property name="text">
-               <string>Commands:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="4">
+            <item row="0" column="2">
              <widget class="QPushButton" name="fgCommand">
               <property name="minimumSize">
                <size>
@@ -570,7 +584,14 @@ background-color: rgb(85, 170, 255);</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="5">
+            <item row="0" column="0">
+             <widget class="QLabel" name="labelCommandColors">
+              <property name="text">
+               <string>Commands:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
              <widget class="QPushButton" name="bgCommand">
               <property name="minimumSize">
                <size>
@@ -587,56 +608,10 @@ background-color: rgb(85, 170, 255);</string>
              </widget>
             </item>
             <item row="0" column="1">
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="3">
-             <spacer name="horizontalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="labelNoteColors">
-              <property name="text">
-               <string>Notes:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <spacer name="horizontalSpacer_3">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="1" column="2">
-             <widget class="QLineEdit" name="editNoteSample">
+             <widget class="QLineEdit" name="editCommandSample">
               <property name="minimumSize">
                <size>
-                <width>150</width>
+                <width>0</width>
                 <height>23</height>
                </size>
               </property>
@@ -658,20 +633,17 @@ background-color: rgb(85, 170, 255);</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="3">
-             <spacer name="horizontalSpacer_4">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+            <item row="1" column="0">
+             <widget class="QLabel" name="labelNoteColors">
+              <property name="text">
+               <string>Notes:</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
-             </spacer>
+             </widget>
             </item>
-            <item row="1" column="4">
+            <item row="1" column="2">
              <widget class="QPushButton" name="fgNote">
               <property name="minimumSize">
                <size>
@@ -687,7 +659,7 @@ background-color: rgb(85, 170, 255);</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="5">
+            <item row="1" column="3">
              <widget class="QPushButton" name="bgNote">
               <property name="minimumSize">
                <size>
@@ -704,6 +676,14 @@ background-color: rgb(85, 170, 255);</string>
              </widget>
             </item>
            </layout>
+           <zorder>editCommandSample</zorder>
+           <zorder>labelCommandColors</zorder>
+           <zorder>bgCommand</zorder>
+           <zorder>labelNoteColors</zorder>
+           <zorder>editNoteSample</zorder>
+           <zorder>fgNote</zorder>
+           <zorder>bgNote</zorder>
+           <zorder>fgCommand</zorder>
           </widget>
          </item>
          <item>
@@ -734,8 +714,17 @@ background-color: rgb(85, 170, 255);</string>
             </property>
             <item row="2" column="0">
              <widget class="QLabel" name="labelLoggingAutoStart">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="text">
                <string>Auto-start:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -743,6 +732,12 @@ background-color: rgb(85, 170, 255);</string>
              <widget class="QCheckBox" name="loggingAutoStart">
               <property name="enabled">
                <bool>true</bool>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
               </property>
              </widget>
             </item>
@@ -823,6 +818,9 @@ background-color: rgb(85, 170, 255);</string>
             <string>Options</string>
            </property>
            <layout class="QFormLayout" name="formLayout_3">
+            <property name="labelAlignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
             <item row="0" column="0">
              <widget class="QLabel" name="labelScriptFilename">
               <property name="text">
@@ -852,9 +850,6 @@ background-color: rgb(85, 170, 255);</string>
              <widget class="QLabel" name="labelScriptPrefix">
               <property name="text">
                <string>Prefix:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -908,10 +903,8 @@ background-color: rgb(85, 170, 255);</string>
   <tabstop>checkReconnect</tabstop>
   <tabstop>checkClearCommands</tabstop>
   <tabstop>comboOutputFont</tabstop>
-  <tabstop>comboOutputFontSize</tabstop>
   <tabstop>checkOutputAntiAliased</tabstop>
   <tabstop>comboInputFont</tabstop>
-  <tabstop>comboInputFontSize</tabstop>
   <tabstop>checkInputAntiAliased</tabstop>
   <tabstop>checkAutoWrap</tabstop>
   <tabstop>editCommandSample</tabstop>

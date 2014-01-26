@@ -41,6 +41,7 @@
         <file alias="script_reload">icons/script_reload.png</file>
         <file alias="compile">icons/script_compile.png</file>
         <file alias="cut">icons/edit_cut.png</file>
+        <file alias="small_close">icons/script_close.png</file>
     </qresource>
     <qresource prefix="/lua">
         <file alias="table_print">lua/table_print.lua</file>

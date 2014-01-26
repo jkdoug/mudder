@@ -22,6 +22,8 @@
 
 
 #include "codeeditorwindow.h"
+#include "dialogglobal.h"
+#include "engine.h"
 #include "luahighlighter.h"
 #include "options.h"
 #include "xmlhighlighter.h"
@@ -32,6 +34,7 @@
 #include <QMessageBox>
 #include <QTabBar>
 #include <QToolBar>
+#include <QtDebug>
 
 struct CodeEditorWindowData
 {
@@ -43,7 +46,10 @@ struct CodeEditorWindowData
         actionNew(0),
         actionOpen(0),
         actionSave(0),
-        actionSaveAs(0)
+        actionSaveAs(0),
+        actionClose(0),
+        actionPreferences(0),
+        actionCompile(0)
     {}
 
     QMdiArea * mdi;
@@ -57,6 +63,9 @@ struct CodeEditorWindowData
     QAction * actionOpen;
     QAction * actionSave;
     QAction * actionSaveAs;
+    QAction * actionClose;
+    QAction * actionPreferences;
+    QAction * actionCompile;
 };
 
 CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
@@ -111,6 +120,32 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     d->toolBar->addAction(d->actionSaveAs);
     connect(d->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 
+    d->actionClose = new QAction(tr("&Close"), this);
+    d->actionClose->setIcon(QIcon(":/icons/small_close"));
+    d->actionClose->setToolTip(tr("Close the current file"));
+    d->actionClose->setShortcut(QKeySequence::Close);
+    d->actionClose->setShortcutContext(Qt::WindowShortcut);
+    d->toolBar->addAction(d->actionClose);
+    connect(d->actionClose, SIGNAL(triggered()), d->mdi, SLOT(closeActiveSubWindow()));
+
+    d->toolBar->addSeparator();
+
+    d->actionPreferences = new QAction(tr("&Global Preferences"), this);
+    d->actionPreferences->setIcon(QIcon(":/icons/preferences"));
+    d->actionPreferences->setToolTip(tr("Edit global application preferences"));
+    d->actionPreferences->setShortcut(QKeySequence("Ctrl+G"));
+    d->actionPreferences->setShortcutContext(Qt::WindowShortcut);
+    d->toolBar->addAction(d->actionPreferences);
+    connect(d->actionPreferences, SIGNAL(triggered()), this, SLOT(actionPreferences()));
+
+    d->toolBar->addSeparator();
+
+    d->actionCompile = new QAction(tr("&Compile"), this);
+    d->actionCompile->setIcon(QIcon(":/icons/compile"));
+    d->actionCompile->setToolTip(tr("Compile script to check for errors"));
+    d->toolBar->addAction(d->actionCompile);
+    connect(d->actionCompile, SIGNAL(triggered()), this, SLOT(actionCompile()));
+
     addToolBar(d->toolBar);
 
     QTabBar * mdiTabBar = d->mdi->findChild<QTabBar *>();
@@ -147,9 +182,6 @@ bool CodeEditorWindow::loadFile(const QString &fileName)
     }
 
     OPTIONS->addRecentFile(fileName);
-//        statusBar()->showMessage(tr("Script loaded"), 2000);
-
-//        connect(script->document(), SIGNAL(contentsChanged()), this, SLOT(onScriptChanged()));
 
     QMdiSubWindow *win = new QMdiSubWindow(this);
     win->setWidget(widget);
@@ -166,6 +198,11 @@ bool CodeEditorWindow::loadFile(const QString &fileName)
              fi.suffix().compare("xml", Qt::CaseInsensitive) == 0)
     {
         widget->setSyntaxHighlighter(new XmlHighlighter());
+    }
+    else if (fi.suffix().compare("htm", Qt::CaseInsensitive) == 0 ||
+             fi.suffix().compare("html", Qt::CaseInsensitive) == 0)
+    {
+//        widget->setSyntaxHighlighter(new HtmlHighlighter());
     }
 
     d->mdi->addSubWindow(win);
@@ -190,15 +227,19 @@ void CodeEditorWindow::actionNew()
     d->mdi->addSubWindow(win);
 
     win->showMaximized();
-
-//    connect(script->document(), SIGNAL(contentsChanged()), this, SLOT(onScriptChanged()));
-
-//    updateActions();
 }
 
 void CodeEditorWindow::actionOpen()
 {
-    QString path(d->defaultPath);
+    QString path;
+    if (d->editor && !d->editor->fileName().isEmpty())
+    {
+        path = QFileInfo(d->editor->fileName()).canonicalPath();
+    }
+    else
+    {
+        path = d->defaultPath;
+    }
 
     QString fileName(QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Lua script files (*.lua);;XML source files (*.xml *.mp);;All files (*)")));
     loadFile(fileName);
@@ -254,6 +295,37 @@ bool CodeEditorWindow::actionSaveAs()
     return false;
 }
 
+void CodeEditorWindow::actionPreferences()
+{
+    DialogGlobal *dlg = new DialogGlobal(this);
+    if (dlg->exec() == QDialog::Accepted)
+    {
+        foreach (QMdiSubWindow *win, d->mdi->subWindowList())
+        {
+            win->widget()->setFont(OPTIONS->editorFont());
+            win->widget()->update();
+        }
+    }
+}
+
+void CodeEditorWindow::actionCompile()
+{
+    if (!d->editor)
+    {
+        return;
+    }
+
+    QString errMessage;
+    if (!Engine::compile(d->editor->document()->toPlainText(), tr("Script Editor"), &errMessage))
+    {
+        QMessageBox::warning(this, tr("Compile Error"), errMessage);
+    }
+    else
+    {
+        QMessageBox::information(this, tr("Compiled"), tr("I'm making a note here: huge success."));
+    }
+}
+
 void CodeEditorWindow::actionPrint()
 {
 
@@ -293,4 +365,6 @@ void CodeEditorWindow::subWindowActivated(QMdiSubWindow *win)
 {
     d->subWindow = win;
     d->editor = win ? qobject_cast<CodeEditorWidget *>(win->widget()) : 0;
+
+    qDebug() << "sub" << d->subWindow << d->editor;
 }

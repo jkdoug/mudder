@@ -86,8 +86,6 @@ private slots:
 
     void onImportMap();
 
-    void onCompileScript();
-
     void on_action_Connect_triggered(bool checked);
     void on_action_Log_triggered(bool checked);
     void on_action_NewProfile_triggered();
@@ -96,7 +94,6 @@ private slots:
     void on_action_SaveAs_triggered();
     void on_action_Close_triggered();
     void on_action_Exit_triggered();
-    void on_action_GlobalPreferences_triggered();
     void on_action_Preferences_triggered();
     void on_action_Settings_triggered();
     void on_action_Reload_triggered();

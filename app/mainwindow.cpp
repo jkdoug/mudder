@@ -225,75 +225,6 @@ void MainWindow::createMapDock()
 void MainWindow::createScriptDock()
 {
     ui->scriptDock->setWidget(new CodeEditorWindow(this));
-
-//    QMainWindow *scriptWin = new QMainWindow(this);
-//    ui->scriptDock->setWidget(scriptWin);
-
-//    m_mdiScript = new QMdiArea(scriptWin);
-//    m_mdiScript->setDocumentMode(true);
-//    m_mdiScript->setViewMode(QMdiArea::TabbedView);
-//    m_mdiScript->setTabsClosable(true);
-//    m_mdiScript->setTabsMovable(true);
-//    scriptWin->setCentralWidget(m_mdiScript);
-//    connect(m_mdiScript, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(scriptWindowActivated(QMdiSubWindow*)));
-
-//    QToolBar *scriptBar = new QToolBar(scriptWin);
-//    scriptBar->setIconSize(QSize(16, 16));
-//    scriptWin->addToolBar(scriptBar);
-
-//    QAction *actionNew = new QAction(tr("&New"), scriptWin);
-//    actionNew->setIcon(QIcon(":/icons/small_new"));
-//    actionNew->setToolTip(tr("Create a new script"));
-//    actionNew->setShortcut(QKeySequence::New);
-//    actionNew->setShortcutContext(Qt::WindowShortcut);
-//    scriptBar->addAction(actionNew);
-//    connect(actionNew, SIGNAL(triggered()), this, SLOT(onNewScript()));
-
-//    QAction *actionOpen = new QAction(tr("&Open"), scriptWin);
-//    actionOpen->setIcon(QIcon(":/icons/small_open"));
-//    actionOpen->setToolTip(tr("Load script file from disk"));
-//    actionOpen->setShortcut(QKeySequence::Open);
-//    actionOpen->setShortcutContext(Qt::WindowShortcut);
-//    scriptBar->addAction(actionOpen);
-//    connect(actionOpen, SIGNAL(triggered()), this, SLOT(onOpenScript()));
-
-//    m_actionScriptSave = new QAction(tr("&Save"), scriptWin);
-//    m_actionScriptSave->setIcon(QIcon(":/icons/small_save"));
-//    m_actionScriptSave->setToolTip(tr("Save script to disk"));
-//    m_actionScriptSave->setShortcut(QKeySequence::Save);
-//    m_actionScriptSave->setShortcutContext(Qt::WindowShortcut);
-//    scriptBar->addAction(m_actionScriptSave);
-//    connect(m_actionScriptSave, SIGNAL(triggered()), this, SLOT(onSaveScript()));
-
-//    m_actionScriptSaveAs = new QAction(tr("Save &As"), scriptWin);
-//    m_actionScriptSaveAs->setIcon(QIcon(":/icons/small_save_as"));
-//    m_actionScriptSaveAs->setToolTip(tr("Save script to disk with a new name"));
-//    m_actionScriptSaveAs->setShortcut(QKeySequence::SaveAs);
-//    m_actionScriptSaveAs->setShortcutContext(Qt::WindowShortcut);
-//    scriptBar->addAction(m_actionScriptSaveAs);
-//    connect(m_actionScriptSaveAs, SIGNAL(triggered()), this, SLOT(onSaveScriptAs()));
-
-//    scriptBar->addSeparator();
-
-//    QAction *actionPreferences = new QAction(tr("&Global Preferences"), scriptWin);
-//    actionPreferences->setIcon(QIcon(":/icons/preferences"));
-//    actionPreferences->setToolTip(tr("Edit global application preferences"));
-//    actionPreferences->setShortcut(QKeySequence("Ctrl+G"));
-//    actionPreferences->setShortcutContext(Qt::WindowShortcut);
-//    scriptBar->addAction(actionPreferences);
-//    connect(actionPreferences, SIGNAL(triggered()), this, SLOT(on_action_GlobalPreferences_triggered()));
-
-//    scriptBar->addSeparator();
-
-//    m_actionScriptCompile = new QAction(tr("&Compile"), scriptWin);
-//    m_actionScriptCompile->setIcon(QIcon(":/icons/compile"));
-//    m_actionScriptCompile->setToolTip(tr("Compile script to check for errors"));
-//    scriptBar->addAction(m_actionScriptCompile);
-//    connect(m_actionScriptCompile, SIGNAL(triggered()), this, SLOT(onCompileScript()));
-
-//    QTabBar *mdiTabBar = m_mdiScript->findChild<QTabBar *>();
-//    Q_ASSERT(mdiTabBar != 0);
-//    mdiTabBar->setExpanding(false);
 }
 
 void MainWindow::loadProfile(const QString &filename)
@@ -594,19 +525,6 @@ void MainWindow::on_action_Exit_triggered()
     close();
 }
 
-void MainWindow::on_action_GlobalPreferences_triggered()
-{
-//    DialogGlobal *dlg = new DialogGlobal(this);
-//    if (dlg->exec() == QDialog::Accepted)
-//    {
-//        foreach (QMdiSubWindow *win, m_mdiScript->subWindowList())
-//        {
-//            win->widget()->setFont(Options::editorFont());
-//            win->widget()->update();
-//        }
-//    }
-}
-
 void MainWindow::on_action_Preferences_triggered()
 {
     Console *console = activeConsole();
@@ -762,22 +680,6 @@ void MainWindow::onImportMap()
     m_mapper->update();
 
     QApplication::restoreOverrideCursor();
-}
-
-void MainWindow::onCompileScript()
-{
-//    LuaScript *script = activeScriptEditor();
-//    Q_ASSERT(script != 0);
-
-//    QString errMessage;
-//    if (!Engine::compile(script->document()->toPlainText(), tr("Script Editor"), &errMessage))
-//    {
-//        QMessageBox::warning(this, tr("Compile Error"), errMessage);
-//    }
-//    else
-//    {
-//        QMessageBox::information(this, tr("Compiled"), tr("I'm making a note here: huge success."));
-//    }
 }
 
 void MainWindow::on_action_About_triggered()

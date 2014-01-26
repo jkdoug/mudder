@@ -46,6 +46,8 @@ public slots:
     void actionOpen();
     bool actionSave();
     bool actionSaveAs();
+    void actionPreferences();
+    void actionCompile();
     void actionPrint();
     void actionPrintPreview();
     void actionPrintPdf();
