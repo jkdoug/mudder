@@ -80,10 +80,10 @@ XmlHighlighter::XmlHighlighter(QTextDocument *document) :
 //Next, XML entities. This is the first item we can assume not to be multiline,
 //So this can be added to the rules. We add this to the second set of rules so
 //that it can highlight inside attribute values.
-    xmlEntityFormat.setForeground(Qt::darkGray);
-    rule.pattern = QRegularExpression("&" + xmlName + ";");
-    rule.format = xmlEntityFormat;
-    m_highlightingRules.append(rule);
+//    xmlEntityFormat.setForeground(Qt::darkGray);
+//    rule.pattern = QRegularExpression("&" + xmlName + ";");
+//    rule.format = xmlEntityFormat;
+//    m_highlightingRules.append(rule);
 }
 
 void XmlHighlighter::highlightSubBlock(const QString &text, const int startIndex, const int currState)
