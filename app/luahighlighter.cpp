@@ -32,8 +32,8 @@ LuaHighlighter::LuaHighlighter(QTextDocument *document) :
 
     m_multiLineCommentFormat.setForeground(Qt::gray);
 
-    m_commentStartExpression = QRegularExpression("--\\[\\[");
-    m_commentEndExpression = QRegularExpression("--\\]\\]");
+    m_commentStart = QRegularExpression("--\\[\\[");
+    m_commentEnd = QRegularExpression("--\\]\\]");
 }
 
 void LuaHighlighter::highlightBlock(const QString &text)
@@ -45,12 +45,12 @@ void LuaHighlighter::highlightBlock(const QString &text)
     int startIndex = 0;
     if (previousBlockState() != 1)
     {
-        startIndex = m_commentStartExpression.match(text).capturedStart();
+        startIndex = m_commentStart.match(text).capturedStart();
     }
 
     while (startIndex >= 0)
     {
-        QRegularExpressionMatch m(m_commentEndExpression.match(text, startIndex));
+        QRegularExpressionMatch m(m_commentEnd.match(text, startIndex));
         int endIndex = m.capturedEnd();
         int commentLength;
         if (endIndex == -1)
@@ -63,6 +63,6 @@ void LuaHighlighter::highlightBlock(const QString &text)
             commentLength = endIndex - startIndex + m.capturedLength();
         }
         setFormat(startIndex, commentLength, m_multiLineCommentFormat);
-        startIndex = m_commentStartExpression.match(text, startIndex + commentLength).capturedStart();
+        startIndex = m_commentStart.match(text, startIndex + commentLength).capturedStart();
     }
 }

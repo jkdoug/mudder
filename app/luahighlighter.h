@@ -16,8 +16,8 @@ protected:
     void highlightBlock(const QString &text);
 
 private:
-    QRegularExpression m_commentStartExpression;
-    QRegularExpression m_commentEndExpression;
+    QRegularExpression m_commentStart;
+    QRegularExpression m_commentEnd;
 
     QTextCharFormat m_singleLineCommentFormat;
     QTextCharFormat m_multiLineCommentFormat;
