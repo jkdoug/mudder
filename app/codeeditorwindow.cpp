@@ -365,6 +365,4 @@ void CodeEditorWindow::subWindowActivated(QMdiSubWindow *win)
 {
     d->subWindow = win;
     d->editor = win ? qobject_cast<CodeEditorWidget *>(win->widget()) : 0;
-
-    qDebug() << "sub" << d->subWindow << d->editor;
 }
