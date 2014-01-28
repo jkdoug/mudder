@@ -500,19 +500,7 @@ void DialogSettings::addVariable()
 
 void DialogSettings::clipboardChanged()
 {
-    QString clip(QApplication::clipboard()->text());
-
-    QFile res(":/schema/profile");
-    res.open(QFile::ReadOnly | QFile::Text);
-    QTextStream ts(&res);
-    QString content(ts.readAll());
-
-    QXmlSchema schema;
-    schema.load(content.toUtf8());
-    Q_ASSERT(schema.isValid());
-
-    QXmlSchemaValidator validator(schema);
-    ui->pasteSetting->setEnabled(validator.validate(clip.toUtf8()));
+    ui->pasteSetting->setEnabled(Profile::validateXml(QApplication::clipboard()->text()));
 }
 
 void DialogSettings::on_editSetting_clicked()

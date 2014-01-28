@@ -26,6 +26,7 @@
 #include "engine.h"
 #include "luahighlighter.h"
 #include "options.h"
+#include "profile.h"
 #include "xmlhighlighter.h"
 #include <QAction>
 #include <QFileDialog>
@@ -341,14 +342,30 @@ void CodeEditorWindow::actionCompile()
         return;
     }
 
-    QString errMessage;
-    if (!Engine::compile(d->editor->document()->toPlainText(), tr("Script Editor"), &errMessage))
+    if (qobject_cast<LuaHighlighter *>(d->editor->syntaxHighlighter()))
     {
-        QMessageBox::warning(this, tr("Compile Error"), errMessage);
+        QString errMessage;
+        if (!Engine::compile(d->editor->document()->toPlainText(), tr("Script Editor"), &errMessage))
+        {
+            QMessageBox::critical(this, tr("Compile Error"), errMessage);
+        }
+        else
+        {
+            QMessageBox::information(this, tr("Compiled"), tr("I'm making a note here: huge success."));
+        }
     }
-    else
+    else if (qobject_cast<XmlHighlighter *>(d->editor->syntaxHighlighter()))
     {
-        QMessageBox::information(this, tr("Compiled"), tr("I'm making a note here: huge success."));
+        QString xml(d->editor->document()->toPlainText());
+        QStringList errors;
+        if (!Profile::validateXml(xml, &errors))
+        {
+            QMessageBox::critical(this, tr("Validation Error"), errors.join("\n\n"));
+        }
+        else
+        {
+            QMessageBox::information(this, tr("Validated"), tr("You should seek approval from yourself."));
+        }
     }
 }
 
@@ -425,7 +442,8 @@ void CodeEditorWindow::updateActions()
     d->actionSaveAs->setEnabled(d->editor);
     d->actionPrint->setEnabled(d->editor);
     d->actionPrintPreview->setEnabled(d->editor);
-    d->actionCompile->setEnabled(d->editor && qobject_cast<LuaHighlighter *>(d->editor->syntaxHighlighter()));
+    d->actionCompile->setEnabled(d->editor && (qobject_cast<LuaHighlighter *>(d->editor->syntaxHighlighter()) ||
+                                               qobject_cast<XmlHighlighter *>(d->editor->syntaxHighlighter())));
 }
 
 void CodeEditorWindow::subWindowActivated(QMdiSubWindow *win)
