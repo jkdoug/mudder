@@ -91,7 +91,8 @@ private:
     void populateBranch(QTreeWidgetItem *parent, Group *group);
     QTreeWidgetItem *populateItem(QTreeWidgetItem *parent, ProfileItem *item, const QIcon &icon, ItemType type);
     void updateItem(QTreeWidgetItem *node, ProfileItem *item);
-    void expandGroups(QTreeWidgetItem *item);
+    int countChildren(QTreeWidgetItem *item);
+    bool parentSelected(QTreeWidgetItem *item);
 
     void toggle(QTreeWidgetItem *item, ItemType type, bool flag);
 

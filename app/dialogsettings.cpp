@@ -258,6 +258,22 @@ void DialogSettings::updateItem(QTreeWidgetItem *node, ProfileItem *item)
     }
 }
 
+int DialogSettings::countChildren(QTreeWidgetItem *item)
+{
+    int count = 0;
+    for (int n = 0; n < item->childCount(); n++)
+    {
+        count += countChildren(item->child(n));
+    }
+
+    return count + item->childCount();
+}
+
+bool DialogSettings::parentSelected(QTreeWidgetItem *item)
+{
+    return item && item->parent() && (item->parent()->isSelected() || parentSelected(item->parent()));
+}
+
 void DialogSettings::on_settings_itemSelectionChanged()
 {
     ui->copySetting->setEnabled(ui->settings->selectedItems().count() > 0);
@@ -524,15 +540,26 @@ void DialogSettings::on_deleteSetting_clicked()
         return;
     }
 
+    QList<QTreeWidgetItem *> deleteItems;
+    int count = 0;
+    foreach (QTreeWidgetItem *item, items)
+    {
+        if (!parentSelected(item))
+        {
+            deleteItems.append(item);
+            count += 1 + countChildren(item);
+        }
+    }
+
     QString title(tr("Confirm Delete"));
     QString msg;
-    if (items.size() == 1)
+    if (count == 1)
     {
         msg = tr("Are you sure you want to remove this setting?");
     }
     else
     {
-        msg = tr("Are you sure you want to remove %1 settings?").arg(items.size());
+        msg = tr("Are you sure you want to remove %1 settings?").arg(count);
     }
 
     if (QMessageBox::question(this, title, msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
@@ -540,7 +567,7 @@ void DialogSettings::on_deleteSetting_clicked()
         ui->settings->clearSelection();
         ui->settings->setCurrentItem(0);
 
-        foreach (QTreeWidgetItem *item, items)
+        foreach (QTreeWidgetItem *item, deleteItems)
         {
             ProfileItem *obj = qvariant_cast<ProfileItem *>(item->data(0, SETTINGS_ROLE_ITEM));
             if (obj == 0)
