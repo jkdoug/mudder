@@ -205,6 +205,7 @@ public:
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml);
     virtual void appendXml(QXmlStreamReader &xml);
+    static bool validateXml(const QString &text, QStringList * errors = 0);
 
 signals:
     void changed();

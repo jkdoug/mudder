@@ -23,10 +23,14 @@
 #include "engine.h"
 #include "mapengine.h"
 #include "xmlexception.h"
+#include <QAbstractMessageHandler>
 #include <QApplication>
 #include <QDateTime>
 #include <QDir>
 #include <QDirIterator>
+#include <QSourceLocation>
+#include <QXmlSchema>
+#include <QXmlSchemaValidator>
 
 Profile::Profile(QObject *parent) :
     QObject(parent)
@@ -1911,4 +1915,50 @@ void Profile::appendXml(QXmlStreamReader &xml)
     {
         throw new XmlException(warnings);
     }
+}
+
+class ProfileValidator : public QAbstractMessageHandler
+{
+public:
+    explicit ProfileValidator(QObject *parent = 0) : QAbstractMessageHandler(parent) {}
+
+    QStringList errors;
+
+protected:
+    virtual void handleMessage(QtMsgType type, const QString &description, const QUrl &identifier, const QSourceLocation &sourceLocation)
+    {
+        Q_UNUSED(type)
+        Q_UNUSED(identifier)
+
+        errors.append(tr("[Line: %1, Column: %2] %3").arg(sourceLocation.line()).arg(sourceLocation.column()).arg(description));
+    }
+};
+
+bool Profile::validateXml(const QString &text, QStringList *errors)
+{
+    QFile res(":/schema/profile");
+    res.open(QFile::ReadOnly | QFile::Text);
+    QTextStream ts(&res);
+    QString content(ts.readAll());
+
+    QXmlSchema schema;
+    schema.load(content.toUtf8());
+    Q_ASSERT(schema.isValid());
+
+    QXmlSchemaValidator validator(schema);
+    ProfileValidator *pv = new ProfileValidator();
+    validator.setMessageHandler(pv);
+    if (!validator.validate(text.toUtf8()))
+    {
+        if (errors)
+        {
+            errors->append(pv->errors);
+        }
+
+        delete pv;
+        return false;
+    }
+
+    delete pv;
+    return true;
 }
