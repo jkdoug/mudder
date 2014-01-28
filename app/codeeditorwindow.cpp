@@ -32,6 +32,8 @@
 #include <QFileInfo>
 #include <QMdiArea>
 #include <QMessageBox>
+#include <QPrintDialog>
+#include <QPrintPreviewDialog>
 #include <QTabBar>
 #include <QToolBar>
 #include <QtDebug>
@@ -48,6 +50,8 @@ struct CodeEditorWindowData
         actionSave(0),
         actionSaveAs(0),
         actionClose(0),
+        actionPrint(0),
+        actionPrintPreview(0),
         actionPreferences(0),
         actionCompile(0)
     {}
@@ -64,6 +68,8 @@ struct CodeEditorWindowData
     QAction * actionSave;
     QAction * actionSaveAs;
     QAction * actionClose;
+    QAction * actionPrint;
+    QAction * actionPrintPreview;
     QAction * actionPreferences;
     QAction * actionCompile;
 };
@@ -130,6 +136,22 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
 
     d->toolBar->addSeparator();
 
+    d->actionPrint = new QAction(tr("&Print"), this);
+    d->actionPrint->setIcon(QIcon(":/icons/small_print"));
+    d->actionPrint->setToolTip(tr("Print the file"));
+    d->actionPrint->setShortcut(QKeySequence::Print);
+    d->actionPrint->setShortcutContext(Qt::WindowShortcut);
+    d->toolBar->addAction(d->actionPrint);
+    connect(d->actionPrint, SIGNAL(triggered()), this, SLOT(actionPrint()));
+
+    d->actionPrintPreview = new QAction(tr("Print Preview"), this);
+    d->actionPrintPreview->setIcon(QIcon(":/icons/small_print_preview"));
+    d->actionPrintPreview->setToolTip(tr("Preview the file before printing"));
+    d->toolBar->addAction(d->actionPrintPreview);
+    connect(d->actionPrintPreview, SIGNAL(triggered()), this, SLOT(actionPrintPreview()));
+
+    d->toolBar->addSeparator();
+
     d->actionPreferences = new QAction(tr("&Global Preferences"), this);
     d->actionPreferences->setIcon(QIcon(":/icons/preferences"));
     d->actionPreferences->setToolTip(tr("Edit global application preferences"));
@@ -151,6 +173,8 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     QTabBar * mdiTabBar = d->mdi->findChild<QTabBar *>();
     Q_ASSERT(mdiTabBar != 0);
     mdiTabBar->setExpanding(false);
+
+    updateActions();
 }
 
 QString CodeEditorWindow::defaultPath() const
@@ -180,6 +204,7 @@ bool CodeEditorWindow::loadFile(const QString &fileName)
         delete widget;
         return false;
     }
+    connect(widget->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 
     OPTIONS->addRecentFile(fileName);
 
@@ -217,6 +242,7 @@ void CodeEditorWindow::actionNew()
     static int num = 0;
 
     CodeEditorWidget * widget = new CodeEditorWidget(this);
+    connect(widget->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 
     QMdiSubWindow * win = new QMdiSubWindow(this);
     win->setWidget(widget);
@@ -328,41 +354,84 @@ void CodeEditorWindow::actionCompile()
 
 void CodeEditorWindow::actionPrint()
 {
+    if (!d->editor)
+    {
+        return;
+    }
 
+#ifndef QT_NO_PRINTER
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setDocName(d->editor->fileName());
+
+    QPrintDialog *dlg = new QPrintDialog(&printer, this);
+    if (d->editor->textCursor().hasSelection())
+    {
+        dlg->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+    }
+    dlg->setWindowTitle(tr("Print Document"));
+    if (dlg->exec() == QDialog::Accepted)
+    {
+        d->editor->print(&printer);
+    }
+    delete dlg;
+#endif
 }
 
 void CodeEditorWindow::actionPrintPreview()
 {
+    if (!d->editor)
+    {
+        return;
+    }
 
-}
+#ifndef QT_NO_PRINTER
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setDocName(d->editor->fileName());
 
-void CodeEditorWindow::actionPrintPdf()
-{
-
-}
-
-void CodeEditorWindow::showEditorSettings()
-{
-
-}
-
-void CodeEditorWindow::showSearchBox()
-{
-
+    QPrintPreviewDialog preview(&printer, this);
+    connect(&preview, SIGNAL(paintRequested(QPrinter *)), SLOT(printPreview(QPrinter *)));
+    preview.exec();
+#endif
 }
 
 void CodeEditorWindow::printPreview(QPrinter *printer)
 {
-    Q_UNUSED(printer)
+    if (!d->editor)
+    {
+        return;
+    }
+
+#ifdef QT_NO_PRINTER
+    Q_UNUSED(printer);
+#else
+    d->editor->print(printer);
+#endif
 }
 
-void CodeEditorWindow::updateSaveAction()
+void CodeEditorWindow::setWindowModified(bool flag)
 {
+    Q_UNUSED(flag)
 
+    if (d->editor)
+    {
+        d->actionSave->setEnabled(d->editor->document()->isModified());
+    }
+}
+
+void CodeEditorWindow::updateActions()
+{
+    d->actionClose->setEnabled(d->editor);
+    d->actionSave->setEnabled(d->editor && d->editor->document()->isModified());
+    d->actionSaveAs->setEnabled(d->editor);
+    d->actionPrint->setEnabled(d->editor);
+    d->actionPrintPreview->setEnabled(d->editor);
+    d->actionCompile->setEnabled(d->editor && qobject_cast<LuaHighlighter *>(d->editor->syntaxHighlighter()));
 }
 
 void CodeEditorWindow::subWindowActivated(QMdiSubWindow *win)
 {
     d->subWindow = win;
     d->editor = win ? qobject_cast<CodeEditorWidget *>(win->widget()) : 0;
+
+    updateActions();
 }

@@ -50,13 +50,11 @@ public slots:
     void actionCompile();
     void actionPrint();
     void actionPrintPreview();
-    void actionPrintPdf();
-    void showEditorSettings();
-    void showSearchBox();
     void printPreview(QPrinter *printer);
+    void setWindowModified(bool flag);
 
 private slots:
-    void updateSaveAction();
+    void updateActions();
     void subWindowActivated(QMdiSubWindow *win);
 
 private:
