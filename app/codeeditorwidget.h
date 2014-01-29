@@ -39,6 +39,7 @@ public:
 
     bool loadFile(const QString &path);
     bool saveFile(QString path = QString());
+    bool maybeSave();
 
     QString fileName() const;
 
@@ -50,9 +51,10 @@ private slots:
 signals:
     void fileNameChanged(const QString &path);
 
-private:
-    bool maybeSave();
+protected:
+    virtual void closeEvent(QCloseEvent *closeEvent);
 
+private:
     CodeEditorWidgetData *d;
 };
 

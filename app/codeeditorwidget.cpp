@@ -121,6 +121,35 @@ bool CodeEditorWidget::saveFile(QString path)
     return true;
 }
 
+bool CodeEditorWidget::maybeSave()
+{
+    if (!document()->isModified())
+    {
+        return true;
+    }
+
+    QMessageBox::StandardButton ret;
+    if (d->fileName.isEmpty())
+    {
+        ret = QMessageBox::warning(this, tr("Code Editor"), tr("The document has been modified.\nDo you want to save your changes?"), QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    }
+    else
+    {
+        ret = QMessageBox::warning(this, tr("File Changed"), tr("The modified document is linked to the following file:\n\n%1\n\nDo you want to save your changes?").arg(d->fileName), QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    }
+
+    if (ret == QMessageBox::Save)
+    {
+        return saveFile();
+    }
+    else if (ret == QMessageBox::Cancel)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 QString CodeEditorWidget::fileName() const
 {
     return d->fileName;
@@ -133,34 +162,71 @@ bool CodeEditorWidget::isModified() const
 
 void CodeEditorWidget::handleFileChange(const QString &path)
 {
-    Q_UNUSED(path)
+    if (!d->watcherMutex.tryLock())
+    {
+        return;
+    }
+
+    QMessageBox msgBox(QMessageBox::Question, tr("File Changed"), QString(), QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+
+    QFile file(path);
+    if (file.exists())
+    {
+        msgBox.setText(tr("Your file has changed outside of the editor:<br><br>") + d->fileName);
+        msgBox.setInformativeText(tr("Do you want to reload the file?"));
+
+        int ret = msgBox.exec();
+        switch (ret)
+        {
+        case QMessageBox::Yes:
+            document()->setModified(false);
+            loadFile(path);
+            break;
+
+        case QMessageBox::No:
+            document()->setModified(true);
+            break;
+
+        default:
+            break;
+        }
+    }
+    else
+    {
+        msgBox.setText(tr("Your file has been removed outside of the editor:<br><br>") + d->fileName);
+        msgBox.setInformativeText(tr("Do you want to keep this file open in the editor?"));
+
+        int ret = msgBox.exec();
+        switch (ret)
+        {
+        case QMessageBox::Yes:
+            document()->setModified(true);
+            break;
+
+        case QMessageBox::No:
+            document()->setModified(false);
+            close();
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    d->watcherMutex.unlock();
 }
 
-bool CodeEditorWidget::maybeSave()
+void CodeEditorWidget::closeEvent(QCloseEvent *closeEvent)
 {
-//    if (!d->editor->document()->isModified())
-//    {
-//        return true;
-//    }
+    if (!maybeSave())
+    {
+        closeEvent->ignore();
+    }
+    else
+    {
+        document()->setModified(false);
 
-//    QMessageBox::StandardButton ret;
-//    if (d->fileName.isEmpty())
-//    {
-//        ret = QMessageBox::warning(this, tr("Code Editor"), tr("The document has been modified.\nDo you want to save your changes?"), QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-//    }
-//    else
-//    {
-//        ret = QMessageBox::warning(this, tr("File Changed"), tr("The modified document is linked to the following file:\n\n%1\n\nDo you want to save your changes?").arg(d->fileName), QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-//    }
-
-//    if (ret == QMessageBox::Save)
-//    {
-//        return actionSave();
-//    }
-//    else if (ret == QMessageBox::Cancel)
-//    {
-//        return false;
-//    }
-
-    return true;
+        CodeEditor::closeEvent(closeEvent);
+    }
 }

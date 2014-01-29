@@ -133,7 +133,7 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     d->actionClose->setShortcut(QKeySequence::Close);
     d->actionClose->setShortcutContext(Qt::WindowShortcut);
     d->toolBar->addAction(d->actionClose);
-    connect(d->actionClose, SIGNAL(triggered()), d->mdi, SLOT(closeActiveSubWindow()));
+    connect(d->actionClose, SIGNAL(triggered()), this, SLOT(actionClose()));
 
     d->toolBar->addSeparator();
 
@@ -322,17 +322,24 @@ bool CodeEditorWindow::actionSaveAs()
     return false;
 }
 
+void CodeEditorWindow::actionClose()
+{
+    if (!d->editor)
+    {
+        return;
+    }
+
+    if (d->editor->maybeSave())
+    {
+        d->editor->document()->setModified(false);
+        d->mdi->closeActiveSubWindow();
+    }
+}
+
 void CodeEditorWindow::actionPreferences()
 {
     DialogGlobal *dlg = new DialogGlobal(this);
-    if (dlg->exec() == QDialog::Accepted)
-    {
-        foreach (QMdiSubWindow *win, d->mdi->subWindowList())
-        {
-            win->widget()->setFont(OPTIONS->editorFont());
-            win->widget()->update();
-        }
-    }
+    dlg->exec();
 }
 
 void CodeEditorWindow::actionCompile()
