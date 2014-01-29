@@ -111,6 +111,7 @@ CodeEditor::CodeEditor(QWidget *parent) :
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
 
     setFont(OPTIONS->editorFont());
+    connect(OPTIONS, SIGNAL(editorFontChanged(QFont)), this, SLOT(handleFontChange(QFont)));
 
     updateLineNumberAreaWidth(0);
 }
@@ -419,5 +420,11 @@ void CodeEditor::createBraceSelection(int pos)
     selections.append(selection);
 
     setExtraSelections(selections);
+}
+
+void CodeEditor::handleFontChange(const QFont &font)
+{
+    setFont(font);
+    update();
 }
 

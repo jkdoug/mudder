@@ -52,6 +52,9 @@ public slots:
 
     void highlightWords(const QStringList& words, const QBrush& brush);
 
+private slots:
+    void handleFontChange(const QFont &font);
+
 protected:
     void resizeEvent(QResizeEvent *e);
 
@@ -63,7 +66,6 @@ private:
     bool matchRightBrace(QTextBlock currentBlock, int index, QChar brace, int numRight = 0);
     void createBraceSelection(int pos);
 
-private:
     CodeEditorData *d;
 };
 

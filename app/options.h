@@ -49,6 +49,8 @@ public:
     void removeRecentFile(const QString &fileName);
 
 signals:
+    void valueChanged(const QString &key, const QVariant &value);
+    void editorFontChanged(const QFont &font);
     void recentFilesChanged(const QStringList &fileNames);
 
 private:

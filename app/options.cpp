@@ -46,6 +46,8 @@ QVariant Options::value(const QString &key, const QVariant &def)
 void Options::setValue(const QString &key, const QVariant &value)
 {
     m_settings.setValue(key, value);
+
+    emit valueChanged(key, value);
 }
 
 
@@ -61,6 +63,8 @@ QFont Options::editorFont()
 void Options::setEditorFont(const QFont &font)
 {
     saveFont("Editor", font);
+
+    emit editorFontChanged(font);
 }
 
 QString Options::homePath()
@@ -103,14 +107,12 @@ void Options::removeRecentFile(const QString &fileName)
 
 QFont Options::loadFont(const QString &key, const QFont &def)
 {
-    return m_settings.value(key + "Font", def).value<QFont>();
+    QFont font(m_settings.value(key + "Font", def).value<QFont>());
+
+    return font;
 }
 
 void Options::saveFont(const QString &key, const QFont &font)
 {
-//    m_settings.setValue(key + "FontName", font.family());
-//    m_settings.setValue(key + "FontSize", font.pointSize());
-//    m_settings.setValue(key + "FontAntialias", font.styleStrategy() & QFont::PreferAntialias);
-
     m_settings.setValue(key + "Font", font);
 }
