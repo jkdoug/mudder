@@ -16,24 +16,24 @@ LuaHighlighter::LuaHighlighter(QTextDocument *document) :
         << "return" << "then" << "true" << "until" << "while");
 
     m_quotationFormat.setForeground(Qt::magenta);
-    rule.pattern = QRegularExpression("([\"\']).*?\\1");
+    rule.pattern.setPattern("(([\"\']).*?\\2)");
     rule.format = m_quotationFormat;
     m_highlightingRules.append(rule);
 
     m_functionFormat.setForeground(Qt::blue);
-    rule.pattern = QRegularExpression("\\b(?:[A-Za-z0-9_]+[\\.:])*[A-Za-z0-9_]+(?=\\()");
+    rule.pattern.setPattern("\\b((?:[A-Za-z0-9_]+[\\.:])*[A-Za-z0-9_]+)(?=\\()");
     rule.format = m_functionFormat;
     m_highlightingRules.append(rule);
 
     m_singleLineCommentFormat.setForeground(Qt::gray);
-    rule.pattern = QRegularExpression("--[^\n]*");
+    rule.pattern.setPattern("(--[^\n]*)");
     rule.format = m_singleLineCommentFormat;
     m_highlightingRules.append(rule);
 
     m_multiLineCommentFormat.setForeground(Qt::gray);
 
-    m_commentStart = QRegularExpression("--\\[\\[");
-    m_commentEnd = QRegularExpression("--\\]\\]");
+    m_commentStart.setPattern("--\\[\\[");
+    m_commentEnd.setPattern("--\\]\\]");
 }
 
 void LuaHighlighter::highlightBlock(const QString &text)

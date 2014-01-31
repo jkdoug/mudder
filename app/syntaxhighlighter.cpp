@@ -77,11 +77,11 @@ void SyntaxHighlighter::addKeywords(const QStringList &words, bool boundary)
     {
         if (boundary)
         {
-            rule.pattern = QRegularExpression(QString("\\b%1\\b").arg(word));
+            rule.pattern = QRegularExpression(QString("\\b(%1)\\b").arg(word));
         }
         else
         {
-            rule.pattern = QRegularExpression(word);
+            rule.pattern = QRegularExpression(QString("(%1)").arg(word));
         }
 
         rule.format = m_keywordFormat;
@@ -97,8 +97,8 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
         QRegularExpressionMatch m(expression.match(text));
         while (m.hasMatch())
         {
-            int start = m.capturedStart();
-            int length = m.capturedLength();
+            int start = m.capturedStart(1);
+            int length = m.capturedLength(1);
             setFormat(start, length, rule.format);
             m = expression.match(text, start + length);
         }

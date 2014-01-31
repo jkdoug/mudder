@@ -34,35 +34,48 @@ public:
 
 protected:
     void highlightBlock(const QString &text);
-    void highlightSubBlock(const QString &text, const int startIndex, const int currState);
+
+    void highlightComment(const QString &text);
+    void highlightDTD(const QString &text);
+    void highlightPI(const QString &text);
+    void highlightQuotes(const QString &text);
 
 private:
-    QRegExp xmlProcInstStartExpression;
-    QRegExp xmlProcInstEndExpression;
-    QRegExp xmlCommentStartExpression;
-    QRegExp xmlCommentEndExpression;
-    QRegExp xmlDoctypeStartExpression;
-    QRegExp xmlDoctypeEndExpression;
+    enum BlockState
+    {
+        NoBlock = 0,
+        InComment,
+        InDTD,
+        InPI,
+        InElement
+    };
 
-    QRegExp xmlOpenTagStartExpression;
-    QRegExp xmlOpenTagEndExpression;
-    QRegExp xmlCloseTagStartExpression;
-    QRegExp xmlCloseTagEndExpression;
-    QRegExp xmlAttributeStartExpression;
-    QRegExp xmlAttributeEndExpression;
-    QRegExp xmlAttValStartExpression;
-    QRegExp xmlAttValEndExpression;
+    QRegularExpression m_piStart;
+    QRegularExpression m_piEnd;
+    QRegularExpression m_piName;
+    QRegularExpression m_commentStart;
+    QRegularExpression m_commentEnd;
+    QRegularExpression m_dtdStart;
+    QRegularExpression m_dtdEnd;
+    QRegularExpression m_dtdName;
+    QRegularExpression m_quoteStart;
+    QRegularExpression m_quoteEnd;
+    QRegularExpression m_openStart;
+    QRegularExpression m_openEnd;
+    QRegularExpression m_closeStart;
+    QRegularExpression m_closeEnd;
+    QRegularExpression m_attributeStart;
+    QRegularExpression m_attributeEnd;
+    QRegularExpression m_valueStart;
+    QRegularExpression m_valueEnd;
 
-    QRegExp xmlAttValExpression;
-
-
-    QTextCharFormat xmlProcInstFormat;
-    QTextCharFormat xmlDoctypeFormat;
-    QTextCharFormat xmlCommentFormat;
-    QTextCharFormat xmlTagFormat;
-    QTextCharFormat xmlEntityFormat;
-    QTextCharFormat xmlAttributeFormat;
-    QTextCharFormat xmlAttValFormat;
+    QTextCharFormat m_piFormat;
+    QTextCharFormat m_commentFormat;
+    QTextCharFormat m_dtdFormat;
+    QTextCharFormat m_dtdNameFormat;
+    QTextCharFormat m_quoteFormat;
+    QTextCharFormat m_tagFormat;
+    QTextCharFormat m_attributeFormat;
 
 //Enumeration for types of element, used for tracking what
 //we're inside while highlighting over multiline blocks.
