@@ -58,16 +58,6 @@ private:
     QRegularExpression m_dtdStart;
     QRegularExpression m_dtdEnd;
     QRegularExpression m_dtdName;
-    QRegularExpression m_quoteStart;
-    QRegularExpression m_quoteEnd;
-    QRegularExpression m_openStart;
-    QRegularExpression m_openEnd;
-    QRegularExpression m_closeStart;
-    QRegularExpression m_closeEnd;
-    QRegularExpression m_attributeStart;
-    QRegularExpression m_attributeEnd;
-    QRegularExpression m_valueStart;
-    QRegularExpression m_valueEnd;
 
     QTextCharFormat m_piFormat;
     QTextCharFormat m_commentFormat;
@@ -76,6 +66,7 @@ private:
     QTextCharFormat m_quoteFormat;
     QTextCharFormat m_tagFormat;
     QTextCharFormat m_attributeFormat;
+    QTextCharFormat m_entityFormat;
 
 //Enumeration for types of element, used for tracking what
 //we're inside while highlighting over multiline blocks.

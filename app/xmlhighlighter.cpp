@@ -51,20 +51,27 @@ XmlHighlighter::XmlHighlighter(QTextDocument *document) :
     const QString nameChar = "[" + nameCharList + "]";
     const QString xmlName = nameStart + "(" + nameChar + ")*";
 
-    m_openStart.setPattern("<" + xmlName);
-    m_openEnd.setPattern(">");
-    m_closeStart.setPattern("</" + xmlName);
-    m_closeEnd.setPattern(">");
+    m_quoteFormat.setForeground(Qt::darkMagenta);
     m_tagFormat.setForeground(Qt::darkBlue);
+    m_attributeFormat.setForeground(Qt::darkCyan);
+    m_entityFormat.setForeground(Qt::darkRed);
+    m_entityFormat.setBackground(QColor("bisque"));
 
     HighlightingRule rule;
     rule.pattern.setPattern("(&" + xmlName + ";)");
-    rule.format.setForeground(Qt::darkRed);
+    rule.format = m_entityFormat;
     m_highlightingRules.append(rule);
 
-    m_quoteFormat.setForeground(Qt::magenta);
     rule.pattern.setPattern("(([\"\']).*?\\2)");
-    rule.format.setForeground(Qt::darkMagenta);
+    rule.format = m_quoteFormat;
+    m_highlightingRules.append(rule);
+
+    rule.pattern.setPattern("(<" + xmlName + ")\\b");
+    rule.format = m_tagFormat;
+    m_highlightingRules.append(rule);
+
+    rule.pattern.setPattern("(" + xmlName + ")\\s*\\=");
+    rule.format = m_attributeFormat;
     m_highlightingRules.append(rule);
 }
 
@@ -72,10 +79,11 @@ void XmlHighlighter::highlightBlock(const QString &text)
 {
     setCurrentBlockState(NoBlock);
 
-    SyntaxHighlighter::highlightBlock(text);
-
     highlightPI(text);
     highlightDTD(text);
+
+    SyntaxHighlighter::highlightBlock(text);
+
     highlightComment(text);
 }
 
