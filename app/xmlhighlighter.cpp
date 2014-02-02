@@ -27,8 +27,8 @@
 XmlHighlighter::XmlHighlighter(QTextDocument *document) :
     SyntaxHighlighter(document)
 {
-    m_piStart = QRegularExpression("<\\?");
-    m_piEnd = QRegularExpression("\\?>");
+    m_piStart.setPattern("<\\?");
+    m_piEnd.setPattern("\\?>");
     m_piName.setPattern("<\\?([xX][mM][lL])");
     m_piFormat.setForeground(Qt::darkMagenta);
     m_piFormat.setFontWeight(QFont::Bold);
