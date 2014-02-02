@@ -65,9 +65,11 @@ void ConsoleDocumentLayout::draw(QPainter *painter, const PaintContext &context)
 
         textLayout->beginLayout();
 
+        int blockHeight = y;
+
         QList<QTextLine> lines;
         QTextLine line(textLayout->createLine());
-        while (y > 0 && line.isValid())
+        while (line.isValid())
         {
             lines.append(line);
             line.setLineWidth(r.width() - m_margins.left() - m_margins.right());
@@ -77,11 +79,12 @@ void ConsoleDocumentLayout::draw(QPainter *painter, const PaintContext &context)
             line = textLayout->createLine();
         }
 
-        qreal height = 0;
-        foreach (line, lines)
+        qreal height = blockHeight;
+        for (int n = lines.count() - 1; n >= 0; n--)
         {
-            line.setPosition(QPointF(m_margins.left(), y + height));
-            height += line.height();
+            line = lines.at(n);
+            height -= line.height();
+            line.setPosition(QPointF(m_margins.left(), height));
         }
 
         textLayout->endLayout();
