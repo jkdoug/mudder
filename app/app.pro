@@ -59,7 +59,12 @@ SOURCES += main.cpp\
     codeeditorwidget.cpp \
     codeeditorwindow.cpp \
     xmlhighlighter.cpp \
-    syntaxhighlighter.cpp
+    syntaxhighlighter.cpp \
+    configwidget.cpp \
+    configconnection.cpp \
+    configdisplay.cpp \
+    configlogging.cpp \
+    configscripting.cpp
 
 HEADERS  += mainwindow.h \
     profile.h \
@@ -109,7 +114,12 @@ HEADERS  += mainwindow.h \
     codeeditorwidget.h \
     codeeditorwindow.h \
     xmlhighlighter.h \
-    syntaxhighlighter.h
+    syntaxhighlighter.h \
+    configwidget.h \
+    configconnection.h \
+    configdisplay.h \
+    configlogging.h \
+    configscripting.h
 
 FORMS    += mainwindow.ui \
     console.ui \
@@ -122,7 +132,12 @@ FORMS    += mainwindow.ui \
     dialogtimer.ui \
     dialogvariable.ui \
     dialoggroup.ui \
-    dialogglobal.ui
+    dialogglobal.ui \
+    configwidget.ui \
+    configconnection.ui \
+    configdisplay.ui \
+    configlogging.ui \
+    configscripting.ui
 
 RESOURCES += \
     mudder.qrc

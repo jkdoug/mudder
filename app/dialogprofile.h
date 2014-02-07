@@ -42,11 +42,6 @@ public:
     void load(Profile *profile);
 
 private:
-    void load();
-    void save();
-    bool validate();
-
-private:
     Ui::DialogProfile *ui;
 
     Profile *m_profile;
@@ -57,16 +52,6 @@ private:
 
 public slots:
     virtual void accept();
-
-private slots:
-    void on_pageList_currentRowChanged(int currentRow);
-    void on_scriptFilenameBrowse_clicked();
-    void on_fgCommand_clicked();
-    void on_bgCommand_clicked();
-    void on_fgNote_clicked();
-    void on_bgNote_clicked();
-    void on_checkAutoWrap_stateChanged(int arg1);
-    void on_loggingDirectoryBrowse_clicked();
 };
 
 #endif // DIALOGPROFILE_H
