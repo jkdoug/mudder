@@ -21,10 +21,10 @@
 */
 
 
-#include <QSettings>
+#include <QDebug>
 #include "dialogglobal.h"
 #include "ui_dialogglobal.h"
-#include "options.h"
+#include "configeditor.h"
 
 DialogGlobal::DialogGlobal(QWidget *parent) :
     QDialog(parent),
@@ -32,14 +32,11 @@ DialogGlobal::DialogGlobal(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QStringList fontSizes;
-    for (int n = 6; n <= 30; n++)
-    {
-        fontSizes << QString::number(n);
-    }
-    ui->comboEditorFontSize->addItems(fontSizes);
+    ui->config->addPage(new ConfigEditor(ui->config));
 
-    load();
+    ui->config->load();
+
+    connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton*)), SLOT(buttonClicked(QAbstractButton*)));
 }
 
 DialogGlobal::~DialogGlobal()
@@ -47,42 +44,32 @@ DialogGlobal::~DialogGlobal()
     delete ui;
 }
 
-void DialogGlobal::accept()
+void DialogGlobal::buttonClicked(QAbstractButton *button)
 {
-    if (validate())
+    QDialogButtonBox::ButtonRole role = ui->buttonBox->buttonRole(button);
+    switch (role)
     {
-        save();
+    case QDialogButtonBox::AcceptRole:
+        if (ui->config->validate())
+        {
+            ui->config->save();
+            accept();
+        }
+        break;
 
-        QDialog::accept();
+    case QDialogButtonBox::ApplyRole:
+        if (ui->config->validate())
+        {
+            ui->config->save();
+        }
+        break;
+
+    case QDialogButtonBox::RejectRole:
+        close();
+        break;
+
+    case QDialogButtonBox::ResetRole:
+        ui->config->restoreDefaults();
+        break;
     }
-}
-
-void DialogGlobal::load()
-{
-    QFont font(OPTIONS->editorFont());
-
-    ui->comboEditorFont->setCurrentFont(font);
-    ui->comboEditorFontSize->setCurrentIndex(font.pointSize() - 6);
-    ui->checkEditorAntiAliased->setChecked(font.styleStrategy() & QFont::PreferAntialias);
-}
-
-void DialogGlobal::save()
-{
-    bool antiAlias = ui->checkEditorAntiAliased->isChecked();
-
-    QFont font(ui->comboEditorFont->currentFont());
-    font.setStyleHint(QFont::TypeWriter, antiAlias?QFont::PreferAntialias:QFont::NoAntialias);
-    font.setPointSize(ui->comboEditorFontSize->currentText().toInt());
-
-    OPTIONS->setEditorFont(font);
-}
-
-bool DialogGlobal::validate()
-{
-    return true;
-}
-
-void DialogGlobal::on_pageList_currentRowChanged(int currentRow)
-{
-    ui->stackedWidget->setCurrentIndex(currentRow);
 }

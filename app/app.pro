@@ -64,7 +64,8 @@ SOURCES += main.cpp\
     configconnection.cpp \
     configdisplay.cpp \
     configlogging.cpp \
-    configscripting.cpp
+    configscripting.cpp \
+    configeditor.cpp
 
 HEADERS  += mainwindow.h \
     profile.h \
@@ -119,7 +120,8 @@ HEADERS  += mainwindow.h \
     configconnection.h \
     configdisplay.h \
     configlogging.h \
-    configscripting.h
+    configscripting.h \
+    configeditor.h
 
 FORMS    += mainwindow.ui \
     console.ui \
@@ -137,7 +139,8 @@ FORMS    += mainwindow.ui \
     configconnection.ui \
     configdisplay.ui \
     configlogging.ui \
-    configscripting.ui
+    configscripting.ui \
+    configeditor.ui
 
 RESOURCES += \
     mudder.qrc

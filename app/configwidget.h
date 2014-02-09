@@ -65,26 +65,13 @@ public slots:
     void load();
     void save();
     bool validate();
-    void apply();
-    void discard();
+    void restoreDefaults();
 
 signals:
     void currentIndexChanged(int index);
 
-    void loading();
-    void saving();
-    void validating();
-    void applying(int index);
-    void discarding(int index);
-
 private:
     Ui::ConfigWidget *ui;
-
-    bool m_loading;
-    bool m_saving;
-    bool m_validating;
-    bool m_applying;
-    bool m_discarding;
 
     Q_DISABLE_COPY(ConfigWidget)
 };

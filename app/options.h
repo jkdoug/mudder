@@ -38,7 +38,7 @@ public:
     QVariant value(const QString &key, const QVariant &def = QVariant());
     void setValue(const QString &key, const QVariant &value);
 
-    QFont editorFont();
+    QFont editorFont(bool def = false);
     void setEditorFont(const QFont &font);
 
     QString homePath();

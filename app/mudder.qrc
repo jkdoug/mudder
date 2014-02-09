@@ -44,6 +44,7 @@
         <file alias="small_close">icons/script_close.png</file>
         <file alias="small_print">icons/script_print.png</file>
         <file alias="small_print_preview">icons/script_print_preview.png</file>
+        <file alias="editor">icons/editor.png</file>
     </qresource>
     <qresource prefix="/lua">
         <file alias="table_print">lua/table_print.lua</file>

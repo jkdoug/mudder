@@ -24,6 +24,7 @@
 #ifndef DIALOGGLOBAL_H
 #define DIALOGGLOBAL_H
 
+#include <QAbstractButton>
 #include <QDialog>
 #include <QFont>
 
@@ -39,18 +40,11 @@ public:
     explicit DialogGlobal(QWidget *parent = 0);
     ~DialogGlobal();
 
-private:
-    void load();
-    void save();
-    bool validate();
-
-    Ui::DialogGlobal *ui;
-
 public slots:
-    virtual void accept();
+    virtual void buttonClicked(QAbstractButton *button);
 
-private slots:
-    void on_pageList_currentRowChanged(int currentRow);
+private:
+    Ui::DialogGlobal *ui;
 };
 
 #endif // DIALOGGLOBAL_H

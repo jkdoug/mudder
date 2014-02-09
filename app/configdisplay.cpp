@@ -23,9 +23,6 @@ ConfigDisplay::ConfigDisplay(Profile *profile, ConfigWidget *parent) :
         fontSizes << QString::number(n);
     }
     ui->comboInputFontSize->addItems(fontSizes);
-
-    connect(parent, SIGNAL(loading()), SLOT(load()));
-    connect(parent, SIGNAL(saving()), SLOT(save()));
 }
 
 ConfigDisplay::~ConfigDisplay()

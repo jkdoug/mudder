@@ -51,11 +51,16 @@ void Options::setValue(const QString &key, const QVariant &value)
 }
 
 
-QFont Options::editorFont()
+QFont Options::editorFont(bool def)
 {
     QFont font("Consolas", 9);
     font.setStyleHint(QFont::TypeWriter);
     font.setStyleStrategy(QFont::PreferAntialias);
+
+    if (def)
+    {
+        return font;
+    }
 
     return loadFont("Editor", font);
 }

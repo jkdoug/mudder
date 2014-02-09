@@ -9,9 +9,6 @@ ConfigScripting::ConfigScripting(Profile *profile, ConfigWidget *parent) :
     m_profile(profile)
 {
     ui->setupUi(this);
-
-    connect(parent, SIGNAL(loading()), SLOT(load()));
-    connect(parent, SIGNAL(saving()), SLOT(save()));
 }
 
 ConfigScripting::~ConfigScripting()

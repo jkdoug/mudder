@@ -68,12 +68,6 @@ ConfigWidget::ConfigWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ConfigWidget)
 {
-    m_loading = false;
-    m_saving = false;
-    m_validating = false;
-    m_applying = false;
-    m_discarding = false;
-
     ui->setupUi(this);
 
     ui->stack->setCurrentIndex(-1);
@@ -218,36 +212,22 @@ void ConfigWidget::setIconSize(const QSize &size)
 
 void ConfigWidget::load()
 {
-    if (m_loading)
+    for (int w = 0; w < ui->stack->count(); w++)
     {
-        return;
+        QMetaObject::invokeMethod(ui->stack->widget(w), "load");
     }
-
-    m_loading = true;
-    emit loading();
-    m_loading = false;
 }
 
 void ConfigWidget::save()
 {
-    if (m_saving)
+    for (int w = 0; w < ui->stack->count(); w++)
     {
-        return;
+        QMetaObject::invokeMethod(ui->stack->widget(w), "save");
     }
-
-    m_saving = true;
-    emit saving();
-    m_saving = false;
 }
 
 bool ConfigWidget::validate()
 {
-    if (m_validating)
-    {
-        return false;
-    }
-
-    m_validating = true;
     bool result = true;
     for (int w = 0; w < ui->stack->count(); w++)
     {
@@ -260,33 +240,14 @@ bool ConfigWidget::validate()
             break;
         }
     }
-    m_validating = false;
 
     return result;
 }
 
-void ConfigWidget::apply()
+void ConfigWidget::restoreDefaults()
 {
-    if (m_applying)
+    for (int w = 0; w < ui->stack->count(); w++)
     {
-        return;
+        QMetaObject::invokeMethod(ui->stack->widget(w), "restoreDefaults");
     }
-
-    m_applying = true;
-    emit applying(currentIndex());
-    QMetaObject::invokeMethod(currentPage(), "apply");
-    m_applying = false;
-}
-
-void ConfigWidget::discard()
-{
-    if (m_discarding)
-    {
-        return;
-    }
-
-    m_discarding = true;
-    emit discarding(currentIndex());
-    QMetaObject::invokeMethod(currentPage(), "discard");
-    m_discarding = false;
 }
