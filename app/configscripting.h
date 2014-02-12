@@ -1,8 +1,7 @@
 #ifndef CONFIGSCRIPTING_H
 #define CONFIGSCRIPTING_H
 
-#include <QWidget>
-#include "configwidget.h"
+#include "configpage.h"
 
 namespace Ui {
 class ConfigScripting;
@@ -10,7 +9,7 @@ class ConfigScripting;
 
 class Profile;
 
-class ConfigScripting : public QWidget
+class ConfigScripting : public ConfigPage
 {
     Q_OBJECT
 
@@ -18,10 +17,11 @@ public:
     explicit ConfigScripting(Profile *profile, ConfigWidget *parent = 0);
     ~ConfigScripting();
 
-private slots:
-    void load();
-    void save();
+public slots:
+    virtual void load();
+    virtual void save();
 
+protected slots:
     void on_scriptFilenameBrowse_clicked();
 
 private:

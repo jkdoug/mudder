@@ -4,7 +4,7 @@
 #include <QMessageBox>
 
 ConfigConnection::ConfigConnection(Profile *profile, ConfigWidget *parent) :
-    QWidget(parent),
+    ConfigPage(parent),
     ui(new Ui::ConfigConnection),
     m_profile(profile)
 {

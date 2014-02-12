@@ -2,8 +2,7 @@
 #define CONFIGDISPLAY_H
 
 #include <QColor>
-#include <QWidget>
-#include "configwidget.h"
+#include "configpage.h"
 
 namespace Ui {
 class ConfigDisplay;
@@ -11,7 +10,7 @@ class ConfigDisplay;
 
 class Profile;
 
-class ConfigDisplay : public QWidget
+class ConfigDisplay : public ConfigPage
 {
     Q_OBJECT
 
@@ -19,10 +18,11 @@ public:
     explicit ConfigDisplay(Profile *profile, ConfigWidget *parent = 0);
     ~ConfigDisplay();
 
-private slots:
-    void load();
-    void save();
+public slots:
+    virtual void load();
+    virtual void save();
 
+protected slots:
     void on_fgCommand_clicked();
     void on_bgCommand_clicked();
     void on_fgNote_clicked();

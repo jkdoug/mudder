@@ -4,7 +4,7 @@
 #include <QColorDialog>
 
 ConfigDisplay::ConfigDisplay(Profile *profile, ConfigWidget *parent) :
-    QWidget(parent),
+    ConfigPage(parent),
     ui(new Ui::ConfigDisplay),
     m_profile(profile)
 {

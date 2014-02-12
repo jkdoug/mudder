@@ -1,8 +1,7 @@
 #ifndef CONFIGCONNECTION_H
 #define CONFIGCONNECTION_H
 
-#include <QWidget>
-#include "configwidget.h"
+#include "configpage.h"
 
 namespace Ui {
 class ConfigConnection;
@@ -10,7 +9,7 @@ class ConfigConnection;
 
 class Profile;
 
-class ConfigConnection : public QWidget
+class ConfigConnection : public ConfigPage
 {
     Q_OBJECT
 
@@ -18,10 +17,10 @@ public:
     explicit ConfigConnection(Profile *profile, ConfigWidget *parent = 0);
     ~ConfigConnection();
 
-private slots:
-    void load();
-    void save();
-    bool validate();
+public slots:
+    virtual void load();
+    virtual void save();
+    virtual bool validate();
 
 private:
     Ui::ConfigConnection *ui;

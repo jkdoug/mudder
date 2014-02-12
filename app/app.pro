@@ -65,7 +65,8 @@ SOURCES += main.cpp\
     configdisplay.cpp \
     configlogging.cpp \
     configscripting.cpp \
-    configeditor.cpp
+    configeditor.cpp \
+    configpage.cpp
 
 HEADERS  += mainwindow.h \
     profile.h \
@@ -121,7 +122,8 @@ HEADERS  += mainwindow.h \
     configdisplay.h \
     configlogging.h \
     configscripting.h \
-    configeditor.h
+    configeditor.h \
+    configpage.h
 
 FORMS    += mainwindow.ui \
     console.ui \

@@ -1,14 +1,13 @@
 #ifndef CONFIGEDITOR_H
 #define CONFIGEDITOR_H
 
-#include <QWidget>
-#include "configwidget.h"
+#include "configpage.h"
 
 namespace Ui {
 class ConfigEditor;
 }
 
-class ConfigEditor : public QWidget
+class ConfigEditor : public ConfigPage
 {
     Q_OBJECT
 
@@ -16,11 +15,10 @@ public:
     explicit ConfigEditor(ConfigWidget *parent = 0);
     ~ConfigEditor();
 
-private slots:
-    void load();
-    void save();
-    bool validate();
-    void restoreDefaults();
+public slots:
+    virtual void load();
+    virtual void save();
+    virtual void restoreDefaults();
 
 private:
     Ui::ConfigEditor *ui;

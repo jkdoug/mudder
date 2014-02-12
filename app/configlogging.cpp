@@ -5,7 +5,7 @@
 #include <QMessageBox>
 
 ConfigLogging::ConfigLogging(Profile *profile, ConfigWidget *parent) :
-    QWidget(parent),
+    ConfigPage(parent),
     ui(new Ui::ConfigLogging),
     m_profile(profile)
 {

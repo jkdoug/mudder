@@ -23,6 +23,7 @@
 
 #include "configwidget.h"
 #include "ui_configwidget.h"
+#include "configpage.h"
 #include <QAbstractItemDelegate>
 #include <QDebug>
 #include <QPainter>
@@ -91,14 +92,14 @@ int ConfigWidget::count() const
     return ui->stack->count();
 }
 
-QWidget * ConfigWidget::page(int index) const
+ConfigPage *ConfigWidget::page(int index) const
 {
-    return ui->stack->widget(index);
+    return qobject_cast<ConfigPage *>(ui->stack->widget(index));
 }
 
-QWidget * ConfigWidget::currentPage() const
+ConfigPage * ConfigWidget::currentPage() const
 {
-    return ui->stack->currentWidget();
+    return qobject_cast<ConfigPage *>(ui->stack->currentWidget());
 }
 
 QSize ConfigWidget::iconSize() const
@@ -106,34 +107,34 @@ QSize ConfigWidget::iconSize() const
     return ui->list->iconSize();
 }
 
-void ConfigWidget::addPage(QWidget *group, const QIcon &icon, const QString &name)
+void ConfigWidget::addPage(ConfigPage *page, const QIcon &icon, const QString &name)
 {
-    insertPage(count(), group, icon, name);
+    insertPage(count(), page, icon, name);
 }
 
-void ConfigWidget::insertPage(int index, QWidget *group, const QIcon &icon, const QString &name)
+void ConfigWidget::insertPage(int index, ConfigPage *page, const QIcon &icon, const QString &name)
 {
-    ui->stack->insertWidget(index, group);
+    ui->stack->insertWidget(index, page);
     QListWidgetItem *item = new QListWidgetItem;
 
     if (name.isNull())
     {
-        item->setText(group->windowTitle());
+        item->setText(page->windowTitle());
     }
     else
     {
         item->setText(name);
-        group->setWindowTitle(name);
+        page->setWindowTitle(name);
     }
 
     if (icon.isNull())
     {
-        item->setIcon(group->windowIcon());
+        item->setIcon(page->windowIcon());
     }
     else
     {
         item->setIcon(icon);
-        group->setWindowIcon(icon);
+        page->setWindowIcon(icon);
     }
 
     ui->list->insertItem(index, item);
@@ -142,7 +143,7 @@ void ConfigWidget::insertPage(int index, QWidget *group, const QIcon &icon, cons
         ui->title->setText(ui->list->item(index)->text());
         setCurrentIndex(0);
     }
-    group->installEventFilter(this);
+    page->installEventFilter(this);
 }
 
 bool ConfigWidget::eventFilter(QObject *object, QEvent *event)
@@ -212,28 +213,26 @@ void ConfigWidget::setIconSize(const QSize &size)
 
 void ConfigWidget::load()
 {
-    for (int w = 0; w < ui->stack->count(); w++)
+    for (int w = 0; w < count(); w++)
     {
-        QMetaObject::invokeMethod(ui->stack->widget(w), "load");
+        page(w)->load();
     }
 }
 
 void ConfigWidget::save()
 {
-    for (int w = 0; w < ui->stack->count(); w++)
+    for (int w = 0; w < count(); w++)
     {
-        QMetaObject::invokeMethod(ui->stack->widget(w), "save");
+        page(w)->save();
     }
 }
 
 bool ConfigWidget::validate()
 {
     bool result = true;
-    for (int w = 0; w < ui->stack->count(); w++)
+    for (int w = 0; w < count(); w++)
     {
-        bool ret = true;
-        QMetaObject::invokeMethod(ui->stack->widget(w), "validate", Qt::DirectConnection,
-                                  Q_RETURN_ARG(bool, ret));
+        bool ret = page(w)->validate();
         if (!ret)
         {
             result = false;
@@ -246,8 +245,8 @@ bool ConfigWidget::validate()
 
 void ConfigWidget::restoreDefaults()
 {
-    for (int w = 0; w < ui->stack->count(); w++)
+    for (int w = 0; w < count(); w++)
     {
-        QMetaObject::invokeMethod(ui->stack->widget(w), "restoreDefaults");
+        page(w)->restoreDefaults();
     }
 }

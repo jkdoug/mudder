@@ -4,7 +4,7 @@
 #include <QFileDialog>
 
 ConfigScripting::ConfigScripting(Profile *profile, ConfigWidget *parent) :
-    QWidget(parent),
+    ConfigPage(parent),
     ui(new Ui::ConfigScripting),
     m_profile(profile)
 {

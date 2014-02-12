@@ -4,7 +4,7 @@
 #include "options.h"
 
 ConfigEditor::ConfigEditor(ConfigWidget *parent) :
-    QWidget(parent),
+    ConfigPage(parent),
     ui(new Ui::ConfigEditor)
 {
     ui->setupUi(this);
@@ -20,11 +20,6 @@ ConfigEditor::ConfigEditor(ConfigWidget *parent) :
 ConfigEditor::~ConfigEditor()
 {
     delete ui;
-}
-
-bool ConfigEditor::validate()
-{
-    return true;
 }
 
 void ConfigEditor::load()

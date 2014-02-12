@@ -31,6 +31,8 @@ namespace Ui {
 class ConfigWidget;
 }
 
+class ConfigPage;
+
 class ConfigWidget : public QWidget
 {
     Q_OBJECT
@@ -46,13 +48,13 @@ public:
     int currentIndex() const;
     int count() const;
 
-    QWidget * page(int index) const;
-    QWidget * currentPage() const;
+    ConfigPage * page(int index) const;
+    ConfigPage * currentPage() const;
 
     QSize iconSize() const;
 
-    void addPage(QWidget *page, const QIcon &icon = QIcon(), const QString &name = QString());
-    void insertPage(int index, QWidget *page, const QIcon &icon = QIcon(), const QString &name = QString());
+    void addPage(ConfigPage *page, const QIcon &icon = QIcon(), const QString &name = QString());
+    void insertPage(int index, ConfigPage *page, const QIcon &icon = QIcon(), const QString &name = QString());
 
     bool eventFilter(QObject *object, QEvent *event);
 
