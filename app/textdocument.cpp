@@ -410,10 +410,14 @@ void TextDocument::append(const QString &text, const QColor &fg, const QColor &b
     {
         QChar ch(text.at(n));
 
-        if (CRLF.contains(ch) || m_isPrompt)
+        if (CRLF.contains(ch))
         {
             newLine();
             continue;
+        }
+        else if (m_isPrompt)
+        {
+            newLine();
         }
 
         m_cursor->insertText(ch);
