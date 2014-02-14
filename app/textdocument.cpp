@@ -33,8 +33,12 @@ TextDocument::TextDocument(QObject *parent) :
     m_bgHighColorMode = false;
     m_isPrompt = false;
 
+    m_formatCommand.setForeground(Qt::darkYellow);
+    m_formatCommand.setBackground(Qt::black);
+
     m_formatDefault.setFont(QFont("Consolas", 10));
     m_formatDefault.setForeground(Qt::lightGray);
+    m_formatDefault.setBackground(Qt::black);
 
     m_formatCurrent = m_formatDefault;
 
