@@ -28,10 +28,14 @@
 
 QString HtmlFormattingEngine::initializeString() const
 {
-    return QString("<html><head><title>%1 - %2</title></head>\n"
-                   "<body><font face=\"Arial\">\n"
-                   "<table width=\"100%\" style=\"table-layout:auto; margin: auto; border-width:thin thin thin thin; border-color:#000000;\">\n"
-                   "<tr><th width=\"10%\"><b>Time</b></th><th><b>Message</b></th></tr>\n")
+    return QString("<html>\n<head>\n <title>%1 - %2</title>\n <style>\n"
+                   "table { border-collapse: collapse; }\n"
+                   "th { border: 2px solid black; }\n"
+                   "td { border: 1px solid black; }\n"
+                   " </style>\n</head>\n"
+                   "<body>\n<font face=\"Arial\">\n"
+                   " <table width=\"100%\" style=\"table-layout:auto; margin:auto;\">\n"
+                   "  <tr><th width=\"10%\"><b>Time</b></th><th><b>Message</b></th></tr>\n")
                    .arg(QCoreApplication::applicationName())
                    .arg(QDate::currentDate().toString());
 }
@@ -40,50 +44,46 @@ QString HtmlFormattingEngine::formatMessage(Logger::MessageType type, const QLis
 {
     if (messages.isEmpty())
     {
-        return "";
+        return QString();
     }
 
-    QString timeString(QTime::currentTime().toString("hh:mm:ss.zzz"));
-    QString formattedString(FormattingEngine::escape(messages.front().toString()));
-    QString message;
+    QString color;
     switch (type)
     {
     case Logger::Trace:
-        message = QString("<td>%1</td><td><font color='gray'>%2</font></td>").arg(timeString).arg(formattedString);
-        break;
-
     case Logger::Debug:
-        message = QString("<td>%1</td><td><font color='gray'>%2</font></td>").arg(timeString).arg(formattedString);
+        color = "gray";
         break;
 
     case Logger::Warning:
-        message = QString("<td>%1</td><td><font color='orange'>%2</font></td>").arg(timeString).arg(formattedString);
+        color = "orange";
         break;
 
     case Logger::Info:
-        message = QString("<td>%1</td><td><font color='black'>%2</font></td>").arg(timeString).arg(formattedString);
+        color = "black";
         break;
 
     case Logger::Error:
-        message = QString("<td>%1</td><td><font color='red'>%2</font></td>").arg(timeString).arg(formattedString);
-        break;
-
-    case Logger::Fatal:
-        message = QString("<td>%1</td><td><font color='red'>%2</font></td>").arg(timeString).arg(formattedString);
+        color = "red";
         break;
 
     default:
         return QString();
     }
 
-    message.prepend("<tr>");
-    message.append("</tr>\n");
-    return message;
+    QStringList formattedMessages;
+    foreach (QVariant message, messages)
+    {
+        formattedMessages << FormattingEngine::escape(message.toString());
+    }
+
+    return QString("  <tr><td>%1</td><td>%2</td></tr>\n")
+            .arg(QTime::currentTime().toString("hh:mm:ss.zzz"))
+            .arg(formattedMessages.join("<li>"));
 }
 
 QString HtmlFormattingEngine::finalizeString() const
 {
-    return QString("</table>%2End of session log: %1</body></html>\n")
-            .arg(QDateTime::currentDateTime().toString())
-            .arg(endOfLine());
+    return QString("</table>\n<br>End of session log: %1\n</font>\n</body>\n</html>\n")
+            .arg(QDateTime::currentDateTime().toString());
 }
