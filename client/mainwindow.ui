@@ -6,12 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>600</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Mudder</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="client.qrc">
+    <normaloff>:/icons/app</normaloff>:/icons/app</iconset>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonFollowStyle</enum>
   </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
@@ -19,7 +26,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>600</width>
      <height>21</height>
     </rect>
    </property>
@@ -30,12 +37,22 @@
     <property name="separatorsCollapsible">
      <bool>true</bool>
     </property>
+    <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
+    <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+    <addaction name="actionAboutQt"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -44,31 +61,121 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionNew"/>
+   <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
+   <addaction name="actionExit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/file_open</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open an existing file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionSave">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="client.qrc">
+     <normaloff>:/icons/file_save</normaloff>
+     <normalon>icons/file_save.png</normalon>:/icons/file_save</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the current file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionExit">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/app_exit</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>E&amp;xit</string>
+   </property>
+   <property name="toolTip">
+    <string>Exit the application</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::QuitRole</enum>
+   </property>
+  </action>
+  <action name="actionSaveAs">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/file_save_as</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Save &amp;As...</string>
+   </property>
+   <property name="toolTip">
+    <string>Save file with a new name</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/file_new</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>&amp;New...</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+   <property name="toolTip">
+    <string>About this application</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutRole</enum>
+   </property>
+  </action>
+  <action name="actionAboutQt">
+   <property name="text">
+    <string>About &amp;Qt...</string>
+   </property>
+   <property name="toolTip">
+    <string>About the Qt library</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutQtRole</enum>
    </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="client.qrc"/>
+ </resources>
  <connections/>
 </ui>

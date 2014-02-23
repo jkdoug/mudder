@@ -41,12 +41,11 @@ int main(int argc, char *argv[])
 
     LOG->setGlobalLogLevel(Logger::Trace);
 
-    LOG->newFileEngine("XML File Example", "mudder_log.xml");
-    LOG->newFileEngine("Plain File Example", "mudder_log.txt");
-    LOG->newFileEngine("HTML File Example", "mudder_log.html");
-    LOG->newFileEngine("Rich Text File Example", "mudder_log.rtf");
+    LOG->newFileEngine("Mudder XML", "mudder_log.xml");
+    LOG->newFileEngine("Mudder Text", "mudder_log.txt");
+    LOG->newFileEngine("Mudder HTML", "mudder_log.html");
 
-    LOG->toggleQtMsgEngine(true);
+    LOG->toggleConsoleEngine(true);
 
     MainWindow w;
     w.show();

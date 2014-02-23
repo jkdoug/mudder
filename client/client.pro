@@ -23,8 +23,8 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../lua52/release/ -llu
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../lua52/debug/ -llua52
 else:unix: LIBS += -L$$OUT_PWD/../lua52/ -llua52
 
-INCLUDEPATH += $$PWD/../lua52
-DEPENDPATH += $$PWD/../lua52
+INCLUDEPATH += $$PWD/../lua52/src
+DEPENDPATH += $$PWD/../lua52/src
 
 win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../lua52/release/lua52.lib
 else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../lua52/debug/lua52.lib
@@ -55,3 +55,6 @@ DEPENDPATH += $$PWD/../logging
 win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../logging/release/logging.lib
 else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../logging/debug/logging.lib
 else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../logging/liblogging.a
+
+RESOURCES += \
+    client.qrc

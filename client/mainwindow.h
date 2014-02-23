@@ -44,9 +44,13 @@ private slots:
     void onBusyStateChanged(bool busy);
     void onRecentFile(const QString &fileName);
     void onRecentFilesChanged(const QStringList &fileNames);
+    void on_actionNew_triggered();
     void on_actionOpen_triggered();
     void on_actionSave_triggered();
+    void on_actionSaveAs_triggered();
     void on_actionExit_triggered();
+    void on_actionAbout_triggered();
+    void on_actionAboutQt_triggered();
 
 private:
     void initializeRecentFiles();

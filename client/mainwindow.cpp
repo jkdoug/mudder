@@ -23,24 +23,28 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "lua.h"
 #include "logger.h"
 #include "coreapplication.h"
 #include <QtDebug>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMessageBox>
 #include <QThread>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    LOG_DEBUG(tr("Setting up main window UI."));
+
     ui->setupUi(this);
 
     connect(CoreApplication::instance(), SIGNAL(busyStateChanged(bool)), SLOT(onBusyStateChanged(bool)));
 
     initializeRecentFiles();
 
-    LOG_INFO(tr("Main window initialized."));
+    LOG_DEBUG(tr("Main window initialized."));
 }
 
 MainWindow::~MainWindow()
@@ -52,7 +56,7 @@ void MainWindow::onBusyStateChanged(bool busy)
 {
     if (busy)
     {
-        CoreApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+        CoreApplication::setOverrideCursor(Qt::WaitCursor);
     }
     else
     {
@@ -64,7 +68,7 @@ void MainWindow::onRecentFile(const QString &fileName)
 {
     // TODO
 
-    LOG_INFO("onRecentFile", fileName);
+    LOG_INFO("Opening a file from the list of recent files:", fileName);
 
     SETTINGS->removeRecentFile(fileName);
     SETTINGS->addRecentFile(fileName);
@@ -95,6 +99,11 @@ void MainWindow::onRecentFilesChanged(const QStringList &fileNames)
     }
 }
 
+void MainWindow::on_actionNew_triggered()
+{
+    LOG_INFO("Creating a new file...");
+}
+
 void MainWindow::on_actionOpen_triggered()
 {
     QString fileName(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), tr("Mudder profiles (*.mp);;Lua script files (*.lua);;All files (*)")));
@@ -105,7 +114,7 @@ void MainWindow::on_actionOpen_triggered()
 
     // TODO
 
-    LOG_INFO("on_actionOpen_triggered", fileName);
+    LOG_INFO("Opening a file:", fileName);
 
     SETTINGS->removeRecentFile(fileName);
     SETTINGS->addRecentFile(fileName);
@@ -115,17 +124,51 @@ void MainWindow::on_actionSave_triggered()
 {
     // TODO
 
-    LOG_INFO("on_actionSave_triggered");
+    LOG_INFO("Saving the current file");
 
 //    CoreApplication::setApplicationBusy(true);
 //    QThread::sleep(7);
 //    CoreApplication::setApplicationBusy(false);
 }
 
+void MainWindow::on_actionSaveAs_triggered()
+{
+    QString fileName(QFileDialog::getOpenFileName(this, tr("Save File As"), QString(), tr("Mudder profiles (*.mp);;All files (*)")));
+    if (fileName.isEmpty())
+    {
+        return;
+    }
+
+    // TODO
+
+    LOG_INFO("Saving the current file to a new location:", fileName);
+
+    SETTINGS->removeRecentFile(fileName);
+    SETTINGS->addRecentFile(fileName);
+}
+
 void MainWindow::on_actionExit_triggered()
 {
     LOG_INFO("Main window closing.");
     close();
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QString msg(tr("<p><b>%1, Version %2</b><br/>Compiled %3 %4</p>")
+                .arg(QApplication::applicationDisplayName())
+                .arg(QApplication::applicationVersion())
+                .arg(__DATE__).arg(__TIME__));
+    msg += QString("<p>%1<br/>%2</p>").arg("Copyright (C) 2014 Jason K. Douglas").arg("<a href='mailto:jkdoug@gmail.com'>jkdoug@gmail.com</a>");
+    msg += QString("<p>%1<br/>%2</p>").arg(LUA_COPYRIGHT).arg(LUA_AUTHORS);
+    msg += QString("<p>%1</p>").arg("Portions inspired by <a href='https://github.com/JPNaude'>Jaco Naude</a>");
+
+    QMessageBox::about(this, tr("About"), msg);
+}
+
+void MainWindow::on_actionAboutQt_triggered()
+{
+    CoreApplication::aboutQt();
 }
 
 void MainWindow::initializeRecentFiles()

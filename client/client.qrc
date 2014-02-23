@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="app_exit">icons/app_exit.png</file>
+        <file alias="file_new">icons/file_new.png</file>
+        <file alias="file_open">icons/file_open.png</file>
+        <file alias="file_save">icons/file_save.png</file>
+        <file alias="file_save_as">icons/file_save_as.png</file>
+        <file alias="app">icons/mudder.png</file>
+    </qresource>
+</RCC>
