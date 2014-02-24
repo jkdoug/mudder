@@ -54,6 +54,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_windowActions = new QActionGroup(this);
 
+    restoreGeometry(SETTINGS->value("MainWindow/Geometry").toByteArray());
+    restoreState(SETTINGS->value("MainWindow/State").toByteArray());
+
     LOG_DEBUG(tr("Main window initialized."));
 }
 
@@ -71,6 +74,9 @@ void MainWindow::closeEvent(QCloseEvent *e)
     }
     else
     {
+        SETTINGS->setValue("MainWindow/Geometry", saveGeometry());
+        SETTINGS->setValue("MainWindow/State", saveState());
+
         e->accept();
     }
 }

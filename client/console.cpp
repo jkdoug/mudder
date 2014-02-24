@@ -25,6 +25,7 @@
 #include "ui_console.h"
 #include "coreapplication.h"
 #include "logger.h"
+#include "profile.h"
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -33,6 +34,8 @@ Console::Console(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Console)
 {
+    LOG_DEBUG("Setting up a new console window.");
+
     ui->setupUi(this);
 
     m_action = new QAction(this);
@@ -42,8 +45,14 @@ Console::Console(QWidget *parent) :
 
     m_isUntitled = true;
 
+    m_profile = new Profile(this);
+    connect(m_profile, SIGNAL(optionsChanged()), SLOT(contentsModified()));
+    connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
+
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
+
+    LOG_DEBUG("Console window initialized.");
 }
 
 Console::~Console()
@@ -65,6 +74,8 @@ void Console::newFile()
 
 bool Console::save()
 {
+    LOG_TRACE("Console::save", QString("Untitled: %1").arg(m_isUntitled), m_fileName);
+
     if (m_isUntitled)
     {
         return saveAs();
@@ -77,6 +88,7 @@ bool Console::saveAs()
 {
     QString fileName(QFileDialog::getSaveFileName(this, tr("Save Profile"),
                                                   m_fileName, tr("Mudder Profiles (*.mp);;All files (*)")));
+    LOG_TRACE("Console::saveAs", fileName);
     if (fileName.isEmpty())
     {
         return false;
@@ -89,6 +101,7 @@ Console * Console::open(QWidget *parent)
 {
     QString fileName(QFileDialog::getOpenFileName(parent, tr("Open Profile"),
                                                   QString(), tr("Mudder profiles (*.mp);;All files (*)")));
+    LOG_TRACE("Console::open", fileName);
     if (fileName.isEmpty())
     {
         return 0;
@@ -99,6 +112,8 @@ Console * Console::open(QWidget *parent)
 
 Console * Console::openFile(const QString &fileName, QWidget *parent)
 {
+    LOG_TRACE("Console::openFile", fileName);
+
     Console *console = new Console(parent);
     if (console->readFile(fileName))
     {
@@ -112,6 +127,8 @@ Console * Console::openFile(const QString &fileName, QWidget *parent)
 
 void Console::closeEvent(QCloseEvent *e)
 {
+    LOG_TRACE("Console::closeEvent");
+
     if (okToContinue())
     {
         e->accept();
@@ -120,6 +137,13 @@ void Console::closeEvent(QCloseEvent *e)
     {
         e->ignore();
     }
+}
+
+void Console::contentsModified()
+{
+    LOG_TRACE("Console::contentsModified");
+
+    setWindowModified(true);
 }
 
 bool Console::okToContinue()
@@ -144,6 +168,8 @@ bool Console::okToContinue()
 
 bool Console::saveFile(const QString &fileName)
 {
+    LOG_TRACE("Console::saveFile", fileName);
+
     if (writeFile(fileName))
     {
         setCurrentFile(fileName);
@@ -155,6 +181,8 @@ bool Console::saveFile(const QString &fileName)
 
 void Console::setCurrentFile(const QString &fileName)
 {
+    LOG_TRACE("Console::setCurrentFile", fileName);
+
     m_fileName = fileName;
     m_isUntitled = false;
 
@@ -166,6 +194,8 @@ void Console::setCurrentFile(const QString &fileName)
 
 bool Console::readFile(const QString &fileName)
 {
+    LOG_TRACE("Console::readFile", fileName);
+
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -173,6 +203,8 @@ bool Console::readFile(const QString &fileName)
                              tr("Cannot read file %1:\n%2.")
                              .arg(file.fileName())
                              .arg(file.errorString()));
+
+        LOG_WARNING("Cannot read profile:", fileName, file.errorString());
         return false;
     }
 
@@ -195,6 +227,8 @@ bool Console::writeFile(const QString &fileName)
                              tr("Cannot write file %1:\n%2.")
                              .arg(file.fileName())
                              .arg(file.errorString()));
+
+        LOG_WARNING("Cannot write profile:", fileName, file.errorString());
         return false;
     }
 

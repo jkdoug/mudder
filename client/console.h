@@ -31,6 +31,8 @@ namespace Ui {
 class Console;
 }
 
+class Profile;
+
 class Console : public QWidget
 {
     Q_OBJECT
@@ -52,6 +54,9 @@ public:
 protected:
     void closeEvent(QCloseEvent *e);
 
+private slots:
+    void contentsModified();
+
 private:
     bool okToContinue();
     bool saveFile(const QString &fileName);
@@ -64,6 +69,8 @@ private:
     QAction *m_action;
     QString m_fileName;
     bool m_isUntitled;
+
+    Profile *m_profile;
 };
 
 #endif // CONSOLE_H

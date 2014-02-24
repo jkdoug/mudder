@@ -13,12 +13,15 @@ DEFINES += CORE_LIBRARY
 
 SOURCES += \
     coresettings.cpp \
-    coreapplication.cpp
+    coreapplication.cpp \
+    xmlobject.cpp
 
 HEADERS +=\
         core_global.h \
     coresettings.h \
-    coreapplication.h
+    coreapplication.h \
+    xmlobject.h \
+    xmlerror.h
 
 unix {
     target.path = /usr/lib

@@ -14,13 +14,19 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    console.cpp
+    console.cpp \
+    profile.cpp
 
 HEADERS  += mainwindow.h \
-    console.h
+    console.h \
+    profile.h
 
 FORMS    += mainwindow.ui \
     console.ui
+
+RESOURCES += \
+    client.qrc
+
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../lua52/release/ -llua52
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../lua52/debug/ -llua52
@@ -58,6 +64,3 @@ DEPENDPATH += $$PWD/../logging
 win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../logging/release/logging.lib
 else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../logging/debug/logging.lib
 else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../logging/liblogging.a
-
-RESOURCES += \
-    client.qrc
