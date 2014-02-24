@@ -250,6 +250,9 @@
    <property name="shortcut">
     <string>Ctrl+W</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
   </action>
   <action name="actionCloseAll">
    <property name="text">
@@ -257,6 +260,9 @@
    </property>
    <property name="toolTip">
     <string>Close all open windows</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="actionNext">
