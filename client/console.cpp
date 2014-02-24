@@ -24,6 +24,7 @@
 #include "console.h"
 #include "ui_console.h"
 #include "coreapplication.h"
+#include "logger.h"
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -58,6 +59,8 @@ void Console::newFile()
     setWindowTitle(m_fileName + "[*]");
     m_action->setText(m_fileName);
     m_isUntitled = true;
+
+    LOG_INFO("Created a new profile:", m_fileName);
 }
 
 bool Console::save()
@@ -175,6 +178,8 @@ bool Console::readFile(const QString &fileName)
 
     CoreApplication::setApplicationBusy(true);
 
+    LOG_INFO("Reading profile:", fileName);
+
     // TODO: read profile
 
     CoreApplication::setApplicationBusy(false);
@@ -194,6 +199,8 @@ bool Console::writeFile(const QString &fileName)
     }
 
     CoreApplication::setApplicationBusy(true);
+
+    LOG_INFO("Writing profile:", fileName);
 
     // TODO: write profile
 

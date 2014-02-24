@@ -77,6 +77,9 @@
   <property name="windowTitle">
    <string>Console</string>
   </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
+  </property>
  </widget>
  <resources/>
  <connections/>

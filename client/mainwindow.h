@@ -25,6 +25,7 @@
 #define MAINWINDOW_H
 
 #include <QActionGroup>
+#include <QCloseEvent>
 #include <QMainWindow>
 #include <QSignalMapper>
 #include "coresettings.h"
@@ -43,6 +44,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+protected:
+    void closeEvent(QCloseEvent *e);
+
 private slots:
     void onBusyStateChanged(bool busy);
     void onRecentFile(const QString &fileName);
@@ -51,15 +55,21 @@ private slots:
     void on_actionOpen_triggered();
     void on_actionSave_triggered();
     void on_actionSaveAs_triggered();
+    void on_actionClose_triggered();
+    void on_actionCloseAll_triggered();
+    void on_actionNext_triggered();
+    void on_actionPrevious_triggered();
     void on_actionExit_triggered();
     void on_actionAbout_triggered();
     void on_actionAboutQt_triggered();
+
+    void updateActions();
 
 private:
     void initializeRecentFiles();
 
     void newConsole();
-    void openConsole();
+    void openConsole(const QString &fileName = QString());
     void saveConsole();
     void addConsole(Console *console);
     Console * activeConsole();

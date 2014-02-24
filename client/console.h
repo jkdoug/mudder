@@ -47,6 +47,7 @@ public:
     static Console * openFile(const QString &fileName, QWidget *parent = 0);
 
     QAction * windowAction() const { return m_action; }
+    const QString & fileName() const { return m_fileName; }
 
 protected:
     void closeEvent(QCloseEvent *e);

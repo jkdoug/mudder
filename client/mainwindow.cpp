@@ -42,6 +42,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
+    QTabBar *mdiTabBar = ui->mdiArea->findChild<QTabBar *>();
+    mdiTabBar->setExpanding(false);
+    mdiTabBar->setIconSize(QSize(0, 0));
+
+    connect(ui->mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(updateActions()));
+
     connect(CoreApplication::instance(), SIGNAL(busyStateChanged(bool)), SLOT(onBusyStateChanged(bool)));
 
     initializeRecentFiles();
@@ -54,6 +60,19 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    ui->mdiArea->closeAllSubWindows();
+    if (!ui->mdiArea->subWindowList().isEmpty())
+    {
+        e->ignore();
+    }
+    else
+    {
+        e->accept();
+    }
 }
 
 void MainWindow::onBusyStateChanged(bool busy)
@@ -70,12 +89,7 @@ void MainWindow::onBusyStateChanged(bool busy)
 
 void MainWindow::onRecentFile(const QString &fileName)
 {
-    // TODO
-
-    LOG_INFO("Opening a file from the list of recent files:", fileName);
-
-    SETTINGS->removeRecentFile(fileName);
-    SETTINGS->addRecentFile(fileName);
+    openConsole(fileName);
 }
 
 void MainWindow::onRecentFilesChanged(const QStringList &fileNames)
@@ -105,51 +119,48 @@ void MainWindow::onRecentFilesChanged(const QStringList &fileNames)
 
 void MainWindow::on_actionNew_triggered()
 {
-    LOG_INFO("Creating a new file...");
     newConsole();
 }
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString fileName(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), tr("Mudder profiles (*.mp);;Lua script files (*.lua);;All files (*)")));
-    if (fileName.isEmpty())
-    {
-        return;
-    }
-
-    // TODO
-
-    LOG_INFO("Opening a file:", fileName);
-
-    SETTINGS->removeRecentFile(fileName);
-    SETTINGS->addRecentFile(fileName);
+    openConsole();
 }
 
 void MainWindow::on_actionSave_triggered()
 {
-    // TODO
-
-    LOG_INFO("Saving the current file");
-
-//    CoreApplication::setApplicationBusy(true);
-//    QThread::sleep(7);
-//    CoreApplication::setApplicationBusy(false);
+    saveConsole();
 }
 
 void MainWindow::on_actionSaveAs_triggered()
 {
-    QString fileName(QFileDialog::getOpenFileName(this, tr("Save File As"), QString(), tr("Mudder profiles (*.mp);;All files (*)")));
-    if (fileName.isEmpty())
+    if (activeConsole())
     {
-        return;
+        if (activeConsole()->saveAs())
+        {
+            SETTINGS->addRecentFile(activeConsole()->fileName());
+        }
     }
+}
 
-    // TODO
+void MainWindow::on_actionClose_triggered()
+{
+    ui->mdiArea->closeActiveSubWindow();
+}
 
-    LOG_INFO("Saving the current file to a new location:", fileName);
+void MainWindow::on_actionCloseAll_triggered()
+{
+    ui->mdiArea->closeAllSubWindows();
+}
 
-    SETTINGS->removeRecentFile(fileName);
-    SETTINGS->addRecentFile(fileName);
+void MainWindow::on_actionNext_triggered()
+{
+    ui->mdiArea->activateNextSubWindow();
+}
+
+void MainWindow::on_actionPrevious_triggered()
+{
+    ui->mdiArea->activatePreviousSubWindow();
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -174,6 +185,22 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_actionAboutQt_triggered()
 {
     CoreApplication::aboutQt();
+}
+
+void MainWindow::updateActions()
+{
+    bool hasConsole = activeConsole() != 0;
+    bool modified = hasConsole && activeConsole()->isWindowModified();
+
+    ui->actionSave->setEnabled(hasConsole && modified);
+    ui->actionSaveAs->setEnabled(hasConsole);
+    ui->actionClose->setEnabled(hasConsole);
+    ui->actionCloseAll->setEnabled(hasConsole);
+
+    if (hasConsole)
+    {
+        activeConsole()->windowAction()->setChecked(true);
+    }
 }
 
 void MainWindow::initializeRecentFiles()
@@ -204,11 +231,22 @@ void MainWindow::newConsole()
     addConsole(console);
 }
 
-void MainWindow::openConsole()
+void MainWindow::openConsole(const QString &fileName)
 {
-    Console *console = new Console; // Console::open(this);
+    Console *console = 0;
+    if (fileName.isEmpty())
+    {
+        console = Console::open(this);
+    }
+    else
+    {
+        console = Console::openFile(fileName, this);
+    }
+
     if (console)
     {
+        SETTINGS->addRecentFile(console->fileName());
+
         addConsole(console);
     }
 }
@@ -236,5 +274,6 @@ Console * MainWindow::activeConsole()
     {
         return qobject_cast<Console *>(subWindow->widget());
     }
+
     return 0;
 }
