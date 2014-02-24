@@ -26,9 +26,11 @@
 #include "lua.h"
 #include "logger.h"
 #include "coreapplication.h"
+#include "console.h"
 #include <QtDebug>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QThread>
 
@@ -43,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(CoreApplication::instance(), SIGNAL(busyStateChanged(bool)), SLOT(onBusyStateChanged(bool)));
 
     initializeRecentFiles();
+
+    m_windowActions = new QActionGroup(this);
 
     LOG_DEBUG(tr("Main window initialized."));
 }
@@ -102,6 +106,7 @@ void MainWindow::onRecentFilesChanged(const QStringList &fileNames)
 void MainWindow::on_actionNew_triggered()
 {
     LOG_INFO("Creating a new file...");
+    newConsole();
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -190,4 +195,46 @@ void MainWindow::initializeRecentFiles()
     connect(SETTINGS, SIGNAL(recentFilesChanged(QStringList)), SLOT(onRecentFilesChanged(QStringList)));
 
     onRecentFilesChanged(SETTINGS->recentFileList());
+}
+
+void MainWindow::newConsole()
+{
+    Console *console = new Console;
+    console->newFile();
+    addConsole(console);
+}
+
+void MainWindow::openConsole()
+{
+    Console *console = new Console; // Console::open(this);
+    if (console)
+    {
+        addConsole(console);
+    }
+}
+
+void MainWindow::saveConsole()
+{
+    if (activeConsole())
+    {
+        activeConsole()->save();
+    }
+}
+
+void MainWindow::addConsole(Console *console)
+{
+    QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(console);
+    ui->menuWindow->addAction(console->windowAction());
+    m_windowActions->addAction(console->windowAction());
+    subWindow->showMaximized();
+}
+
+Console * MainWindow::activeConsole()
+{
+    QMdiSubWindow * subWindow = ui->mdiArea->activeSubWindow();
+    if (subWindow)
+    {
+        return qobject_cast<Console *>(subWindow->widget());
+    }
+    return 0;
 }

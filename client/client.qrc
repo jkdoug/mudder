@@ -6,5 +6,9 @@
         <file alias="file_save">icons/file_save.png</file>
         <file alias="file_save_as">icons/file_save_as.png</file>
         <file alias="app">icons/mudder.png</file>
+        <file alias="edit_copy">icons/edit_copy.png</file>
+        <file alias="edit_cut">icons/edit_cut.png</file>
+        <file alias="edit_paste">icons/edit_paste.png</file>
+        <file alias="win_close">icons/win_close.png</file>
     </qresource>
 </RCC>

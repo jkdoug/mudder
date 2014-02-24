@@ -13,11 +13,14 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    console.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    console.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    console.ui
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../lua52/release/ -llua52
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../lua52/debug/ -llua52

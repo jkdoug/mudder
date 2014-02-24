@@ -24,6 +24,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QActionGroup>
 #include <QMainWindow>
 #include <QSignalMapper>
 #include "coresettings.h"
@@ -31,6 +32,8 @@
 namespace Ui {
 class MainWindow;
 }
+
+class Console;
 
 class MainWindow : public QMainWindow
 {
@@ -55,11 +58,18 @@ private slots:
 private:
     void initializeRecentFiles();
 
+    void newConsole();
+    void openConsole();
+    void saveConsole();
+    void addConsole(Console *console);
+    Console * activeConsole();
+
 private:
     Ui::MainWindow *ui;
 
     QAction *m_recentFileActions[CoreSettings::MaxRecentFiles];
     QSignalMapper *m_recentSignalMapper;
+    QActionGroup *m_windowActions;
 };
 
 #endif // MAINWINDOW_H
