@@ -212,9 +212,24 @@ bool Console::readFile(const QString &fileName)
 
     LOG_INFO("Reading profile:", fileName);
 
-    // TODO: read profile
+    QXmlStreamReader xml(&file);
+    m_profile->fromXml(xml);
+    file.close();
 
     CoreApplication::setApplicationBusy(false);
+
+    if (m_profile->hasErrors())
+    {
+        QStringList errList;
+        foreach (XmlError *err, m_profile->errors())
+        {
+            errList << QString("Line %1, Column %2: %3").arg(err->line()).arg(err->column()).arg(err->message());
+        }
+
+        LOG_ERROR("Errors reading profile XML:", errList);
+        return false;
+    }
+
     return true;
 }
 
@@ -236,8 +251,25 @@ bool Console::writeFile(const QString &fileName)
 
     LOG_INFO("Writing profile:", fileName);
 
-    // TODO: write profile
+    QXmlStreamWriter xml(&file);
+    xml.setAutoFormatting(true);
+    xml.setAutoFormattingIndent(2);
+    m_profile->toXml(xml);
+    file.close();
 
     CoreApplication::setApplicationBusy(false);
+
+    if (m_profile->hasErrors())
+    {
+        QStringList errList;
+        foreach (XmlError *err, m_profile->errors())
+        {
+            errList << QString("Line %1, Column %2: %3").arg(err->line()).arg(err->column()).arg(err->message());
+        }
+
+        LOG_ERROR("Errors writing profile XML:", errList);
+        return false;
+    }
+
     return true;
 }

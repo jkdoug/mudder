@@ -39,7 +39,7 @@ public:
     virtual ~XmlObject();
 
     bool hasErrors() const { return !m_errors.isEmpty(); }
-    const QList<XmlError *> & errors() const { return m_errors; }
+    QList<XmlError *> errors() const { return m_errors; }
     void clear();
 
     virtual void toXml(QXmlStreamWriter &xml) = 0;

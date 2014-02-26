@@ -23,6 +23,7 @@
 
 #include "profile.h"
 #include "logger.h"
+#include "coreapplication.h"
 
 Profile::Profile(QObject *parent) :
     XmlObject(parent)
@@ -32,9 +33,25 @@ Profile::Profile(QObject *parent) :
 void Profile::toXml(QXmlStreamWriter &xml)
 {
     LOG_TRACE("Profile::toXml", xml.device()->objectName());
+
+    xml.writeStartDocument();
+
+    xml.writeStartElement("mudder");
+    xml.writeAttribute("version", CoreApplication::applicationVersion());
+    xml.writeAttribute("saved", QDateTime::currentDateTime().toString());
+
+    xml.writeStartElement("profile");
+    xml.writeEndElement();
+
+    xml.writeEndDocument();
 }
 
 void Profile::fromXml(QXmlStreamReader &xml)
 {
     LOG_TRACE("Profile::fromXml", xml.device()->objectName());
+
+    while (!xml.atEnd())
+    {
+        xml.readNext();
+    }
 }

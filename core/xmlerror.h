@@ -25,31 +25,45 @@
 #define XMLERROR_H
 
 #include "core_global.h"
+#include <QDebug>
 #include <QObject>
 #include <QString>
 
-class CORESHARED_EXPORT XmlError : public QObject
+class CORESHARED_EXPORT XmlError
 {
-    Q_OBJECT
 public:
-    explicit XmlError(QObject *parent = 0) :
-        QObject(parent),
+    XmlError() :
         m_message("Undefined error"),
         m_line(0),
         m_column(0)
     {}
+    XmlError(const XmlError &rhs)
+    {
+        m_message = rhs.m_message;
+        m_line = rhs.m_line;
+        m_column = rhs.m_column;
+    }
+    ~XmlError() {}
 
     void setMessage(const QString &message) { m_message = message; }
     const QString & message() const { return m_message; }
     void setLine(int line) { m_line = line; }
-    int line() { return m_line; }
+    int line() const { return m_line; }
     void setColumn(int column) { m_column = column; }
-    int column() { return m_column; }
+    int column() const { return m_column; }
 
 private:
     QString m_message;
     int m_line;
     int m_column;
 };
+
+inline QDebug operator<<(QDebug dbg, const XmlError &err)
+{
+    dbg.nospace() << "XmlError(" << err.line() << ":" << err.column();
+    dbg.space() << err.message();
+    dbg.nospace() << ")";
+    return dbg.maybeSpace();
+}
 
 #endif // XMLERROR_H

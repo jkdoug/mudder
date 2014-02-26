@@ -48,7 +48,7 @@ void XmlObject::clear()
 
 void XmlObject::addError(int line, int column, const QString &message)
 {
-    XmlError *err = new XmlError(this);
+    XmlError *err = new XmlError;
     err->setLine(line);
     err->setColumn(column);
     err->setMessage(message);
