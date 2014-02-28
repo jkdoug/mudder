@@ -21,38 +21,19 @@
 */
 
 
-#include "profile.h"
-#include "logger.h"
-#include "coreapplication.h"
-#include <QDateTime>
+#ifndef CONSOLEDOCUMENT_H
+#define CONSOLEDOCUMENT_H
 
-Profile::Profile(QObject *parent) :
-    XmlObject(parent)
+#include <QTextDocument>
+
+class ConsoleDocument : public QTextDocument
 {
-}
+    Q_OBJECT
+public:
+    explicit ConsoleDocument(QObject *parent = 0);
 
-void Profile::toXml(QXmlStreamWriter &xml)
-{
-    LOG_TRACE("Profile::toXml", xml.device()->objectName());
+public slots:
+    void process(const QByteArray &data);
+};
 
-    xml.writeStartDocument();
-
-    xml.writeStartElement("mudder");
-    xml.writeAttribute("version", CoreApplication::applicationVersion());
-    xml.writeAttribute("saved", QDateTime::currentDateTime().toString());
-
-    xml.writeStartElement("profile");
-    xml.writeEndElement();
-
-    xml.writeEndDocument();
-}
-
-void Profile::fromXml(QXmlStreamReader &xml)
-{
-    LOG_TRACE("Profile::fromXml", xml.device()->objectName());
-
-    while (!xml.atEnd())
-    {
-        xml.readNext();
-    }
-}
+#endif // CONSOLEDOCUMENT_H

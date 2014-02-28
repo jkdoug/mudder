@@ -25,6 +25,7 @@
 #include "ui_console.h"
 #include "coreapplication.h"
 #include "logger.h"
+#include "consoledocument.h"
 #include "profile.h"
 #include <QFileDialog>
 #include <QFileInfo>
@@ -44,6 +45,8 @@ Console::Console(QWidget *parent) :
     connect(m_action, SIGNAL(triggered()), SLOT(setFocus()));
 
     m_isUntitled = true;
+
+    m_document = new ConsoleDocument(this);
 
     m_profile = new Profile(this);
     connect(m_profile, SIGNAL(optionsChanged()), SLOT(contentsModified()));

@@ -21,38 +21,15 @@
 */
 
 
-#include "profile.h"
-#include "logger.h"
-#include "coreapplication.h"
-#include <QDateTime>
+#ifndef EDITOR_GLOBAL_H
+#define EDITOR_GLOBAL_H
 
-Profile::Profile(QObject *parent) :
-    XmlObject(parent)
-{
-}
+#include <QtCore/qglobal.h>
 
-void Profile::toXml(QXmlStreamWriter &xml)
-{
-    LOG_TRACE("Profile::toXml", xml.device()->objectName());
+#if defined(EDITOR_LIBRARY)
+#  define EDITORSHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define EDITORSHARED_EXPORT Q_DECL_IMPORT
+#endif
 
-    xml.writeStartDocument();
-
-    xml.writeStartElement("mudder");
-    xml.writeAttribute("version", CoreApplication::applicationVersion());
-    xml.writeAttribute("saved", QDateTime::currentDateTime().toString());
-
-    xml.writeStartElement("profile");
-    xml.writeEndElement();
-
-    xml.writeEndDocument();
-}
-
-void Profile::fromXml(QXmlStreamReader &xml)
-{
-    LOG_TRACE("Profile::fromXml", xml.device()->objectName());
-
-    while (!xml.atEnd())
-    {
-        xml.readNext();
-    }
-}
+#endif // EDITOR_GLOBAL_H

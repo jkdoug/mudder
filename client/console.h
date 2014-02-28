@@ -31,6 +31,7 @@ namespace Ui {
 class Console;
 }
 
+class ConsoleDocument;
 class Profile;
 
 class Console : public QWidget
@@ -70,6 +71,7 @@ private:
     QString m_fileName;
     bool m_isUntitled;
 
+    ConsoleDocument *m_document;
     Profile *m_profile;
 };
 

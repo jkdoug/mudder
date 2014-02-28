@@ -21,38 +21,40 @@
 */
 
 
-#include "profile.h"
-#include "logger.h"
-#include "coreapplication.h"
-#include <QDateTime>
+#ifndef CODEEDITORWIDGET_H
+#define CODEEDITORWIDGET_H
 
-Profile::Profile(QObject *parent) :
-    XmlObject(parent)
+#include "editor_global.h"
+#include "codeeditor.h"
+
+struct CodeEditorWidgetData;
+
+class EDITORSHARED_EXPORT CodeEditorWidget : public CodeEditor
 {
-}
+    Q_OBJECT
+public:
+    explicit CodeEditorWidget(QWidget *parent = 0);
+    ~CodeEditorWidget();
 
-void Profile::toXml(QXmlStreamWriter &xml)
-{
-    LOG_TRACE("Profile::toXml", xml.device()->objectName());
+    bool loadFile(const QString &path);
+    bool saveFile(QString path = QString());
+    bool maybeSave();
 
-    xml.writeStartDocument();
+    QString fileName() const;
 
-    xml.writeStartElement("mudder");
-    xml.writeAttribute("version", CoreApplication::applicationVersion());
-    xml.writeAttribute("saved", QDateTime::currentDateTime().toString());
+    bool isModified() const;
 
-    xml.writeStartElement("profile");
-    xml.writeEndElement();
+private slots:
+    void handleFileChange(const QString &path);
 
-    xml.writeEndDocument();
-}
+signals:
+    void fileNameChanged(const QString &path);
 
-void Profile::fromXml(QXmlStreamReader &xml)
-{
-    LOG_TRACE("Profile::fromXml", xml.device()->objectName());
+protected:
+    virtual void closeEvent(QCloseEvent *closeEvent);
 
-    while (!xml.atEnd())
-    {
-        xml.readNext();
-    }
-}
+private:
+    CodeEditorWidgetData *d;
+};
+
+#endif // CODEEDITORWIDGET_H

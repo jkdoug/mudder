@@ -6,8 +6,12 @@ SUBDIRS += \
     lua52 \
     core \
     logging \
+    editor \
     client
 
 client.depends = lua52 \
                  core \
-                 logging
+                 logging \
+                 editor
+
+editor.depends = core
