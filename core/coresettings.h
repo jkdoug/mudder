@@ -44,6 +44,8 @@ public:
     void addRecentFile(const QString &fileName);
     void removeRecentFile(const QString &fileName);
 
+    QString homePath() const;
+
 signals:
     void valueChanged(const QString &key, const QVariant &value);
     void recentFilesChanged(const QStringList &fileNames);

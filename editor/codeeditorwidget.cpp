@@ -22,146 +22,98 @@
 
 
 #include "codeeditorwidget.h"
+#include "coreapplication.h"
+#include "coresettings.h"
+#include "logger.h"
+#include "luahighlighter.h"
+#include "xmlhighlighter.h"
 #include <QApplication>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QMessageBox>
-#include <QMutex>
 
-struct CodeEditorWidgetData
-{
-    QString fileName;
-
-    QFileSystemWatcher watcher;
-    QMutex watcherMutex;
-};
+QString CodeEditorWidget::m_fileFilter(tr("Lua script files (*.lua);;XML source files (*.xml *.mp);;All files (*)"));
 
 CodeEditorWidget::CodeEditorWidget(QWidget *parent) :
     CodeEditor(parent)
 {
-    d = new CodeEditorWidgetData;
+    m_watcher = new QFileSystemWatcher(this);
 
-    connect(&d->watcher, SIGNAL(fileChanged(QString)), this, SLOT(handleFileChange(QString)));
+    connect(m_watcher, SIGNAL(fileChanged(QString)), SLOT(handleFileChange(QString)));
+    connect(document(), SIGNAL(modificationChanged(bool)), SLOT(contentsModified(bool)));
 }
 
 CodeEditorWidget::~CodeEditorWidget()
 {
-    maybeSave();
-
-    delete d;
+    delete m_watcher;
 }
 
-bool CodeEditorWidget::loadFile(const QString &path)
+void CodeEditorWidget::newFile()
 {
-    maybeSave();
+    static int fileNumber = 1;
 
-    if (path.isEmpty())
+    m_fileName = tr("document%1").arg(fileNumber++);
+    setWindowTitle(m_fileName + "[*]");
+    m_isUntitled = true;
+
+    LOG_INFO("Created a new file:", m_fileName);
+}
+
+bool CodeEditorWidget::save()
+{
+    LOG_TRACE("CodeEditorWidget::save", QString("Untitled: %1").arg(m_isUntitled), m_fileName);
+
+    if (m_isUntitled)
+    {
+        return saveAs();
+    }
+
+    return saveFile(m_fileName);
+}
+
+bool CodeEditorWidget::saveAs()
+{
+    QString fileName(QFileDialog::getSaveFileName(this, tr("Save File"), m_fileName, m_fileFilter));
+    LOG_TRACE("CodeEditorWidget::saveAs", fileName);
+    if (fileName.isEmpty())
     {
         return false;
     }
 
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        return false;
-    }
-
-    document()->setModified(false);
-    setPlainText(file.readAll());
-    setWindowModified(false);
-
-    QString previous(d->fileName);
-    d->fileName = path;
-    emit fileNameChanged(d->fileName);
-
-    if (d->watcher.files().contains(previous))
-    {
-        d->watcher.removePath(previous);
-    }
-    d->watcher.addPath(d->fileName);
-
-    return true;
+    return saveFile(fileName);
 }
 
-bool CodeEditorWidget::saveFile(QString path)
+CodeEditorWidget * CodeEditorWidget::open(QWidget *parent)
 {
-    if (path.isEmpty())
+    QString fileName(QFileDialog::getOpenFileName(parent, tr("Open File"), QString(), m_fileFilter));
+    LOG_TRACE("CodeEditorWidget::open", fileName);
+    if (fileName.isEmpty())
     {
-        path = d->fileName;
+        return 0;
     }
 
-    if (path.isEmpty())
-    {
-        return false;
-    }
-
-    if (d->watcher.files().contains(d->fileName))
-    {
-        d->watcher.removePath(d->fileName);
-    }
-
-    QFile file(path);
-    if (!file.open(QFile::WriteOnly))
-    {
-        return false;
-    }
-
-    file.write(toPlainText().toUtf8());
-    file.close();
-
-    document()->setModified(false);
-
-    d->fileName = path;
-    emit fileNameChanged(d->fileName);
-
-    d->watcher.addPath(d->fileName);
-
-    return true;
+    return openFile(fileName, parent);
 }
 
-bool CodeEditorWidget::maybeSave()
+CodeEditorWidget * CodeEditorWidget::openFile(const QString &fileName, QWidget *parent)
 {
-    if (!document()->isModified())
+    LOG_TRACE("CodeEditorWidget::openFile", fileName);
+
+    CodeEditorWidget *editor = new CodeEditorWidget(parent);
+    if (editor->readFile(fileName))
     {
-        return true;
+        editor->setCurrentFile(fileName);
+        return editor;
     }
 
-    QMessageBox::StandardButton ret;
-    if (d->fileName.isEmpty())
-    {
-        ret = QMessageBox::warning(this, tr("Code Editor"), tr("The document has been modified.\nDo you want to save your changes?"), QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    }
-    else
-    {
-        ret = QMessageBox::warning(this, tr("File Changed"), tr("The modified document is linked to the following file:\n\n%1\n\nDo you want to save your changes?").arg(d->fileName), QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    }
-
-    if (ret == QMessageBox::Save)
-    {
-        return saveFile();
-    }
-    else if (ret == QMessageBox::Cancel)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-QString CodeEditorWidget::fileName() const
-{
-    return d->fileName;
-}
-
-bool CodeEditorWidget::isModified() const
-{
-    return document()->isModified();
+    delete editor;
+    return 0;
 }
 
 void CodeEditorWidget::handleFileChange(const QString &path)
 {
-    if (!d->watcherMutex.tryLock())
+    if (!m_watcherMutex.tryLock())
     {
         return;
     }
@@ -172,19 +124,19 @@ void CodeEditorWidget::handleFileChange(const QString &path)
     QFile file(path);
     if (file.exists())
     {
-        msgBox.setText(tr("Your file has changed outside of the editor:<br><br>") + d->fileName);
+        msgBox.setText(tr("Your file has changed outside of the editor:<br><br>") + m_fileName);
         msgBox.setInformativeText(tr("Do you want to reload the file?"));
 
         int ret = msgBox.exec();
         switch (ret)
         {
         case QMessageBox::Yes:
-            document()->setModified(false);
-            loadFile(path);
+            setWindowModified(false);
+            readFile(path);
             break;
 
         case QMessageBox::No:
-            document()->setModified(true);
+            setWindowModified(true);
             break;
 
         default:
@@ -193,18 +145,18 @@ void CodeEditorWidget::handleFileChange(const QString &path)
     }
     else
     {
-        msgBox.setText(tr("Your file has been removed outside of the editor:<br><br>") + d->fileName);
+        msgBox.setText(tr("Your file has been removed outside of the editor:<br><br>") + m_fileName);
         msgBox.setInformativeText(tr("Do you want to keep this file open in the editor?"));
 
         int ret = msgBox.exec();
         switch (ret)
         {
         case QMessageBox::Yes:
-            document()->setModified(true);
+            setWindowModified(true);
             break;
 
         case QMessageBox::No:
-            document()->setModified(false);
+            setWindowModified(false);
             close();
             break;
 
@@ -213,19 +165,147 @@ void CodeEditorWidget::handleFileChange(const QString &path)
         }
     }
 
-    d->watcherMutex.unlock();
+    m_watcherMutex.unlock();
 }
 
-void CodeEditorWidget::closeEvent(QCloseEvent *closeEvent)
+void CodeEditorWidget::contentsModified(bool changed)
 {
-    if (!maybeSave())
+    setWindowModified(changed);
+}
+
+void CodeEditorWidget::closeEvent(QCloseEvent *e)
+{
+    if (!okToContinue())
     {
-        closeEvent->ignore();
+        e->ignore();
     }
     else
     {
-        document()->setModified(false);
-
-        CodeEditor::closeEvent(closeEvent);
+        e->accept();
     }
+}
+
+bool CodeEditorWidget::okToContinue()
+{
+    if (isWindowModified())
+    {
+        QMessageBox::StandardButton answer = QMessageBox::warning(this, tr("Editor"),
+            tr("The file has been modified.\nDo you want to save your changes?"),
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        if (answer == QMessageBox::Yes)
+        {
+            return save();
+        }
+        else if (answer == QMessageBox::Cancel)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool CodeEditorWidget::saveFile(const QString &fileName)
+{
+    LOG_TRACE("CodeEditorWidget::saveFile", fileName);
+
+    if (writeFile(fileName))
+    {
+        setCurrentFile(fileName);
+        return true;
+    }
+
+    return false;
+}
+
+void CodeEditorWidget::setCurrentFile(const QString &fileName)
+{
+    LOG_TRACE("CodeEditorWidget::setCurrentFile", fileName);
+
+    m_fileName = fileName;
+    m_isUntitled = false;
+
+    QString suffix(QFileInfo(fileName).suffix());
+    if (suffix.compare("lua", Qt::CaseInsensitive) == 0)
+    {
+        setSyntaxHighlighter(new LuaHighlighter);
+    }
+    else if (suffix.compare("xml", Qt::CaseInsensitive) == 0 ||
+             suffix.compare("mp", Qt::CaseInsensitive) == 0)
+    {
+        setSyntaxHighlighter(new XmlHighlighter);
+    }
+
+    setWindowTitle(QFileInfo(fileName).fileName() + "[*]");
+    setWindowModified(false);
+}
+
+bool CodeEditorWidget::readFile(const QString &fileName)
+{
+    LOG_TRACE("CodeEditorWidget::readFile", fileName);
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(this, tr("Editor"),
+                             tr("Cannot read file %1:\n%2.")
+                             .arg(file.fileName())
+                             .arg(file.errorString()));
+
+        LOG_WARNING("Cannot read file:", fileName, file.errorString());
+        return false;
+    }
+
+    CoreApplication::setApplicationBusy(true);
+
+    setPlainText(file.readAll());
+    setWindowModified(false);
+
+    QString previous(m_fileName);
+    m_fileName = fileName;
+
+    if (m_watcher->files().contains(previous))
+    {
+        m_watcher->removePath(previous);
+    }
+    m_watcher->addPath(m_fileName);
+
+    CoreApplication::setApplicationBusy(false);
+
+    return true;
+}
+
+bool CodeEditorWidget::writeFile(const QString &fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(this, tr("Editor"),
+                             tr("Cannot write file %1:\n%2.")
+                             .arg(file.fileName())
+                             .arg(file.errorString()));
+
+        LOG_WARNING("Cannot write file:", fileName, file.errorString());
+        return false;
+    }
+
+    CoreApplication::setApplicationBusy(true);
+
+    LOG_INFO("Writing file:", fileName);
+
+    if (m_watcher->files().contains(fileName))
+    {
+        m_watcher->removePath(fileName);
+    }
+
+    file.write(toPlainText().toUtf8());
+    file.close();
+
+    m_fileName = fileName;
+
+    m_watcher->addPath(m_fileName);
+
+    CoreApplication::setApplicationBusy(false);
+
+    return true;
 }

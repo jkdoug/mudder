@@ -26,8 +26,9 @@
 
 #include "editor_global.h"
 #include "codeeditor.h"
+#include <QMutex>
 
-struct CodeEditorWidgetData;
+class QFileSystemWatcher;
 
 class EDITORSHARED_EXPORT CodeEditorWidget : public CodeEditor
 {
@@ -36,25 +37,36 @@ public:
     explicit CodeEditorWidget(QWidget *parent = 0);
     ~CodeEditorWidget();
 
-    bool loadFile(const QString &path);
-    bool saveFile(QString path = QString());
-    bool maybeSave();
+    void newFile();
+    bool save();
+    bool saveAs();
 
-    QString fileName() const;
+    static CodeEditorWidget * open(QWidget *parent = 0);
+    static CodeEditorWidget * openFile(const QString &fileName, QWidget *parent = 0);
 
-    bool isModified() const;
+    const QString & fileName() const { return m_fileName; }
 
 private slots:
     void handleFileChange(const QString &path);
-
-signals:
-    void fileNameChanged(const QString &path);
+    void contentsModified(bool changed);
 
 protected:
-    virtual void closeEvent(QCloseEvent *closeEvent);
+    virtual void closeEvent(QCloseEvent *e);
 
 private:
-    CodeEditorWidgetData *d;
+    bool okToContinue();
+    bool saveFile(const QString &fileName);
+    void setCurrentFile(const QString &fileName);
+    bool readFile(const QString &fileName);
+    bool writeFile(const QString &fileName);
+
+    static QString m_fileFilter;
+
+    QString m_fileName;
+    bool m_isUntitled;
+
+    QFileSystemWatcher * m_watcher;
+    QMutex m_watcherMutex;
 };
 
 #endif // CODEEDITORWIDGET_H

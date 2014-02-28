@@ -22,7 +22,8 @@
 
 
 #include "coresettings.h"
-#include <QCoreApplication>
+#include <QApplication>
+#include <QDir>
 
 CoreSettings::CoreSettings(QObject *parent) :
     QObject(parent),
@@ -93,4 +94,9 @@ void CoreSettings::removeRecentFile(const QString &fileName)
     setValue("RecentFileList", files);
 
     emit recentFilesChanged(files);
+}
+
+QString CoreSettings::homePath() const
+{
+    return QDir::homePath() + QDir::separator() + QApplication::applicationName();
 }

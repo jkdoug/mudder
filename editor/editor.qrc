@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="small_close">icons/small_close.png</file>
+        <file alias="small_new">icons/small_new.png</file>
+        <file alias="small_open">icons/small_open.png</file>
+        <file alias="small_print">icons/small_print.png</file>
+        <file alias="small_print_preview">icons/small_print_preview.png</file>
+        <file alias="small_save">icons/small_save.png</file>
+        <file alias="small_save_as">icons/small_save_as.png</file>
+    </qresource>
+</RCC>

@@ -25,6 +25,7 @@
 #include "ui_mainwindow.h"
 #include "lua.h"
 #include "logger.h"
+#include "codeeditorwindow.h"
 #include "coreapplication.h"
 #include "console.h"
 #include <QtDebug>
@@ -42,6 +43,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
+    m_editor = new CodeEditorWindow(this);
+    ui->dockEditor->setWidget(m_editor);
+
     QTabBar *mdiTabBar = ui->mdiArea->findChild<QTabBar *>();
     mdiTabBar->setExpanding(false);
     mdiTabBar->setIconSize(QSize(0, 0));
@@ -57,6 +61,8 @@ MainWindow::MainWindow(QWidget *parent) :
     restoreGeometry(SETTINGS->value("MainWindow/Geometry").toByteArray());
     restoreState(SETTINGS->value("MainWindow/State").toByteArray());
 
+    ui->actionEditor->setChecked(ui->dockEditor->isVisible());
+
     LOG_DEBUG(tr("Main window initialized."));
 }
 
@@ -67,6 +73,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
+    if (!m_editor->close())
+    {
+        e->ignore();
+        return;
+    }
+
     ui->mdiArea->closeAllSubWindows();
     if (!ui->mdiArea->subWindowList().isEmpty())
     {
@@ -95,7 +107,14 @@ void MainWindow::onBusyStateChanged(bool busy)
 
 void MainWindow::onRecentFile(const QString &fileName)
 {
-    openConsole(fileName);
+    if (QFileInfo(fileName).suffix().compare("mp", Qt::CaseInsensitive) == 0)
+    {
+        openConsole(fileName);
+    }
+    else
+    {
+        m_editor->openEditor(fileName);
+    }
 }
 
 void MainWindow::onRecentFilesChanged(const QStringList &fileNames)
@@ -167,6 +186,11 @@ void MainWindow::on_actionNext_triggered()
 void MainWindow::on_actionPrevious_triggered()
 {
     ui->mdiArea->activatePreviousSubWindow();
+}
+
+void MainWindow::on_actionEditor_triggered(bool checked)
+{
+    ui->dockEditor->setVisible(checked);
 }
 
 void MainWindow::on_actionExit_triggered()

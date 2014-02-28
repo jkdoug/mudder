@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
     LOG->newFileEngine("Mudder Text", "mudder_log.txt");
     LOG->newFileEngine("Mudder HTML", "mudder_log.html");
 
+    LOG->toggleQtMsgEngine(true);
     LOG->toggleConsoleEngine(true);
 
     MainWindow w;

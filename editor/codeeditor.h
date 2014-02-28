@@ -61,13 +61,6 @@ protected:
     void resizeEvent(QResizeEvent *e);
 
 private:
-    QChar leftBrace(QChar right);
-    QChar rightBrace(QChar left);
-
-    bool matchLeftBrace(const QTextBlock &currentBlock, int index, QChar brace, int numLeft = 0);
-    bool matchRightBrace(const QTextBlock &currentBlock, int index, QChar brace, int numRight = 0);
-    void createBraceSelection(int pos);
-
     CodeEditorData *d;
 };
 

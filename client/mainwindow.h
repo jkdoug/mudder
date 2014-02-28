@@ -34,6 +34,7 @@ namespace Ui {
 class MainWindow;
 }
 
+class CodeEditorWindow;
 class Console;
 
 class MainWindow : public QMainWindow
@@ -59,6 +60,7 @@ private slots:
     void on_actionCloseAll_triggered();
     void on_actionNext_triggered();
     void on_actionPrevious_triggered();
+    void on_actionEditor_triggered(bool checked);
     void on_actionExit_triggered();
     void on_actionAbout_triggered();
     void on_actionAboutQt_triggered();
@@ -80,6 +82,8 @@ private:
     QAction *m_recentFileActions[CoreSettings::MaxRecentFiles];
     QSignalMapper *m_recentSignalMapper;
     QActionGroup *m_windowActions;
+
+    CodeEditorWindow *m_editor;
 };
 
 #endif // MAINWINDOW_H

@@ -28,35 +28,6 @@
 #include <QSyntaxHighlighter>
 
 
-struct BraceInfo
-{
-    QChar character;
-    bool left;
-    int position;
-};
-
-class CodeBlockData : public QTextBlockUserData
-{
-public:
-    explicit CodeBlockData() {}
-
-    QVector<BraceInfo *> braces() { return m_braces; }
-
-    void insert(BraceInfo *info)
-    {
-        int pos = 0;
-        while (pos < m_braces.size() && info->position > m_braces.at(pos)->position)
-        {
-            pos++;
-        }
-
-        m_braces.insert(pos, info);
-    }
-
-private:
-    QVector<BraceInfo *> m_braces;
-};
-
 struct CodeEditorData
 {
     CodeEditorData() :
@@ -111,8 +82,8 @@ CodeEditor::CodeEditor(QWidget *parent) :
     connect(this, SIGNAL(updateRequest(const QRect &, int)), this, SLOT(updateLineNumberArea(const QRect &, int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
 
-//    setFont(SETTINGS->editorFont());
-//    connect(SETTINGS, SIGNAL(valueChanged(QFont)), this, SLOT(handleFontChange(QFont)));
+    setFont(SETTINGS->value("Editor/Font", QFont("Consolas", 10)).value<QFont>());
+    connect(SETTINGS, SIGNAL(valueChanged(QString,QVariant)), SLOT(handleSettingsChange(QString,QVariant)));
 
     updateLineNumberAreaWidth(0);
 }
@@ -192,35 +163,6 @@ void CodeEditor::updateCursorPosition()
     }
 
     setExtraSelections(extraSelections);
-
-//    CodeBlockData *data = static_cast<CodeBlockData *>(textCursor().block().userData());
-//    if (data)
-//    {
-//        QVector<BraceInfo *> infos(data->braces());
-//        int pos = textCursor().block().position();
-
-//        for (int index = 0; index < infos.size(); index++)
-//        {
-//            BraceInfo *info = infos.at(index);
-
-//            int currentPos = textCursor().position() - textCursor().block().position();
-
-//            if (info->position == currentPos - 1 && info->left)
-//            {
-//                if (matchLeftBrace(textCursor().block(), index + 1, info->character))
-//                {
-//                    createBraceSelection(pos + info->position);
-//                }
-//            }
-//            else if (info->position == currentPos - 1 && !info->left)
-//            {
-//                if (matchRightBrace(textCursor().block(), index - 1, info->character))
-//                {
-//                    createBraceSelection(pos + info->position);
-//                }
-//            }
-//        }
-//    }
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int newBlockCount)
@@ -287,140 +229,6 @@ void CodeEditor::removeWordHighlighting()
     QString tmp(document()->toPlainText());
     document()->clear();
     document()->setPlainText(tmp);
-}
-
-inline QChar CodeEditor::leftBrace(QChar right)
-{
-    switch (right.toLatin1())
-    {
-    case ')':
-        return '(';
-
-    case ']':
-        return '[';
-
-    case '}':
-        return '{';
-    }
-
-    Q_ASSERT(false);
-    return QChar();
-}
-
-inline QChar CodeEditor::rightBrace(QChar left)
-{
-    switch (left.toLatin1())
-    {
-    case '(':
-        return ')';
-
-    case '[':
-        return ']';
-
-    case '{':
-        return '}';
-    }
-
-    Q_ASSERT(false);
-    return QChar();
-}
-
-bool CodeEditor::matchLeftBrace(const QTextBlock &currentBlock, int index, QChar brace, int numLeft)
-{
-    CodeBlockData *data = static_cast<CodeBlockData *>(currentBlock.userData());
-    QVector<BraceInfo *> infos(data->braces());
-
-    int blockPos = currentBlock.position();
-    for (int infoPos = index; infoPos < infos.size(); infoPos++)
-    {
-        BraceInfo *info = infos.at(infoPos);
-
-        if (info->character == brace)
-        {
-            numLeft++;
-            continue;
-        }
-
-        if (info->character == rightBrace(brace))
-        {
-            if (numLeft == 0)
-            {
-                createBraceSelection(blockPos + info->position);
-                return true;
-            }
-            else
-            {
-                numLeft--;
-            }
-        }
-    }
-
-    QTextBlock nextBlock(currentBlock.next());
-    if (nextBlock.isValid())\
-    {
-        return matchLeftBrace(nextBlock, 0, brace, numLeft);
-    }
-
-    return false;
-}
-
-bool CodeEditor::matchRightBrace(const QTextBlock &currentBlock, int index, QChar brace, int numRight)
-{
-    CodeBlockData *data = static_cast<CodeBlockData *>(currentBlock.userData());
-    QVector<BraceInfo *> infos(data->braces());
-
-    int blockPos = currentBlock.position();
-    for (int infoPos = index; infoPos > -1 && infos.size() > 0; infoPos--)
-    {
-        BraceInfo *info = infos.at(infoPos);
-
-        if (info->character == brace)
-        {
-            numRight++;
-            continue;
-        }
-
-        if (info->character == leftBrace(brace))
-        {
-            if (numRight == 0)
-            {
-                createBraceSelection(blockPos + info->position);
-                return true;
-            }
-            else
-            {
-                numRight--;
-            }
-        }
-    }
-
-    QTextBlock nextBlock(currentBlock.previous());
-    if (nextBlock.isValid())\
-    {
-        return matchRightBrace(nextBlock, 0, brace, numRight);
-    }
-
-    return false;
-}
-
-void CodeEditor::createBraceSelection(int pos)
-{
-    QList<QTextEdit::ExtraSelection> selections(extraSelections());
-
-    QTextEdit::ExtraSelection selection;
-    QTextCharFormat format(selection.format);
-    format.setBackground(QColor(Qt::green).lighter(160));
-    format.setForeground(QColor(Qt::red));
-    selection.format = format;
-
-    QTextCursor cursor(textCursor());
-    cursor.setPosition(pos);
-    cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
-    selection.cursor = cursor;
-
-    selections.append(selection);
-
-    setExtraSelections(selections);
 }
 
 void CodeEditor::handleSettingsChange(const QString &key, const QVariant &val)
