@@ -38,13 +38,11 @@ QString QtMsgFormattingEngine::formatMessage(Logger::MessageType type, const QLi
     QMetaEnum metaMessageType(metaLogger.enumerator(indexMessageType));
     message.append(QString("[%1] ").arg(metaMessageType.valueToKey(type)));
 
-    int indent = message.length();
-
     message.append(messages.front().toString());
 
     for (int i = 1; i < messages.count(); i++)
     {
-        message.append(QString("%3%1%2").arg(' ', indent).arg(messages.at(i).toString()).arg(endOfLine()));
+        message.append(" " + messages.at(i).toString());
     }
 
     return message;
