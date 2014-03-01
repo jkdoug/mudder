@@ -71,6 +71,8 @@ CodeEditor::CodeEditor(QWidget *parent) :
     connect(SETTINGS, SIGNAL(valueChanged(QString,QVariant)), SLOT(handleSettingsChange(QString,QVariant)));
 
     updateLineNumberAreaWidth(0);
+
+    setTabStopWidth(fontMetrics().averageCharWidth() * 2);
 }
 
 CodeEditor::~CodeEditor()
@@ -215,6 +217,7 @@ void CodeEditor::handleSettingsChange(const QString &key, const QVariant &val)
     if (key.compare("Editor/Font") == 0)
     {
         setFont(val.value<QFont>());
+        setTabStopWidth(fontMetrics().averageCharWidth() * 2);
         update();
     }
 }
