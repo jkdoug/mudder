@@ -28,22 +28,6 @@
 #include <QSyntaxHighlighter>
 
 
-struct CodeEditorData
-{
-    CodeEditorData() :
-        lineNumberArea(0),
-        syntaxHighlighter(0)
-    {
-        countCache.first = -1;
-        countCache.second = -1;
-    }
-
-    QWidget * lineNumberArea;
-    QSyntaxHighlighter * syntaxHighlighter;
-    QPair<int, int> countCache;
-};
-
-
 class CodeEditor;
 
 class LineNumberAreaPrivate : public QWidget
@@ -52,31 +36,32 @@ public:
     LineNumberAreaPrivate(CodeEditor *editor) :
         QWidget(editor)
     {
-        textEditor = editor;
+        m_textEditor = editor;
     }
 
     QSize sizeHint() const
     {
-        return QSize(textEditor->lineNumberAreaWidth(), 0);
+        return QSize(m_textEditor->lineNumberAreaWidth(), 0);
     }
 
 protected:
     void paintEvent(QPaintEvent *event)
     {
-        textEditor->lineNumberAreaPaintEvent(event);
+        m_textEditor->lineNumberAreaPaintEvent(event);
     }
 
 private:
-    CodeEditor *textEditor;
+    CodeEditor *m_textEditor;
 };
 
 
 CodeEditor::CodeEditor(QWidget *parent) :
     QPlainTextEdit(parent)
 {
-    d = new CodeEditorData;
+    m_countCache.first = -1;
+    m_countCache.second = -1;
 
-    d->lineNumberArea = new LineNumberAreaPrivate(this);
+    m_lineNumberArea = new LineNumberAreaPrivate(this);
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(const QRect &, int)), this, SLOT(updateLineNumberArea(const QRect &, int)));
@@ -90,23 +75,17 @@ CodeEditor::CodeEditor(QWidget *parent) :
 
 CodeEditor::~CodeEditor()
 {
-    delete d;
-}
-
-QSyntaxHighlighter * CodeEditor::syntaxHighlighter() const
-{
-    return d->syntaxHighlighter;
 }
 
 void CodeEditor::setSyntaxHighlighter(QSyntaxHighlighter *highlighter)
 {
-    d->syntaxHighlighter = highlighter;
-    d->syntaxHighlighter->setDocument(document());
+    m_syntaxHighlighter = highlighter;
+    m_syntaxHighlighter->setDocument(document());
 }
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
-    QPainter painter(d->lineNumberArea);
+    QPainter painter(m_lineNumberArea);
     painter.fillRect(event->rect(), Qt::lightGray);
 
     QTextBlock block(firstVisibleBlock());
@@ -119,7 +98,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         if (block.isVisible() && bottom >= event->rect().top())
         {
             painter.setPen(Qt::black);
-            painter.drawText(0, top, d->lineNumberArea->width(), fontMetrics().height(),
+            painter.drawText(0, top, m_lineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, QString::number(blockNumber + 1));
         }
 
@@ -176,14 +155,14 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
 {
     if (dy)
     {
-        d->lineNumberArea->scroll(0, dy);
+        m_lineNumberArea->scroll(0, dy);
     }
-    else if (d->countCache.first != blockCount() || d->countCache.second != textCursor().block().lineCount())
+    else if (m_countCache.first != blockCount() || m_countCache.second != textCursor().block().lineCount())
     {
-        d->lineNumberArea->update(0, rect.y(), d->lineNumberArea->width(), rect.height());
+        m_lineNumberArea->update(0, rect.y(), m_lineNumberArea->width(), rect.height());
 
-        d->countCache.first = blockCount();
-        d->countCache.second = textCursor().block().lineCount();
+        m_countCache.first = blockCount();
+        m_countCache.second = textCursor().block().lineCount();
     }
 
     if (rect.contains(viewport()->rect()))
@@ -197,7 +176,7 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
     QPlainTextEdit::resizeEvent(e);
 
     QRect cr(contentsRect());
-    d->lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+    m_lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
 void CodeEditor::highlightWords(const QStringList &words, const QBrush &brush)

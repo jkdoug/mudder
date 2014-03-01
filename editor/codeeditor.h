@@ -28,8 +28,6 @@
 #include <QPlainTextEdit>
 #include <QSyntaxHighlighter>
 
-struct CodeEditorData;
-
 class EDITORSHARED_EXPORT CodeEditor : public QPlainTextEdit
 {
     Q_OBJECT
@@ -38,7 +36,7 @@ public:
     explicit CodeEditor(QWidget *parent = 0);
     virtual ~CodeEditor();
 
-    QSyntaxHighlighter * syntaxHighlighter() const;
+    QSyntaxHighlighter * syntaxHighlighter() const { return m_syntaxHighlighter; }
     void setSyntaxHighlighter(QSyntaxHighlighter *highlighter);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
@@ -61,7 +59,9 @@ protected:
     void resizeEvent(QResizeEvent *e);
 
 private:
-    CodeEditorData *d;
+    QWidget *m_lineNumberArea;
+    QSyntaxHighlighter *m_syntaxHighlighter;
+    QPair<int, int> m_countCache;
 };
 
 #endif // CODEEDITOR_H
