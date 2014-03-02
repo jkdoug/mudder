@@ -28,6 +28,7 @@
 #include <QMainWindow>
 
 class CodeEditorWidget;
+class SearchWidget;
 class QAction;
 class QMdiArea;
 class QMdiSubWindow;
@@ -55,6 +56,7 @@ public slots:
     void actionPrint();
     void actionPrintPreview();
     void printPreview(QPrinter *printer);
+    void showSearchBox();
 
 private slots:
     void updateActions();
@@ -71,6 +73,8 @@ private:
     QAction *m_actionClose;
     QAction *m_actionPrint;
     QAction *m_actionPrintPreview;
+
+    SearchWidget *m_searchWidget;
 };
 
 #endif // CODEEDITORWINDOW_H

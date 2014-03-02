@@ -26,7 +26,9 @@
 #include "luahighlighter.h"
 #include "coresettings.h"
 #include "xmlhighlighter.h"
+#include "searchwidget.h"
 #include <QAction>
+#include <QBoxLayout>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMdiArea>
@@ -50,7 +52,21 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     m_mdi->setOption(QMdiArea::DontMaximizeSubWindowOnActivation, false);
     connect(m_mdi, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(editorModified()));
 
-    setCentralWidget(m_mdi);
+    QWidget *centralWidget = new QWidget();
+    setCentralWidget(centralWidget);
+
+    if (centralWidget->layout())
+    {
+        delete centralWidget->layout();
+    }
+
+    QLayout *centralLayout = new QBoxLayout(QBoxLayout::TopToBottom, centralWidget);
+    centralLayout->addWidget(m_mdi);
+    centralLayout->setMargin(0);
+    centralLayout->setSpacing(0);
+
+    m_searchWidget = 0;
+    showSearchBox();
 
     m_toolBar = new QToolBar(this);
     m_toolBar->setIconSize(QSize(16, 16));
@@ -205,6 +221,37 @@ void CodeEditorWindow::printPreview(QPrinter *printer)
         activeEditor()->print(printer);
     }
 #endif
+}
+
+void CodeEditorWindow::showSearchBox()
+{
+    if (!m_searchWidget)
+    {
+        SearchWidget::SearchOptions options = SETTINGS->value("Editor/SearchOptions",
+                                                              SearchWidget::NoOptions).toInt();
+        SearchWidget::SearchButtons buttons = SETTINGS->value("Editor/SearchButtons",
+                                                              SearchWidget::AllButtons).toInt();
+        m_searchWidget = new SearchWidget(options, SearchWidget::SearchAndReplace, buttons);
+        m_searchWidget->setPlainTextEditor(activeEditor());
+
+        centralWidget()->layout()->addWidget(m_searchWidget);
+    }
+
+    m_searchWidget->setEditorFocus();
+
+    if (activeEditor())
+    {
+        QTextCursor cursor(activeEditor()->textCursor());
+        if (cursor.hasSelection())
+        {
+            m_searchWidget->setCurrentSearchString(cursor.selectedText());
+        }
+    }
+
+    if (!m_searchWidget->isVisible())
+    {
+        m_searchWidget->show();
+    }
 }
 
 void CodeEditorWindow::updateActions()

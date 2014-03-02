@@ -65,7 +65,7 @@ private:
     QString m_fileName;
     bool m_isUntitled;
 
-    QFileSystemWatcher * m_watcher;
+    QFileSystemWatcher *m_watcher;
     QMutex m_watcherMutex;
 };
 

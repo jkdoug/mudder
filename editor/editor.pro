@@ -18,7 +18,8 @@ SOURCES += codeeditor.cpp \
     codeeditorwindow.cpp \
     luahighlighter.cpp \
     xmlhighlighter.cpp \
-    syntaxhighlighter.cpp
+    syntaxhighlighter.cpp \
+    searchwidget.cpp
 
 HEADERS += codeeditor.h\
         editor_global.h \
@@ -26,7 +27,8 @@ HEADERS += codeeditor.h\
     codeeditorwindow.h \
     luahighlighter.h \
     xmlhighlighter.h \
-    syntaxhighlighter.h
+    syntaxhighlighter.h \
+    searchwidget.h
 
 unix {
     target.path = /usr/lib
@@ -61,3 +63,6 @@ else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../logging/liblogging.a
 
 RESOURCES += \
     editor.qrc
+
+FORMS += \
+    searchwidget.ui
