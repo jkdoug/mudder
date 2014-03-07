@@ -53,6 +53,7 @@ public:
     const QString & fileName() const { return m_fileName; }
 
 protected:
+    virtual void paintEvent(QPaintEvent *e);
     void closeEvent(QCloseEvent *e);
 
 private slots:

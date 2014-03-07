@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     console.cpp \
     profile.cpp \
-    consoledocument.cpp
+    consoledocument.cpp \
+    consoledocumentlayout.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
     profile.h \
-    consoledocument.h
+    consoledocument.h \
+    consoledocumentlayout.h
 
 FORMS    += mainwindow.ui \
     console.ui
@@ -41,8 +43,6 @@ win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../lua52/relea
 else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../lua52/debug/lua52.lib
 else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../lua52/liblua52.a
 
-
-
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../core/release/ -lcore
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../core/debug/ -lcore
 else:unix: LIBS += -L$$OUT_PWD/../core/ -lcore
@@ -53,8 +53,6 @@ DEPENDPATH += $$PWD/../core
 win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/release/core.lib
 else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/debug/core.lib
 else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../core/libcore.a
-
-
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../editor/release/ -leditor
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../editor/debug/ -leditor
@@ -67,15 +65,9 @@ win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../editor/rele
 else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../editor/debug/editor.lib
 else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../editor/libeditor.a
 
-
-
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../logging/release/ -llogging
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../logging/debug/ -llogging
 else:unix: LIBS += -L$$OUT_PWD/../logging/ -llogging
 
 INCLUDEPATH += $$PWD/../logging
 DEPENDPATH += $$PWD/../logging
-
-win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../logging/release/logging.lib
-else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../logging/debug/logging.lib
-else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../logging/liblogging.a

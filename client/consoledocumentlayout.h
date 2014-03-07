@@ -21,46 +21,30 @@
 */
 
 
-#ifndef CONSOLEDOCUMENT_H
-#define CONSOLEDOCUMENT_H
+#ifndef CONSOLEDOCUMENTLAYOUT_H
+#define CONSOLEDOCUMENTLAYOUT_H
 
-#include <QList>
-#include <QTextCharFormat>
+#include <QAbstractTextDocumentLayout>
 #include <QTextDocument>
 
-class ConsoleDocument : public QTextDocument
+class ConsoleDocumentLayout : public QAbstractTextDocumentLayout
 {
     Q_OBJECT
 public:
-    explicit ConsoleDocument(QObject *parent = 0);
+    explicit ConsoleDocumentLayout(QTextDocument *doc);
+    ~ConsoleDocumentLayout();
 
-public slots:
-    void process(const QByteArray &data);
+    virtual void draw(QPainter *painter, const PaintContext &context);
+    virtual int hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const;
 
-private:
-    void newLine();
-    void processAnsi(int code);
-    QColor translateColor(const QString &name);
+    virtual int pageCount() const;
+    virtual QSizeF documentSize() const;
 
-    QTextCursor *m_cursor;
+    virtual QRectF frameBoundingRect(QTextFrame *frame) const;
+    virtual QRectF blockBoundingRect(const QTextBlock &block) const;
 
-    QString m_text;
-    QString m_input;
-    QString m_ansiCode;
-    QList<int> m_codes;
-
-    bool m_gotESC;
-    bool m_gotHeader;
-
-    bool m_waitHighColorMode;
-    bool m_fgHighColorMode;
-    bool m_bgHighColorMode;
-    bool m_isHighColorMode;
-    bool m_isPrompt;
-
-    QTextCharFormat m_formatDefault;
-    QTextCharFormat m_formatCommand;
-    QTextCharFormat m_formatCurrent;
+protected:
+    virtual void documentChanged(int from, int charsRemoved, int charsAdded);
 };
 
-#endif // CONSOLEDOCUMENT_H
+#endif // CONSOLEDOCUMENTLAYOUT_H

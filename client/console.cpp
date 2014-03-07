@@ -27,9 +27,11 @@
 #include "logger.h"
 #include "consoledocument.h"
 #include "profile.h"
+#include <QAbstractTextDocumentLayout>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QPainter>
 
 Console::Console(QWidget *parent) :
     QWidget(parent),
@@ -48,12 +50,44 @@ Console::Console(QWidget *parent) :
 
     m_document = new ConsoleDocument(this);
 
+    QByteArray test("Rapture Runtime Environment v2.2.0 -- (c) 2012 -- Iron Realms Entertainment\n"
+                    "Multi-User License: 100-0000-000\n"
+                    "\n"
+                    "[0;37m[33m   o0==============================~o[0]o~==============================0o\n"
+                    "    IP Address:[35m 69.65.42.86[33m              Questions: [35msupport@lusternia.com\n"
+                    "    [33mCurrently On-Line: [35m52\n"
+                    "\n"
+                    "[1;35m     .____                     __                         .__\n"
+                    "     |    |     __ __  _______/  |_  _____ _______  ____  |__|_____\n"
+                    "     |    |    |  |  \\/  ___/\\   __\\/  __ \\\\_  __ \\/    \\ |  |\\__  \\\n"
+                    "     |    |___ |  |  /\\___ \\  |  |  \\  ___/ |  | \\/|  |  \\|  | / __ \\\n"
+                    "     |_______ \\|____/ /____ \\ |__|   \\___ \\ |__|   |__|  /|__|/_____ \\\n"
+                    "             \\/            \\/            \\/            \\/           \\/\n"
+                    "\n"
+                    "[0;35m                        A G E  O F  A S C E N S I O N\n"
+                    "\n"
+                    "\n"
+                    "[33m   o0===================================================================0o\n"
+                    "\n"
+                    "[37m                 [35m1.[37m Enter the game.\n"
+                    "                 [35m2.[37m Create a new character.\n"
+                    "                 [35m3.[37m Quit.\n"
+                    "\n"
+                    "Enter an option or enter your character's name. \xFF\xFF");
+    m_document->process(test);
+
     m_profile = new Profile(this);
     connect(m_profile, SIGNAL(optionsChanged()), SLOT(contentsModified()));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
 
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
+
+    QPalette pal(palette());
+    pal.setBrush(QPalette::Base, Qt::black);
+    pal.setBrush(QPalette::Window, Qt::black);
+    pal.setBrush(QPalette::Text, Qt::lightGray);
+    setPalette(pal);
 
     LOG_DEBUG("Console window initialized.");
 }
@@ -126,6 +160,25 @@ Console * Console::openFile(const QString &fileName, QWidget *parent)
 
     delete console;
     return 0;
+}
+
+void Console::paintEvent(QPaintEvent *e)
+{
+    Q_UNUSED(e)
+
+    QPainter painter(this);
+    painter.fillRect(rect(), palette().window());
+
+    if (!m_document)
+    {
+        return;
+    }
+
+    QAbstractTextDocumentLayout::PaintContext ctx;
+    ctx.clip = rect();
+    ctx.palette = palette();
+
+    m_document->documentLayout()->draw(&painter, ctx);
 }
 
 void Console::closeEvent(QCloseEvent *e)
