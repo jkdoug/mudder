@@ -472,11 +472,12 @@ void SearchWidget::handleReplaceAll()
     if (m_target == ExternalTarget)
     {
         emit replaceAll_clicked();
+        return;
     }
-    else if (m_target == TextEdit && m_textEdit)
-    {
-        int count = 0;
 
+    int count = 0;
+    if (m_target == TextEdit && m_textEdit)
+    {
         QTextCursor cursor(m_textEdit->textCursor());
         int position = cursor.position();
         cursor.setPosition(0);
@@ -488,29 +489,15 @@ void SearchWidget::handleReplaceAll()
         {
             m_textEdit->textCursor().insertText(ui->replaceString->text());
             m_textEdit->find(currentSearchString(), findFlags());
-            ++count;
+            count++;
         }
 
         cursor.endEditBlock();
         cursor.setPosition(position);
         m_textEdit->setTextCursor(cursor);
-
-        if (count == 1)
-        {
-            setMessage("<font color='green'>Replaced 1 occurence.</font>");
-        }
-        else if (count > 1)
-        {
-            setMessage(QString("<font color='green'>Replaced %1 occurences.</font>").arg(count));
-        }
-        else
-        {
-            setMessage("<font color='orange'>No matches found.</font>");
-        }
-    } else if (m_target == PlainTextEdit && m_plainTextEdit)
+    }
+    else if (m_target == PlainTextEdit && m_plainTextEdit)
     {
-        int count = 0;
-
         QTextCursor cursor(m_plainTextEdit->textCursor());
         int position = cursor.position();
         cursor.setPosition(0);
@@ -522,25 +509,29 @@ void SearchWidget::handleReplaceAll()
         {
             m_plainTextEdit->textCursor().insertText(ui->replaceString->text());
             m_plainTextEdit->find(currentSearchString(), findFlags());
-            ++count;
+            count++;
         }
 
         cursor.endEditBlock();
         cursor.setPosition(position);
         m_plainTextEdit->setTextCursor(cursor);
+    }
+    else
+    {
+        return;
+    }
 
-        if (count == 1)
-        {
-            setMessage("<font color='green'>Replaced 1 occurence.</font>");
-        }
-        else if (count > 1)
-        {
-            setMessage(QString("<font color='green'>Replaced %1 occurences.</font>").arg(count));
-        }
-        else
-        {
-            setMessage("<font color='orange'>No matches found.</font>");
-        }
+    if (count == 1)
+    {
+        setMessage("<font color='green'>Replaced 1 occurence.</font>");
+    }
+    else if (count > 1)
+    {
+        setMessage(QString("<font color='green'>Replaced %1 occurences.</font>").arg(count));
+    }
+    else
+    {
+        setMessage("<font color='orange'>No matches found.</font>");
     }
 }
 

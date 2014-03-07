@@ -66,7 +66,6 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     centralLayout->setSpacing(0);
 
     m_searchWidget = 0;
-    showSearchBox();
 
     m_toolBar = new QToolBar(this);
     m_toolBar->setIconSize(QSize(16, 16));
@@ -264,6 +263,11 @@ void CodeEditorWindow::updateActions()
     m_actionSaveAs->setEnabled(hasEditor);
     m_actionPrint->setEnabled(hasEditor);
     m_actionPrintPreview->setEnabled(hasEditor);
+
+    if (m_searchWidget)
+    {
+        m_searchWidget->setPlainTextEditor(activeEditor());
+    }
 }
 
 void CodeEditorWindow::editorModified()
