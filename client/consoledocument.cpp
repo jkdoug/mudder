@@ -25,6 +25,7 @@
 #include "consoledocumentlayout.h"
 #include "logger.h"
 #include <QTextBlock>
+#include <QTextDocumentFragment>
 
 static const QLatin1Char ESC('\x1B');
 static const QLatin1Char ANSI_START('[');
@@ -59,7 +60,29 @@ ConsoleDocument::ConsoleDocument(QObject *parent) :
 
     m_formatCurrent = m_formatDefault;
 
+    m_cursor->setCharFormat(m_formatCurrent);
+
     setDocumentLayout(new ConsoleDocumentLayout(this));
+}
+
+QString ConsoleDocument::toPlainText(int start, int stop)
+{
+    QTextCursor cursor(this);
+    cursor.setPosition(qMax(start, 0));
+    cursor.setPosition(qMin(stop, characterCount() - 1), QTextCursor::KeepAnchor);
+
+    return toPlainText(cursor);
+}
+
+QString ConsoleDocument::toPlainText(QTextCursor cur)
+{
+    if (cur.isNull())
+    {
+        cur = QTextCursor(this);
+        cur.select(QTextCursor::Document);
+    }
+
+    return cur.selection().toPlainText();
 }
 
 void ConsoleDocument::process(const QByteArray &data)

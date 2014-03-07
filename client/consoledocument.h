@@ -26,6 +26,7 @@
 
 #include <QList>
 #include <QTextCharFormat>
+#include <QTextCursor>
 #include <QTextDocument>
 
 class ConsoleDocument : public QTextDocument
@@ -33,6 +34,9 @@ class ConsoleDocument : public QTextDocument
     Q_OBJECT
 public:
     explicit ConsoleDocument(QObject *parent = 0);
+
+    QString toPlainText(int start, int stop);
+    QString toPlainText(QTextCursor cur = QTextCursor());
 
 public slots:
     void process(const QByteArray &data);
