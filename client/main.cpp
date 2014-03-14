@@ -48,6 +48,9 @@ int main(int argc, char *argv[])
     LOG->toggleQtMsgEngine(true);
     LOG->toggleConsoleEngine(true);
 
+    CONTEXT_MANAGER->registerContext("app.mudder.Main");
+    CONTEXT_MANAGER->appendContext("app.mudder.Main");
+
     MainWindow w;
     w.show();
 

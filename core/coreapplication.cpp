@@ -22,6 +22,7 @@
 
 
 #include "coreapplication.h"
+#include "logger.h"
 #include <QtDebug>
 
 CoreApplication * CoreApplication::m_instance = 0;
@@ -33,6 +34,8 @@ CoreApplication::CoreApplication(int &argc, char **argv) :
     if (!m_instance)
     {
         m_instance = this;
+
+        m_contextManager = new ContextManager;
     }
 }
 
@@ -83,4 +86,22 @@ void CoreApplication::q_setApplicationBusy(bool busy)
 bool CoreApplication::applicationBusy()
 {
     return instance()->m_busyCount > 0;
+}
+
+ContextManager * CoreApplication::contextManager()
+{
+    return instance()->m_contextManager;
+}
+
+bool CoreApplication::notify(QObject *object, QEvent *event)
+{
+    try
+    {
+        return QApplication::notify(object, event);
+    }
+    catch (...)
+    {
+        LOG_FATAL(tr("CoreApplication caught an unhandled exception..."));
+    }
+    return false;
 }

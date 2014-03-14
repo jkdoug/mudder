@@ -25,6 +25,7 @@
 #define COREAPPLICATION_H
 
 #include "core_global.h"
+#include "contextmanager.h"
 #include <QApplication>
 
 class CORESHARED_EXPORT CoreApplication : public QApplication
@@ -39,6 +40,10 @@ public:
     static void setApplicationBusy(bool busy);
     static bool applicationBusy();
 
+    static ContextManager * contextManager();
+
+    bool notify(QObject *object, QEvent *event);
+
 private:
     void q_setApplicationBusy(bool busy);
 
@@ -48,9 +53,13 @@ signals:
 private:
     Q_DISABLE_COPY(CoreApplication)
 
-    static CoreApplication* m_instance;
+    static CoreApplication *m_instance;
 
     int m_busyCount;
+
+    ContextManager *m_contextManager;
 };
+
+#define CONTEXT_MANAGER CoreApplication::contextManager()
 
 #endif // COREAPPLICATION_H
