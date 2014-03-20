@@ -143,9 +143,6 @@
      <property name="bottomMargin">
       <number>0</number>
      </property>
-     <item>
-      <widget class="CodeEditorWindow" name="editorWindow" native="true"/>
-     </item>
     </layout>
    </widget>
   </widget>
@@ -325,14 +322,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>CodeEditorWindow</class>
-   <extends>QWidget</extends>
-   <header>codeeditorwindow.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="client.qrc"/>
  </resources>

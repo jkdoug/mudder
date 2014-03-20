@@ -44,7 +44,7 @@ int ContextManager::registerContext(const QString &name)
     if (!m_contexts.contains(id))
     {
         m_contexts.prepend(id);
-        LOG_TRACE(QString("Context Manager: Registering new context: %1 with ID %2.").arg(name).arg(id));
+        LOG_DEBUG(QString("Context Manager: Registering new context: %1 with ID %2.").arg(name).arg(id));
     }
 
     return id;
@@ -106,10 +106,10 @@ void ContextManager::setContext(int id, bool notify)
 {
     if (m_activeContexts.contains(id) && !notify)
     {
-        LOG_TRACE("Context already active; the following contexts are currently active:");
+        LOG_DEBUG("Context already active; the following contexts are currently active:");
         for (int n = 0; n < m_activeContexts.size(); n++)
         {
-            LOG_TRACE(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
+            LOG_DEBUG(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
         }
         return;
     }
@@ -128,15 +128,15 @@ void ContextManager::setContext(int id, bool notify)
     if (m_contexts.contains(id))
     {
         m_activeContexts.append(id);
-        LOG_TRACE("Context set; the following contexts are currently active:");
+        LOG_DEBUG("Context set; the following contexts are currently active:");
         for (int n = 0; n < m_activeContexts.size(); n++)
         {
-            LOG_TRACE(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
+            LOG_DEBUG(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
         }
     }
     else
     {
-        LOG_WARNING(QString("Attempting to set new unregistered context in function setContext with ID: %1").arg(id));
+        LOG_WARNING(QString("Attempting to set unregistered context in function setContext with ID: %1").arg(id));
     }
 
     if (notify)
@@ -152,10 +152,10 @@ void ContextManager::appendContext(int id, bool notify)
     {
         if (m_activeContexts.contains(id))
         {
-            LOG_TRACE("Context already active; the following contexts are currently active:");
+            LOG_DEBUG("Context already active; the following contexts are currently active:");
             for (int n = 0; n < m_activeContexts.size(); n++)
             {
-                LOG_TRACE(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
+                LOG_DEBUG(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
             }
             return;
         }
@@ -167,16 +167,16 @@ void ContextManager::appendContext(int id, bool notify)
 
         m_activeContexts.append(id);
 
+        LOG_DEBUG("Context appended; the following contexts are currently active:");
+        for (int n = 0; n < m_activeContexts.size(); n++)
+        {
+            LOG_DEBUG(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
+        }
+
         if (notify)
         {
             emit appendedContext(id);
             emit contextChanged(activeContexts());
-        }
-
-        LOG_TRACE("Context appended; the following contexts are currently active:");
-        for (int n = 0; n < m_activeContexts.size(); n++)
-        {
-            LOG_TRACE(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
         }
     }
     else
@@ -199,10 +199,10 @@ void ContextManager::removeContext(int id, bool notify)
             emit removingContext(id);
             m_activeContexts.removeAt(n);
 
-            LOG_TRACE("Context removed; the following contexts are currently active:");
+            LOG_DEBUG("Context removed; the following contexts are currently active:");
             for (int n = 0; n < m_activeContexts.size(); n++)
             {
-                LOG_TRACE(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
+                LOG_DEBUG(QString("- %1 - ID: %2, Name: %3").arg(n).arg(m_activeContexts.at(n)).arg(contextName(m_activeContexts.at(n))));
             }
 
             if (notify)
@@ -216,7 +216,7 @@ void ContextManager::removeContext(int id, bool notify)
 
 void ContextManager::setContext(const QString &name, bool notify)
 {
-    LOG_TRACE(QString("Clearing all contexts. New active context: %1").arg(name));
+    LOG_DEBUG(QString("Clearing all contexts. New active context: %1").arg(name));
     setContext(contextId(name), notify);
 }
 

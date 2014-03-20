@@ -21,38 +21,37 @@
 */
 
 
-#include "mainwindow.h"
-#include <QApplication>
-#include <QDateTime>
-#include "coreapplication.h"
-#include "coresettings.h"
+#include "shortcutcommand.h"
 #include "logger.h"
 
-int main(int argc, char *argv[])
+ShortcutCommand::ShortcutCommand(const QString &text, QShortcut *shortcut, QList<int> contexts, QObject *parent) :
+    Command(contexts, parent)
 {
-    CoreApplication a(argc, argv);
-    a.setApplicationName("Mudder");
-    a.setApplicationVersion("0.3");
-    a.setOrganizationName("Iasmos");
+    Q_ASSERT(shortcut);
 
-    SETTINGS->setValue("LastRun", QDateTime::currentDateTime());
+    m_userText = text;
+    m_shortcut = shortcut;
+    m_shortcut->setEnabled(false);
+}
 
-    LOG_INITIALIZE();
+void ShortcutCommand::handleKeyChange(const QKeySequence &old)
+{
 
-    LOG->setGlobalLogLevel(Logger::Trace);
+}
 
-    LOG->newFileEngine("Mudder XML", "mudder_log.xml");
-    LOG->newFileEngine("Mudder Text", "mudder_log.txt");
-    LOG->newFileEngine("Mudder HTML", "mudder_log.html");
+void ShortcutCommand::changeContexts(QList<int> contexts)
+{
+    bool enabled = false;
+    for (int n = 0; n < m_contexts.size(); n++)
+    {
+        if (contexts.contains(m_contexts.at(n)))
+        {
+            enabled = true;
+            break;
+        }
+    }
 
-    LOG->toggleQtMsgEngine(true);
-    LOG->toggleConsoleEngine(true);
+    LOG_TRACE("Context update request on shortcut command", text(), enabled);
 
-    MainWindow w;
-    w.show();
-
-    int result = a.exec();
-
-    LOG_FINALIZE();
-    return result;
+    m_shortcut->setEnabled(enabled);
 }

@@ -21,38 +21,29 @@
 */
 
 
-#include "mainwindow.h"
-#include <QApplication>
-#include <QDateTime>
+#include "command.h"
+#include "contextmanager.h"
 #include "coreapplication.h"
-#include "coresettings.h"
-#include "logger.h"
 
-int main(int argc, char *argv[])
+Command::Command(QList<int> contexts, QObject *parent) :
+    QObject(parent)
 {
-    CoreApplication a(argc, argv);
-    a.setApplicationName("Mudder");
-    a.setApplicationVersion("0.3");
-    a.setOrganizationName("Iasmos");
+    m_contexts = contexts;
 
-    SETTINGS->setValue("LastRun", QDateTime::currentDateTime());
+    connect(CONTEXT_MANAGER, SIGNAL(contextChanged(QList<int>)), SLOT(changeContexts(QList<int>)));
+}
 
-    LOG_INITIALIZE();
+void Command::setDefaultKey(const QKeySequence &key)
+{
+    m_defaultKey = key;
+    handleKeyChange(m_currentKey);
+    emit keyChanged();
+}
 
-    LOG->setGlobalLogLevel(Logger::Trace);
-
-    LOG->newFileEngine("Mudder XML", "mudder_log.xml");
-    LOG->newFileEngine("Mudder Text", "mudder_log.txt");
-    LOG->newFileEngine("Mudder HTML", "mudder_log.html");
-
-    LOG->toggleQtMsgEngine(true);
-    LOG->toggleConsoleEngine(true);
-
-    MainWindow w;
-    w.show();
-
-    int result = a.exec();
-
-    LOG_FINALIZE();
-    return result;
+void Command::setKey(const QKeySequence &key)
+{
+    QKeySequence old(m_currentKey);
+    m_currentKey = key;
+    handleKeyChange(old);
+    emit keyChanged();
 }

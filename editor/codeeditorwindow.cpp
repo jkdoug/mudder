@@ -25,8 +25,12 @@
 #include "codeeditorwidget.h"
 #include "luahighlighter.h"
 #include "coresettings.h"
+#include "coreapplication.h"
+#include "contextmanager.h"
+#include "logger.h"
 #include "xmlhighlighter.h"
 #include "searchwidget.h"
+#include "proxyaction.h"
 #include <QAction>
 #include <QBoxLayout>
 #include <QFileDialog>
@@ -44,6 +48,14 @@
 CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    QString contextName("lib.core.CodeEditorWindow");
+    int count = 1;
+    while (CONTEXT_MANAGER->hasContext(contextName + QString::number(count))) {
+        count++;
+    }
+    setObjectName(contextName + QString::number(count));
+    CONTEXT_MANAGER->registerContext(objectName());
+
     m_mdi = new QMdiArea(this);
     m_mdi->setDocumentMode(true);
     m_mdi->setViewMode(QMdiArea::TabbedView);
@@ -51,6 +63,8 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     m_mdi->setTabsMovable(true);
     m_mdi->setOption(QMdiArea::DontMaximizeSubWindowOnActivation, false);
     connect(m_mdi, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(editorModified()));
+
+    m_mdi->installEventFilter(this);
 
     QWidget *centralWidget = new QWidget();
     setCentralWidget(centralWidget);
@@ -253,6 +267,40 @@ void CodeEditorWindow::showSearchBox()
     }
 }
 
+void CodeEditorWindow::focusInEvent(QFocusEvent *e)
+{
+    LOG_TRACE("CodeEditorWindow::focusInEvent");
+
+    CONTEXT_MANAGER->appendContext(objectName());
+
+    QMainWindow::focusInEvent(e);
+}
+
+void CodeEditorWindow::focusOutEvent(QFocusEvent *e)
+{
+    LOG_TRACE("CodeEditorWindow::focusOutEvent");
+
+    CONTEXT_MANAGER->removeContext(objectName());
+
+    QMainWindow::focusOutEvent(e);
+}
+
+bool CodeEditorWindow::eventFilter(QObject *obj, QEvent *e)
+{
+    if (e->type() == QEvent::FocusIn)
+    {
+//        LOG_TRACE("CodeEditorWindow::eventFilter - FocusIn", obj->metaObject()->className());
+        focusInEvent(static_cast<QFocusEvent *>(e));
+    }
+    else if (e->type() == QEvent::FocusOut)
+    {
+//        LOG_TRACE("CodeEditorWindow::eventFilter - FocusOut", obj->metaObject()->className());
+        focusOutEvent(static_cast<QFocusEvent *>(e));
+    }
+
+    return false;
+}
+
 void CodeEditorWindow::updateActions()
 {
     bool hasEditor = activeEditor() != 0;
@@ -312,6 +360,8 @@ void CodeEditorWindow::saveEditor()
 
 void CodeEditorWindow::addEditor(CodeEditorWidget *editor)
 {
+    editor->installEventFilter(this);
+
     QMdiSubWindow *subWindow = m_mdi->addSubWindow(editor);
     subWindow->showMaximized();
     connect(editor, SIGNAL(modificationChanged(bool)), SLOT(editorModified()));

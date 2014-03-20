@@ -28,6 +28,7 @@
 #include "codeeditorwindow.h"
 #include "coreapplication.h"
 #include "console.h"
+#include "contextmanager.h"
 #include <QtDebug>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -42,6 +43,10 @@ MainWindow::MainWindow(QWidget *parent) :
     LOG_DEBUG(tr("Setting up main window UI."));
 
     ui->setupUi(this);
+
+    setObjectName("app.mudder.MainWindow");
+    CONTEXT_MANAGER->registerContext(objectName());
+    CONTEXT_MANAGER->appendContext(objectName());
 
     m_editor = new CodeEditorWindow(this);
     ui->dockEditor->setWidget(m_editor);
@@ -63,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->actionEditor->setChecked(ui->dockEditor->isVisible());
 
-    LOG_DEBUG(tr("Main window initialized."));
+    LOG_DEBUG("Main window initialized.");
 }
 
 MainWindow::~MainWindow()
@@ -75,6 +80,8 @@ void MainWindow::closeEvent(QCloseEvent *e)
 {
     if (!m_editor->close())
     {
+        LOG_DEBUG("Main window will not close yet; editor windows still open.");
+
         e->ignore();
         return;
     }
@@ -82,10 +89,14 @@ void MainWindow::closeEvent(QCloseEvent *e)
     ui->mdiArea->closeAllSubWindows();
     if (!ui->mdiArea->subWindowList().isEmpty())
     {
+        LOG_DEBUG("Main window will not close yet; console windows still open.");
+
         e->ignore();
     }
     else
     {
+        LOG_DEBUG("Main window saving state and closing.");
+
         SETTINGS->setValue("MainWindow/Geometry", saveGeometry());
         SETTINGS->setValue("MainWindow/State", saveState());
 
@@ -195,7 +206,8 @@ void MainWindow::on_actionEditor_triggered(bool checked)
 
 void MainWindow::on_actionExit_triggered()
 {
-    LOG_INFO("Main window closing.");
+    LOG_TRACE("MainWindow::on_actionExit_triggered");
+
     close();
 }
 

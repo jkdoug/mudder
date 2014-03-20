@@ -25,9 +25,11 @@
 #define CODEEDITORWINDOW_H
 
 #include "editor_global.h"
+#include <QList>
 #include <QMainWindow>
 
 class CodeEditorWidget;
+class Command;
 class SearchWidget;
 class QAction;
 class QMdiArea;
@@ -58,6 +60,11 @@ public slots:
     void printPreview(QPrinter *printer);
     void showSearchBox();
 
+protected:
+    virtual void focusInEvent(QFocusEvent *e);
+    virtual void focusOutEvent(QFocusEvent *e);
+    bool eventFilter(QObject *obj, QEvent *e);
+
 private slots:
     void updateActions();
     void editorModified();
@@ -73,6 +80,8 @@ private:
     QAction *m_actionClose;
     QAction *m_actionPrint;
     QAction *m_actionPrintPreview;
+
+    QList<Command *> m_commands;
 
     SearchWidget *m_searchWidget;
 };

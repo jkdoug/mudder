@@ -15,7 +15,10 @@ SOURCES += \
     coresettings.cpp \
     coreapplication.cpp \
     xmlobject.cpp \
-    contextmanager.cpp
+    contextmanager.cpp \
+    command.cpp \
+    shortcutcommand.cpp \
+    proxyaction.cpp
 
 HEADERS +=\
         core_global.h \
@@ -23,7 +26,10 @@ HEADERS +=\
     coreapplication.h \
     xmlobject.h \
     xmlerror.h \
-    contextmanager.h
+    contextmanager.h \
+    command.h \
+    shortcutcommand.h \
+    proxyaction.h
 
 unix {
     target.path = /usr/lib

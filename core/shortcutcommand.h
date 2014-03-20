@@ -21,38 +21,31 @@
 */
 
 
-#include "mainwindow.h"
-#include <QApplication>
-#include <QDateTime>
-#include "coreapplication.h"
-#include "coresettings.h"
-#include "logger.h"
+#ifndef SHORTCUTCOMMAND_H
+#define SHORTCUTCOMMAND_H
 
-int main(int argc, char *argv[])
+#include "core_global.h"
+#include "command.h"
+#include <QShortcut>
+
+class CORESHARED_EXPORT ShortcutCommand : public Command
 {
-    CoreApplication a(argc, argv);
-    a.setApplicationName("Mudder");
-    a.setApplicationVersion("0.3");
-    a.setOrganizationName("Iasmos");
+    Q_OBJECT
+public:
+    explicit ShortcutCommand(const QString &text, QShortcut *shortcut, QList<int> contexts, QObject *parent = 0);
 
-    SETTINGS->setValue("LastRun", QDateTime::currentDateTime());
+    virtual QShortcut * shortcut() const { return m_shortcut; }
+    virtual QString text() const { return m_userText; }
 
-    LOG_INITIALIZE();
+    virtual void handleKeyChange(const QKeySequence &old);
 
-    LOG->setGlobalLogLevel(Logger::Trace);
+public slots:
+    virtual void changeContexts(QList<int> contexts);
 
-    LOG->newFileEngine("Mudder XML", "mudder_log.xml");
-    LOG->newFileEngine("Mudder Text", "mudder_log.txt");
-    LOG->newFileEngine("Mudder HTML", "mudder_log.html");
+private:
+    QString m_userText;
 
-    LOG->toggleQtMsgEngine(true);
-    LOG->toggleConsoleEngine(true);
+    QShortcut *m_shortcut;
+};
 
-    MainWindow w;
-    w.show();
-
-    int result = a.exec();
-
-    LOG_FINALIZE();
-    return result;
-}
+#endif // SHORTCUTCOMMAND_H
