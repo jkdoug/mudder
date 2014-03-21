@@ -21,41 +21,33 @@
 */
 
 
-#ifndef PROFILE_H
-#define PROFILE_H
+#ifndef GROUP_H
+#define GROUP_H
 
-#include <QHash>
+#include "profileitem.h"
 #include <QList>
-#include <QObject>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
 
-class Group;
-class ProfileItem;
 class XmlError;
 
-class Profile : public QObject
+class Group : public ProfileItem
 {
     Q_OBJECT
 public:
-    explicit Profile(QObject *parent = 0);
+    explicit Group(QObject *parent = 0);
 
-    Group * rootGroup() const { return m_root; }
-    Group * activeGroup() const { return m_activeGroup?m_activeGroup:m_root; }
-    void setActiveGroup(Group *group);
+    QString path() const;
 
+    virtual int sequence() const { return 0; }
+
+    void addItem(ProfileItem *item);
+    bool removeItem(ProfileItem *item);
+
+    virtual QString tagName() const { return "group"; }
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
-signals:
-    void optionsChanged();
-    void settingsChanged();
-
 private:
-    Group *m_root;
-    Group *m_activeGroup;
-
-    QHash<QString, ProfileItem *> m_itemMap;
+    QList<ProfileItem *> m_items;
 };
 
-#endif // PROFILE_H
+#endif // GROUP_H

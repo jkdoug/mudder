@@ -17,13 +17,20 @@ SOURCES += main.cpp\
     console.cpp \
     profile.cpp \
     consoledocument.cpp \
-    consoledocumentlayout.cpp
+    consoledocumentlayout.cpp \
+    profileitem.cpp \
+    group.cpp \
+    profileitemfactory.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
     profile.h \
     consoledocument.h \
-    consoledocumentlayout.h
+    consoledocumentlayout.h \
+    profileitem.h \
+    group.h \
+    profileitemfactory.h \
+    xmlerror.h
 
 FORMS    += mainwindow.ui \
     console.ui

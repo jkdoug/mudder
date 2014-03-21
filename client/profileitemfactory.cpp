@@ -21,41 +21,46 @@
 */
 
 
-#ifndef PROFILE_H
-#define PROFILE_H
+#include "profileitemfactory.h"
+#include "profileitem.h"
+#include "group.h"
 
-#include <QHash>
-#include <QList>
-#include <QObject>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
-
-class Group;
-class ProfileItem;
-class XmlError;
-
-class Profile : public QObject
+ProfileItem * ProfileItemFactory::create(const QString &name, Group *parent)
 {
-    Q_OBJECT
-public:
-    explicit Profile(QObject *parent = 0);
+    ProfileItem *item = 0;
 
-    Group * rootGroup() const { return m_root; }
-    Group * activeGroup() const { return m_activeGroup?m_activeGroup:m_root; }
-    void setActiveGroup(Group *group);
+    if (name == "accelerator")
+    {
+        item = new ProfileItem(parent);
+    }
+    else if (name == "alias")
+    {
+        item = new ProfileItem(parent);
+    }
+    else if (name == "event")
+    {
+        item = new ProfileItem(parent);
+    }
+    else if (name == "group")
+    {
+        item = new Group(parent);
+    }
+    else if (name == "timer")
+    {
+        item = new ProfileItem(parent);
+    }
+    else if (name == "trigger")
+    {
+        item = new ProfileItem(parent);
+    }
+    else if (name == "variable")
+    {
+        item = new ProfileItem(parent);
+    }
+    else
+    {
+        return 0;
+    }
 
-    virtual void toXml(QXmlStreamWriter &xml);
-    virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
-
-signals:
-    void optionsChanged();
-    void settingsChanged();
-
-private:
-    Group *m_root;
-    Group *m_activeGroup;
-
-    QHash<QString, ProfileItem *> m_itemMap;
-};
-
-#endif // PROFILE_H
+    return item;
+}

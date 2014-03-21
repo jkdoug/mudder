@@ -14,7 +14,6 @@ DEFINES += CORE_LIBRARY
 SOURCES += \
     coresettings.cpp \
     coreapplication.cpp \
-    xmlobject.cpp \
     contextmanager.cpp \
     command.cpp \
     shortcutcommand.cpp \
@@ -24,8 +23,6 @@ HEADERS +=\
         core_global.h \
     coresettings.h \
     coreapplication.h \
-    xmlobject.h \
-    xmlerror.h \
     contextmanager.h \
     command.h \
     shortcutcommand.h \

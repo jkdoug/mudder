@@ -27,6 +27,7 @@
 #include "logger.h"
 #include "consoledocument.h"
 #include "profile.h"
+#include "xmlerror.h"
 #include <QAbstractTextDocumentLayout>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -269,21 +270,19 @@ bool Console::readFile(const QString &fileName)
     LOG_INFO("Reading profile:", fileName);
 
     QXmlStreamReader xml(&file);
-    m_profile->fromXml(xml);
+
+    QList<XmlError *> errors;
+    m_profile->fromXml(xml, errors);
+
     file.close();
 
     CoreApplication::setApplicationBusy(false);
 
-    if (m_profile->hasErrors())
+    foreach (XmlError *err, errors)
     {
-        QStringList errList;
-        foreach (XmlError *err, m_profile->errors())
-        {
-            errList << QString("Line %1, Column %2: %3").arg(err->line()).arg(err->column()).arg(err->message());
-        }
+        LOG_WARNING(err->toString());
 
-        LOG_ERROR("Errors reading profile XML:", errList);
-        return false;
+        // TODO: append to console document
     }
 
     return true;
@@ -314,18 +313,6 @@ bool Console::writeFile(const QString &fileName)
     file.close();
 
     CoreApplication::setApplicationBusy(false);
-
-    if (m_profile->hasErrors())
-    {
-        QStringList errList;
-        foreach (XmlError *err, m_profile->errors())
-        {
-            errList << QString("Line %1, Column %2: %3").arg(err->line()).arg(err->column()).arg(err->message());
-        }
-
-        LOG_ERROR("Errors writing profile XML:", errList);
-        return false;
-    }
 
     return true;
 }

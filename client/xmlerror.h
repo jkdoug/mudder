@@ -24,18 +24,17 @@
 #ifndef XMLERROR_H
 #define XMLERROR_H
 
-#include "core_global.h"
 #include <QDebug>
 #include <QObject>
 #include <QString>
 
-class CORESHARED_EXPORT XmlError
+class XmlError
 {
 public:
-    XmlError() :
-        m_message("Undefined error"),
-        m_line(0),
-        m_column(0)
+    XmlError(int line = 0, int column = 0, const QString &message = "Undefined error") :
+        m_message(message),
+        m_line(line),
+        m_column(column)
     {}
     XmlError(const XmlError &rhs)
     {
@@ -51,6 +50,24 @@ public:
     int line() const { return m_line; }
     void setColumn(int column) { m_column = column; }
     int column() const { return m_column; }
+
+    QString toString() const
+    {
+        QString l;
+        if (m_line > 0)
+        {
+            if (m_column > 0)
+            {
+                l = QString(": Line %1, Column %2").arg(m_line).arg(m_column);
+            }
+            else
+            {
+                l = QString(": Line %1").arg(m_line);
+            }
+        }
+
+        return QString("XML%1; %2").arg(l).arg(m_message);
+    }
 
 private:
     QString m_message;
