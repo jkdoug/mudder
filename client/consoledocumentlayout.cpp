@@ -84,7 +84,11 @@ void ConsoleDocumentLayout::draw(QPainter *painter, const PaintContext &context)
 
 void ConsoleDocumentLayout::documentChanged(int from, int charsRemoved, int charsAdded)
 {
-    LOG_DEBUG("ConsoleDocumentLayout::documentChanged", from, charsRemoved, charsAdded);
+    Q_UNUSED(from)
+    Q_UNUSED(charsRemoved)
+    Q_UNUSED(charsAdded)
+
+//    LOG_DEBUG("ConsoleDocumentLayout::documentChanged", from, charsRemoved, charsAdded);
 }
 
 int ConsoleDocumentLayout::hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const
