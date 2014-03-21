@@ -170,11 +170,12 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionSaveAs_triggered()
 {
-    if (activeConsole())
+    Console *console = activeConsole();
+    if (console)
     {
-        if (activeConsole()->saveAs())
+        if (console->saveAs())
         {
-            SETTINGS->addRecentFile(activeConsole()->fileName());
+            SETTINGS->addRecentFile(console->fileName());
         }
     }
 }
