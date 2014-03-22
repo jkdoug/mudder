@@ -20,7 +20,15 @@ SOURCES += main.cpp\
     consoledocumentlayout.cpp \
     profileitem.cpp \
     group.cpp \
-    profileitemfactory.cpp
+    profileitemfactory.cpp \
+    executable.cpp \
+    matchable.cpp \
+    alias.cpp \
+    trigger.cpp \
+    variable.cpp \
+    event.cpp \
+    accelerator.cpp \
+    timer.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -30,7 +38,15 @@ HEADERS  += mainwindow.h \
     profileitem.h \
     group.h \
     profileitemfactory.h \
-    xmlerror.h
+    xmlerror.h \
+    executable.h \
+    matchable.h \
+    alias.h \
+    trigger.h \
+    variable.h \
+    event.h \
+    accelerator.h \
+    timer.h
 
 FORMS    += mainwindow.ui \
     console.ui

@@ -283,7 +283,10 @@ bool Console::readFile(const QString &fileName)
         LOG_WARNING(err->toString());
 
         // TODO: append to console document
+
+        delete err;
     }
+    errors.clear();
 
     return true;
 }

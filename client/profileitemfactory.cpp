@@ -23,7 +23,13 @@
 
 #include "profileitemfactory.h"
 #include "profileitem.h"
+#include "accelerator.h"
+#include "alias.h"
+#include "event.h"
 #include "group.h"
+#include "timer.h"
+#include "trigger.h"
+#include "variable.h"
 
 ProfileItem * ProfileItemFactory::create(const QString &name, Group *parent)
 {
@@ -31,15 +37,15 @@ ProfileItem * ProfileItemFactory::create(const QString &name, Group *parent)
 
     if (name == "accelerator")
     {
-        item = new ProfileItem(parent);
+        item = new Accelerator(parent);
     }
     else if (name == "alias")
     {
-        item = new ProfileItem(parent);
+        item = new Alias(parent);
     }
     else if (name == "event")
     {
-        item = new ProfileItem(parent);
+        item = new Event(parent);
     }
     else if (name == "group")
     {
@@ -47,15 +53,15 @@ ProfileItem * ProfileItemFactory::create(const QString &name, Group *parent)
     }
     else if (name == "timer")
     {
-        item = new ProfileItem(parent);
+        item = new Timer(parent);
     }
     else if (name == "trigger")
     {
-        item = new ProfileItem(parent);
+        item = new Trigger(parent);
     }
     else if (name == "variable")
     {
-        item = new ProfileItem(parent);
+        item = new Variable(parent);
     }
     else
     {
