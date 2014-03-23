@@ -50,6 +50,9 @@ Console::Console(QWidget *parent) :
     m_isUntitled = true;
 
     m_document = new ConsoleDocument(this);
+    ui->output->setDocument(m_document);
+
+    connect(ui->input, SIGNAL(command(QString)), SLOT(commandEntered(QString)));
 
     QByteArray test("Rapture Runtime Environment v2.2.0 -- (c) 2012 -- Iron Realms Entertainment\n"
                     "Multi-User License: 100-0000-000\n"
@@ -83,12 +86,6 @@ Console::Console(QWidget *parent) :
 
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
-
-    QPalette pal(palette());
-    pal.setBrush(QPalette::Base, Qt::black);
-    pal.setBrush(QPalette::Window, Qt::black);
-    pal.setBrush(QPalette::Text, Qt::lightGray);
-    setPalette(pal);
 
     LOG_DEBUG("Console window initialized.");
 }
@@ -163,25 +160,6 @@ Console * Console::openFile(const QString &fileName, QWidget *parent)
     return 0;
 }
 
-void Console::paintEvent(QPaintEvent *e)
-{
-    Q_UNUSED(e)
-
-    QPainter painter(this);
-    painter.fillRect(rect(), palette().window());
-
-    if (!m_document)
-    {
-        return;
-    }
-
-    QAbstractTextDocumentLayout::PaintContext ctx;
-    ctx.clip = rect();
-    ctx.palette = palette();
-
-    m_document->documentLayout()->draw(&painter, ctx);
-}
-
 void Console::closeEvent(QCloseEvent *e)
 {
     LOG_TRACE("Console::closeEvent");
@@ -201,6 +179,11 @@ void Console::contentsModified()
     LOG_TRACE("Console::contentsModified");
 
     setWindowModified(true);
+}
+
+void Console::commandEntered(const QString &cmd)
+{
+    LOG_TRACE("Console::commandEntered", cmd);
 }
 
 bool Console::okToContinue()

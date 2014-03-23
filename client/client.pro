@@ -28,7 +28,9 @@ SOURCES += main.cpp\
     variable.cpp \
     event.cpp \
     accelerator.cpp \
-    timer.cpp
+    timer.cpp \
+    commandline.cpp \
+    consoledisplay.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -46,7 +48,9 @@ HEADERS  += mainwindow.h \
     variable.h \
     event.h \
     accelerator.h \
-    timer.h
+    timer.h \
+    commandline.h \
+    consoledisplay.h
 
 FORMS    += mainwindow.ui \
     console.ui
