@@ -92,7 +92,7 @@ void Accelerator::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
     QKeySequence key(QKeySequence::fromString(keyName));
     if (key.isEmpty())
     {
-        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), QString("invalid value for 'key' attribute: %1").arg(keyName));
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid value for 'key' attribute: %1").arg(keyName));
     }
     setKey(key);
 

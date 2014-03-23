@@ -151,13 +151,18 @@ void ProfileItem::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 
     enable(xml.attributes().value("enabled").compare("n", Qt::CaseInsensitive) != 0);
 
-    bool valid = true;
-    int sequence = xml.attributes().value("sequence").toString().toInt(&valid);
-    if (!valid)
+    QString seq(xml.attributes().value("sequence").toString());
+    int sequence = 1000;
+    if (!seq.isEmpty())
     {
-        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid value for 'sequence' attribute: %1").arg(xml.attributes().value("sequence").toString()));
+        bool valid = true;
+        sequence = seq.toInt(&valid);
+        if (!valid)
+        {
+            errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid value for 'sequence' attribute: %1").arg(seq));
 
-        sequence = 1000;
+            sequence = 1000;
+        }
     }
     setSequence(qBound(1, sequence, 100000));
 }

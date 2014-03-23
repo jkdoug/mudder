@@ -23,6 +23,7 @@
 
 #include "variable.h"
 #include "xmlerror.h"
+#include <QRegularExpression>
 
 Variable::Variable(QObject *parent) :
     ProfileItem(parent),
@@ -210,14 +211,14 @@ void Variable::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
     QVariant::Type enumType = Variable::translateType(type);
     if (enumType == QVariant::Invalid)
     {
-        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), QString("invalid value for 'type' attribute: %1").arg(type));
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid value for 'type' attribute: %1").arg(type));
     }
     else
     {
         QVariant val(xml.readElementText().trimmed());
         if (!val.convert(enumType))
         {
-            errors << new XmlError(xml.lineNumber(), xml.columnNumber(), QString("type mismatch in variable: %1").arg(type));
+            errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("type mismatch in variable: %1").arg(type));
         }
 
         setContents(val);

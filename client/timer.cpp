@@ -246,7 +246,7 @@ void Timer::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
     QTime time(h, m, s, ms);
     if (!time.isValid() || (h <= 0 && m <= 0 && s <= 0 && ms <= 0))
     {
-        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), "invalid interval for timer");
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid interval for timer"));
     }
     setInterval(time);
 
@@ -256,6 +256,6 @@ void Timer::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 
     if (contents().isEmpty())
     {
-        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), "missing or empty 'send' element in timer");
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or empty 'send' element in timer"));
     }
 }

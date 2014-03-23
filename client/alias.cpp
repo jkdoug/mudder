@@ -98,6 +98,6 @@ void Alias::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 
     if (contents().isEmpty())
     {
-        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), "missing or empty 'send' element in alias");
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or empty 'send' element in alias"));
     }
 }

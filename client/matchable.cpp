@@ -177,14 +177,14 @@ void Matchable::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
     QString pattern(xml.attributes().value("pattern").toString());
     if (pattern.isEmpty())
     {
-        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), "missing 'pattern' attribute");
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing 'pattern' attribute"));
     }
     else
     {
         setPattern(pattern);
         if (!regex().isValid())
         {
-            errors << new XmlError(xml.lineNumber(), xml.columnNumber(), QString("invalid regular expression pattern: %1").arg(pattern));
+            errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid regular expression pattern: %1").arg(pattern));
         }
     }
 

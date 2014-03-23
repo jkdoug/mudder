@@ -65,6 +65,7 @@ public:
     virtual QString value() const { return interval().toString(); }
     virtual int sequence() const { return 0; }
 
+    virtual QString tagName() const { return "timer"; }
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
