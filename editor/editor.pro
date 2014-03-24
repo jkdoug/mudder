@@ -36,7 +36,6 @@ unix {
 }
 
 
-
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../core/release/ -lcore
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../core/debug/ -lcore
 else:unix: LIBS += -L$$OUT_PWD/../core/ -lcore
@@ -44,22 +43,12 @@ else:unix: LIBS += -L$$OUT_PWD/../core/ -lcore
 INCLUDEPATH += $$PWD/../core
 DEPENDPATH += $$PWD/../core
 
-win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/release/core.lib
-else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/debug/core.lib
-else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../core/libcore.a
-
-
-
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../logging/release/ -llogging
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../logging/debug/ -llogging
 else:unix: LIBS += -L$$OUT_PWD/../logging/ -llogging
 
 INCLUDEPATH += $$PWD/../logging
 DEPENDPATH += $$PWD/../logging
-
-win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../logging/release/logging.lib
-else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../logging/debug/logging.lib
-else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../logging/liblogging.a
 
 RESOURCES += \
     editor.qrc

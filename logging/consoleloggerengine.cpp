@@ -24,6 +24,10 @@
 #include "consoleloggerengine.h"
 #include <QMutex>
 
+#ifndef Q_OS_WIN
+#include <stdio.h>
+#endif
+
 #define CONSOLE_RESET       "\033[0m"
 #define CONSOLE_BLACK       "\033[30m"
 #define CONSOLE_RED         "\033[31m"

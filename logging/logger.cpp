@@ -36,6 +36,7 @@
 #include "xmlformattingengine.h"
 #include <QCoreApplication>
 #include <QDir>
+#include <QMutex>
 #include <QPointer>
 #include <QtDebug>
 

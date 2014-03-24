@@ -77,20 +77,12 @@ else:unix: LIBS += -L$$OUT_PWD/../core/ -lcore
 INCLUDEPATH += $$PWD/../core
 DEPENDPATH += $$PWD/../core
 
-win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/release/core.lib
-else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/debug/core.lib
-else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../core/libcore.a
-
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../editor/release/ -leditor
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../editor/debug/ -leditor
 else:unix: LIBS += -L$$OUT_PWD/../editor/ -leditor
 
 INCLUDEPATH += $$PWD/../editor
 DEPENDPATH += $$PWD/../editor
-
-win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../editor/release/editor.lib
-else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../editor/debug/editor.lib
-else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../editor/libeditor.a
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../logging/release/ -llogging
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../logging/debug/ -llogging

@@ -238,33 +238,33 @@ void CodeEditorWindow::printPreview(QPrinter *printer)
 
 void CodeEditorWindow::showSearchBox()
 {
-    if (!m_searchWidget)
-    {
-        SearchWidget::SearchOptions options = SETTINGS->value("Editor/SearchOptions",
-                                                              SearchWidget::NoOptions).toInt();
-        SearchWidget::SearchButtons buttons = SETTINGS->value("Editor/SearchButtons",
-                                                              SearchWidget::AllButtons).toInt();
-        m_searchWidget = new SearchWidget(options, SearchWidget::SearchAndReplace, buttons);
-        m_searchWidget->setPlainTextEditor(activeEditor());
+//    if (!m_searchWidget)
+//    {
+//        SearchWidget::SearchOptions options = SETTINGS->value("Editor/SearchOptions",
+//                                                              SearchWidget::NoOptions).toInt();
+//        SearchWidget::SearchButtons buttons = SETTINGS->value("Editor/SearchButtons",
+//                                                              SearchWidget::AllButtons).toInt();
+//        m_searchWidget = new SearchWidget(options, SearchWidget::SearchAndReplace, buttons);
+//        m_searchWidget->setPlainTextEditor(activeEditor());
 
-        centralWidget()->layout()->addWidget(m_searchWidget);
-    }
+//        centralWidget()->layout()->addWidget(m_searchWidget);
+//    }
 
-    m_searchWidget->setEditorFocus();
+//    m_searchWidget->setEditorFocus();
 
-    if (activeEditor())
-    {
-        QTextCursor cursor(activeEditor()->textCursor());
-        if (cursor.hasSelection())
-        {
-            m_searchWidget->setCurrentSearchString(cursor.selectedText());
-        }
-    }
+//    if (activeEditor())
+//    {
+//        QTextCursor cursor(activeEditor()->textCursor());
+//        if (cursor.hasSelection())
+//        {
+//            m_searchWidget->setCurrentSearchString(cursor.selectedText());
+//        }
+//    }
 
-    if (!m_searchWidget->isVisible())
-    {
-        m_searchWidget->show();
-    }
+//    if (!m_searchWidget->isVisible())
+//    {
+//        m_searchWidget->show();
+//    }
 }
 
 void CodeEditorWindow::focusInEvent(QFocusEvent *e)

@@ -32,11 +32,11 @@
 
 struct CustomFormattingHint
 {
-    CustomFormattingHint(const QRegularExpression &regex, const QString &hint, Logger::MessageTypeFlags typeFlags = Logger::AllLogLevels) :
-        regex(regex),
-        hint(hint),
-        typeFlags(typeFlags)
+    CustomFormattingHint(const QRegularExpression &r, const QString &h, Logger::MessageTypeFlags t = Logger::AllLogLevels)
     {
+        regex = r;
+        hint = h;
+        typeFlags = t;
     }
     CustomFormattingHint(const CustomFormattingHint &rhs)
     {
