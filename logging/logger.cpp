@@ -37,37 +37,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QMutex>
-#include <QPointer>
 #include <QtDebug>
-
-const quint32 MARKER_LOGGER_CONFIG_TAG = 0xFACE10FF;
-
-
-struct LoggerPrivate
-{
-    LoggerPrivate()
-    {
-        defaultFormattingEngine = "Uninitialized";
-        globalLogLevel = Logger::Debug;
-        initialized = false;
-        rememberSessionConfig = false;
-        priorityFormattingEngine = 0;
-        sessionPath = QCoreApplication::applicationDirPath() + "Session";
-        settingsEnabled = true;
-    }
-
-    LoggerFactory<LoggerEngine> loggerEngineFactory;
-    QList<QPointer<LoggerEngine> > loggerEngines;
-    QList<QPointer<FormattingEngine> > formattingEngines;
-    QString defaultFormattingEngine;
-    Logger::MessageType globalLogLevel;
-    bool initialized;
-    bool isQtMessageHandler;
-    bool rememberSessionConfig;
-    QPointer<FormattingEngine> priorityFormattingEngine;
-    QString sessionPath;
-    bool settingsEnabled;
-};
 
 
 Logger * Logger::m_instance = 0;
@@ -90,8 +60,6 @@ Logger * Logger::instance()
 
 Logger::Logger()
 {
-    m_d = new LoggerPrivate;
-
     qRegisterMetaType<Logger::MessageType>("Logger::MessageType");
     qRegisterMetaType<Logger::MessageContextFlags>("Logger::MessageContextFlags");
 }
@@ -99,24 +67,23 @@ Logger::Logger()
 Logger::~Logger()
 {
     clear();
-    delete m_d;
 }
 
-void Logger::initialize(const QString &configFileName)
+void Logger::initialize()
 {
-    if (m_d->initialized)
+    if (m_initialized)
     {
         return;
     }
 
-    m_d->formattingEngines << &DefaultFormattingEngine::instance();
-    m_d->formattingEngines << &RichTextFormattingEngine::instance();
-    m_d->formattingEngines << &XmlFormattingEngine::instance();
-    m_d->formattingEngines << &HtmlFormattingEngine::instance();
-    m_d->formattingEngines << &QtMsgFormattingEngine::instance();
-    m_d->defaultFormattingEngine = "Default";
+    m_formattingEngines << &DefaultFormattingEngine::instance();
+    m_formattingEngines << &RichTextFormattingEngine::instance();
+    m_formattingEngines << &XmlFormattingEngine::instance();
+    m_formattingEngines << &HtmlFormattingEngine::instance();
+    m_formattingEngines << &QtMsgFormattingEngine::instance();
+    m_defaultFormattingEngine = "Default";
 
-    m_d->loggerEngineFactory.registerFactoryInterface("def.FactoryTag.File", &FileLoggerEngine::factory);
+    m_loggerEngineFactory.registerFactoryInterface("def.FactoryTag.File", &FileLoggerEngine::factory);
 
     LoggerEngine *engine = QtMsgLoggerEngine::instance();
     engine->installFormattingEngine(&QtMsgFormattingEngine::instance());
@@ -128,270 +95,12 @@ void Logger::initialize(const QString &configFileName)
     attachLoggerEngine(engine, true);
     toggleConsoleEngine(false);
 
-//    readSettings();       // TODO
-
-    if (m_d->rememberSessionConfig)
-    {
-        loadSessionConfig(configFileName);
-    }
-
-    m_d->initialized = true;
+    m_initialized = true;
 }
 
-void Logger::finalize(const QString &configFileName)
+void Logger::finalize()
 {
-    if (m_d->rememberSessionConfig)
-    {
-        saveSessionConfig(configFileName);
-    }
-
     clear();
-}
-
-bool Logger::loadSessionConfig(QString configFileName)
-{
-    if (configFileName.isEmpty())
-    {
-        configFileName = m_d->sessionPath + QDir::separator() + "last_stored.logconfig";
-    }
-
-//    LOG_DEBUG(tr("Logging configuration import started from ") + file_name);
-    QFile file(configFileName);
-    if (!file.open(QIODevice::ReadOnly))
-    {
-//        LOG_INFO(tr("Logging configuration import failed from ") + file_name + tr(". This file could not be opened in read mode."));
-        return false;
-    }
-
-    QDataStream stream(&file);
-
-    quint32 ui32;
-    stream >> ui32;
-    if (ui32 != MARKER_LOGGER_CONFIG_TAG)
-    {
-        file.close();
-//        LOG_INFO(tr("Logging configuration import failed from ") + file_name + tr(". The file contains invalid data or does not exist."));
-        return false;
-    }
-
-    quint32 globalLogLevel;
-    stream >> globalLogLevel;
-
-    quint32 importCount;
-    stream >> importCount;
-
-    bool success = true;
-    QList<LoggerEngine *> engines;
-    for (quint32 i = 0; i < importCount; i++)
-    {
-        if (!success)
-        {
-            break;
-        }
-
-        QString tag;
-        stream >> tag;
-//        LOG_DEBUG(tr("Creating logger factory instance with tag: ") + tag);
-        LoggerEngine *engine = m_d->loggerEngineFactory.createInstance(tag);
-        if (engine)
-        {
-            QString name;
-            stream >> name;
-            engine->setName(name);
-            LoggerExportable *logExport = qobject_cast<LoggerExportable *>(engine);
-            if (logExport)
-            {
-                logExport->importBinary(stream);
-                engines << engine;
-            }
-            else
-            {
-//                LOG_WARNING(tr("Logger engine could not be constructed for factory tag: ") + tag);
-                success = false;
-            }
-        }
-        else
-        {
-            success = false;
-        }
-    }
-
-    if (success)
-    {
-        QList<LoggerEngine*> loggers;
-        foreach (LoggerEngine *engine, m_d->loggerEngines)
-        {
-            LoggerExportable *logExport = qobject_cast<LoggerExportable *>(engine);
-            if (logExport)
-            {
-                loggers << engine;
-            }
-        }
-
-        foreach (LoggerEngine *engine, loggers)
-        {
-            detachLoggerEngine(engine);
-        }
-
-        foreach (LoggerEngine *engine, engines)
-        {
-            if (!attachLoggerEngine(engine))
-            {
-                success = false;
-            }
-        }
-    }
-    else
-    {
-        foreach (LoggerEngine *engine, engines)
-        {
-            delete engine;
-        }
-    }
-
-    bool complete = true;
-    if (success)
-    {
-        stream >> importCount;
-
-        QString currentName;
-        QString currentEngine;
-        bool isActive;
-        MessageContextFlags messageContextFlags;
-        for (quint32 i = 0; i < importCount; i++)
-        {
-            if (!success)
-            {
-                break;
-            }
-
-            stream >> currentName;
-            stream >> currentEngine;
-            stream >> isActive;
-
-            quint32 context;
-            stream >> context;
-            messageContextFlags = (MessageContextFlags)context;
-
-            LoggerEngine *engine = loggerEngineReference(currentName);
-            if (engine)
-            {
-//                LOG_DEBUG(tr("Restoring configuration for logger engine: ") + currentName);
-                engine->installFormattingEngine(formattingEngineReference(currentEngine));
-                engine->setActive(isActive);
-                engine->setMessageContexts(messageContextFlags);
-            }
-            else
-            {
-//                LOG_DEBUG(tr("Found logger engine configuration for an engine which does not exist yet with name: ") + currentName);
-                complete = false;
-            }
-        }
-    }
-
-    file.close();
-    if (success)
-    {
-        setGlobalLogLevel((Logger::MessageType)globalLogLevel);
-        if (complete)
-        {
-//            LOG_INFO(tr("Successfully imported logging configuration (complete) imported from ") + file_name);
-        }
-        else
-        {
-//            LOG_WARNING(tr("Logging configuration successfully (incomplete) imported from ") + file_name);
-        }
-
-        return true;
-    }
-
-//    LOG_INFO(tr("Logging configuration import failed from ") + file_name);
-    return false;
-}
-
-bool Logger::saveSessionConfig(QString configFileName) const
-{
-    if (!m_d->settingsEnabled)
-    {
-        return false;
-    }
-
-    if (configFileName.isEmpty())
-        configFileName = m_d->sessionPath + QDir::separator() + "last_stored.logconfig";
-
-//    LOG_DEBUG(tr("Logging configuration export started to ") + file_name);
-
-    QFileInfo fileInfo(configFileName);
-    if (!fileInfo.dir().exists())
-    {
-        fileInfo.dir().mkpath(fileInfo.path());
-    }
-
-    QFile file(configFileName);
-    if (!file.open(QIODevice::WriteOnly))
-    {
-//        LOG_DEBUG(tr("Logging configuration export failed to ") + file_name + tr(". The file could not be opened in WriteOnly mode."));
-        return false;
-    }
-
-    QDataStream stream(&file);
-    stream << MARKER_LOGGER_CONFIG_TAG;
-
-    QList<LoggerExportable *> exportLoggers;
-    foreach (LoggerEngine *engine, m_d->loggerEngines)
-    {
-        if (engine)
-        {
-            LoggerExportable *logExport = qobject_cast<LoggerExportable *>(engine);
-            if (logExport)
-            {
-                exportLoggers << logExport;
-            }
-        }
-    }
-
-    stream << (quint32)m_d->globalLogLevel;
-    stream << (quint32)exportLoggers.count();
-
-    bool success = true;
-    foreach (LoggerExportable *engine, exportLoggers)
-    {
-//        LOG_DEBUG(tr("Exporting logger factory instance: ") + engine->factoryTag());
-        stream << engine->factoryTag();
-        stream << engine->instanceName();
-        success = engine->exportBinary(stream);
-
-        if (!success)
-        {
-            break;
-        }
-    }
-
-    if (success)
-    {
-        stream << (quint32)m_d->loggerEngines.count();
-        foreach (LoggerEngine *engine, m_d->loggerEngines)
-        {
-            if (engine)
-            {
-//                LOG_DEBUG(tr("Saving configuration for logger engine: ") + engine->name());
-                stream << engine->name();
-                stream << engine->formattingEngineName();
-                stream << engine->isActive();
-                stream << (quint32)engine->messageContexts();
-            }
-        }
-    }
-
-    file.close();
-    if (success)
-    {
-//        LOG_INFO(tr("Successfully exported logging configuration exported to ") + file_name);
-        return true;
-    }
-
-//    LOG_ERROR(tr("Logging configuration export failed to ") + file_name);
-    return false;
 }
 
 bool Logger::attachLoggerEngine(LoggerEngine *engine, bool init)
@@ -412,7 +121,7 @@ bool Logger::attachLoggerEngine(LoggerEngine *engine, bool init)
         bool initResult = engine->initialize();
         if (!initResult)
         {
-//            LOG_ERROR(tr("New logger engine could not be added, failed during initialization."));
+            LOG_ERROR(tr("New logger engine could not be added, failed during initialization."));
             delete engine;
             engine = 0;
             return false;
@@ -422,7 +131,7 @@ bool Logger::attachLoggerEngine(LoggerEngine *engine, bool init)
     if (engine)
     {
         engine->setObjectName(engine->name());
-        m_d->loggerEngines << engine;
+        m_loggerEngines << engine;
         connect(this, SIGNAL(newMessage(QString, Logger::MessageType, Logger::MessageContext, QList<QVariant>)),
                 engine, SLOT(newMessages(QString, Logger::MessageType, Logger::MessageContext, QList<QVariant>)));
     }
@@ -433,7 +142,7 @@ bool Logger::attachLoggerEngine(LoggerEngine *engine, bool init)
 
 bool Logger::detachLoggerEngine(LoggerEngine *engine, bool del)
 {
-    if (engine && m_d->loggerEngines.removeOne(engine))
+    if (engine && m_loggerEngines.removeOne(engine))
     {
         emit loggerEngineCountChanged(engine, EngineRemoved);
         if (del)
@@ -448,20 +157,19 @@ bool Logger::detachLoggerEngine(LoggerEngine *engine, bool del)
 
 void Logger::setGlobalLogLevel(Logger::MessageType logLevel)
 {
-    if (m_d->globalLogLevel == logLevel)
+    if (m_globalLogLevel == logLevel)
     {
         return;
     }
 
-    m_d->globalLogLevel = logLevel;
+    m_globalLogLevel = logLevel;
 
-//    writeSettings();  // TODO
-//    LOG_INFO("Global log level changed to " + logLevelToString(logLevel));
+    LOG_INFO(tr("Global log level changed to %1.").arg(logLevelToString(logLevel)));
 }
 
 Logger::MessageType Logger::globalLogLevel() const
 {
-    return m_d->globalLogLevel;
+    return m_globalLogLevel;
 }
 QString Logger::logLevelToString(Logger::MessageType logLevel) const
 {
@@ -551,10 +259,6 @@ QString Logger::messageContextsToString(Logger::MessageContextFlags contexts) co
     {
         contextList << "System";
     }
-    if (contexts.testFlag(PriorityMessages))
-    {
-        contextList << "Priority";
-    }
     if (contexts.testFlag(EngineSpecificMessages))
     {
         contextList << "Engine";
@@ -575,10 +279,6 @@ Logger::MessageContextFlags Logger::stringToMessageContexts(const QString &conte
     {
         flags |= SystemWideMessages;
     }
-    if (contexts.contains("Priority"))
-    {
-        flags |= PriorityMessages;
-    }
     if (contexts.contains("Engine"))
     {
         flags |= EngineSpecificMessages;
@@ -592,26 +292,25 @@ QStringList Logger::allMessageContextStrings() const
     QStringList strings;
     strings << "None";
     strings << "System";
-    strings << "Priority";
     strings << "Engine";
     return strings;
 }
 
 void Logger::deleteAllLoggerEngines()
 {
-    foreach (LoggerEngine *engine, m_d->loggerEngines)
+    foreach (LoggerEngine *engine, m_loggerEngines)
     {
         if (engine)
         {
             delete engine;
         }
     }
-    m_d->loggerEngines.clear();
+    m_loggerEngines.clear();
 }
 
 void Logger::disableAllLoggerEngines()
 {
-    foreach (LoggerEngine *engine, m_d->loggerEngines)
+    foreach (LoggerEngine *engine, m_loggerEngines)
     {
         if (engine)
         {
@@ -622,7 +321,7 @@ void Logger::disableAllLoggerEngines()
 
 void Logger::enableAllLoggerEngines()
 {
-    foreach (LoggerEngine *engine, m_d->loggerEngines)
+    foreach (LoggerEngine *engine, m_loggerEngines)
     {
         if (engine)
         {
@@ -667,7 +366,7 @@ void Logger::disableEngine(const QString &engineName)
 QStringList Logger::availableFormattingEnginesInFactory() const
 {
     QStringList names;
-    foreach (FormattingEngine *engine, m_d->formattingEngines)
+    foreach (FormattingEngine *engine, m_formattingEngines)
     {
         names << engine->name();
     }
@@ -676,7 +375,7 @@ QStringList Logger::availableFormattingEnginesInFactory() const
 
 FormattingEngine * Logger::formattingEngineReference(const QString &name)
 {
-    foreach (FormattingEngine *engine, m_d->formattingEngines)
+    foreach (FormattingEngine *engine, m_formattingEngines)
     {
         if (engine->name().compare(name) == 0)
         {
@@ -690,13 +389,13 @@ void Logger::registerFormattingEngine(FormattingEngine *engine)
 {
     if (engine)
     {
-        m_d->formattingEngines << engine;
+        m_formattingEngines << engine;
     }
 }
 
 FormattingEngine * Logger::formattingEngineReferenceFromExtension(const QString &extension)
 {
-    foreach (FormattingEngine *engine, m_d->formattingEngines)
+    foreach (FormattingEngine *engine, m_formattingEngines)
     {
         if (engine->fileExtension().compare(extension) == 0)
         {
@@ -708,38 +407,38 @@ FormattingEngine * Logger::formattingEngineReferenceFromExtension(const QString 
 
 FormattingEngine * Logger::formattingEngineReferenceAt(int index)
 {
-    if (index < 0 || index >= m_d->formattingEngines.count())
+    if (index < 0 || index >= m_formattingEngines.count())
     {
         return 0;
     }
 
-    return m_d->formattingEngines.at(index);
+    return m_formattingEngines.at(index);
 }
 
 QString Logger::defaultFormattingEngine() const
 {
-    return m_d->defaultFormattingEngine;
+    return m_defaultFormattingEngine;
 }
 
 void Logger::registerLoggerEngineFactory(const QString &tag, LoggerFactoryInterface<LoggerEngine> *factory)
 {
-    m_d->loggerEngineFactory.registerFactoryInterface(tag, factory);
+    m_loggerEngineFactory.registerFactoryInterface(tag, factory);
 }
 
 QStringList Logger::availableLoggerEnginesInFactory() const
 {
-    return m_d->loggerEngineFactory.tags();
+    return m_loggerEngineFactory.tags();
 }
 
 inline int Logger::attachedFormattingEngineCount() const
 {
-    return m_d->formattingEngines.count();
+    return m_formattingEngines.count();
 }
 
 QStringList Logger::attachedLoggerEngineNames() const
 {
     QStringList names;
-    foreach (LoggerEngine *engine, m_d->loggerEngines)
+    foreach (LoggerEngine *engine, m_loggerEngines)
     {
         if (engine)
         {
@@ -752,7 +451,7 @@ QStringList Logger::attachedLoggerEngineNames() const
 int Logger::attachedLoggerEngineCount() const
 {
     int count = 0;
-    foreach (LoggerEngine *engine, m_d->loggerEngines)
+    foreach (LoggerEngine *engine, m_loggerEngines)
     {
         if (engine)
         {
@@ -764,7 +463,7 @@ int Logger::attachedLoggerEngineCount() const
 
 LoggerEngine * Logger::loggerEngineReference(const QString &engineName)
 {
-    foreach (LoggerEngine *engine, m_d->loggerEngines)
+    foreach (LoggerEngine *engine, m_loggerEngines)
     {
         if (engine && engine->name().compare(engineName) == 0)
         {
@@ -776,7 +475,7 @@ LoggerEngine * Logger::loggerEngineReference(const QString &engineName)
 
 LoggerEngine * Logger::loggerEngineReferenceForFile(const QString &filePath)
 {
-    foreach (LoggerEngine *engine, m_d->loggerEngines)
+    foreach (LoggerEngine *engine, m_loggerEngines)
     {
         if (engine)
         {
@@ -797,9 +496,9 @@ LoggerEngine * Logger::loggerEngineReferenceForFile(const QString &filePath)
                     if (cleanPath1.size() == cleanPath2.size())
                     {
 #ifdef Q_OS_WIN
-                        isMatch = (QDir::toNativeSeparators(cleanPath1).compare(QDir::toNativeSeparators(cleanPath2),Qt::CaseInsensitive) == 0);
+                        isMatch = (QDir::toNativeSeparators(cleanPath1).compare(QDir::toNativeSeparators(cleanPath2), Qt::CaseInsensitive) == 0);
 #else
-                        isMatch = (QDir::toNativeSeparators(cleanPath1).compare(QDir::toNativeSeparators(cleanPath2),Qt::CaseSensitive) == 0);
+                        isMatch = (QDir::toNativeSeparators(cleanPath1).compare(QDir::toNativeSeparators(cleanPath2), Qt::CaseSensitive) == 0);
 #endif
                     }
                     else
@@ -822,7 +521,7 @@ LoggerEngine * Logger::loggerEngineReferenceForFile(const QString &filePath)
 LoggerEngine * Logger::loggerEngineReferenceAt(int index)
 {
     int validCount = 0;
-    foreach (LoggerEngine *engine, m_d->loggerEngines)
+    foreach (LoggerEngine *engine, m_loggerEngines)
     {
         if (engine)
         {
@@ -839,15 +538,15 @@ LoggerEngine * Logger::loggerEngineReferenceAt(int index)
 LoggerEngine * Logger::newLoggerEngine(QString tag, FormattingEngine * formattingEngine)
 {
     int count = 0;
-    QString engineName = QString("%1_%2").arg(tag).arg(count);
+    QString engineName(QString("%1_%2").arg(tag).arg(count));
     while (attachedLoggerEngineNames().contains(engineName))
     {
-        QString countString = QString("%1").arg(count);
+        QString countString(QString("%1").arg(count));
         engineName.chop(countString.length());
         engineName.append(QString("%1").arg(++count));
     }
 
-    LoggerEngine * engine = m_d->loggerEngineFactory.createInstance(tag);
+    LoggerEngine * engine = m_loggerEngineFactory.createInstance(tag);
     if (!engine)
     {
         return 0;
@@ -870,12 +569,12 @@ LoggerEngine* Logger::newFileEngine(const QString &engineName, const QString &fi
 
     if (attachedLoggerEngineNames().contains(engineName))
     {
-        qDebug() << "Attempting to attach logger engines with duplicate names; this is not allowed. Name:" << engineName;
+        qDebug() << "Attempting to attach logger engines with duplicate names; this is not allowed. Name: " << engineName;
         return 0;
     }
 
     QPointer<FileLoggerEngine> fileEngine;
-    QPointer<LoggerEngine> engine = m_d->loggerEngineFactory.createInstance("def.FactoryTag.File");
+    QPointer<LoggerEngine> engine = m_loggerEngineFactory.createInstance("def.FactoryTag.File");
     Q_ASSERT(engine);
     engine->setName(engineName);
 
@@ -915,7 +614,7 @@ LoggerEngine* Logger::newFileEngine(const QString &engineName, const QString &fi
 
 void Logger::toggleQtMsgEngine(bool toggle)
 {
-    if (m_d->loggerEngines.contains(QtMsgLoggerEngine::instance()))
+    if (m_loggerEngines.contains(QtMsgLoggerEngine::instance()))
     {
         QtMsgLoggerEngine::instance()->setActive(toggle);
     }
@@ -923,7 +622,7 @@ void Logger::toggleQtMsgEngine(bool toggle)
 
 bool Logger::qtMsgEngineActive() const
 {
-    if (m_d->loggerEngines.contains(QtMsgLoggerEngine::instance()))
+    if (m_loggerEngines.contains(QtMsgLoggerEngine::instance()))
     {
         return QtMsgLoggerEngine::instance()->isActive();
     }
@@ -932,7 +631,7 @@ bool Logger::qtMsgEngineActive() const
 
 void Logger::toggleConsoleEngine(bool toggle)
 {
-    if (m_d->loggerEngines.contains(ConsoleLoggerEngine::instance()))
+    if (m_loggerEngines.contains(ConsoleLoggerEngine::instance()))
     {
         ConsoleLoggerEngine::instance()->setActive(toggle);
     }
@@ -940,7 +639,7 @@ void Logger::toggleConsoleEngine(bool toggle)
 
 bool Logger::consoleEngineActive() const
 {
-    if (m_d->loggerEngines.contains(ConsoleLoggerEngine::instance()))
+    if (m_loggerEngines.contains(ConsoleLoggerEngine::instance()))
     {
         return ConsoleLoggerEngine::instance()->isActive();
     }
@@ -949,19 +648,19 @@ bool Logger::consoleEngineActive() const
 
 void Logger::clear()
 {
-    for (int i = 0; i < m_d->loggerEngines.count(); i++)
+    for (int n = 0; n < m_loggerEngines.count(); n++)
     {
-        if (m_d->loggerEngines.at(i))
+        if (m_loggerEngines.at(n))
         {
-            if (m_d->loggerEngines.at(i) != QtMsgLoggerEngine::instance() &&
-                m_d->loggerEngines.at(i) != ConsoleLoggerEngine::instance())
+            if (m_loggerEngines.at(n) != QtMsgLoggerEngine::instance() &&
+                m_loggerEngines.at(n) != ConsoleLoggerEngine::instance())
             {
-                delete m_d->loggerEngines.at(i);
+                delete m_loggerEngines.at(n);
             }
         }
 
     }
-    m_d->loggerEngines.clear();
+    m_loggerEngines.clear();
 }
 
 void Logger::logMessage(const QString &engineName, MessageType type, const QVariant &message,
@@ -981,7 +680,7 @@ void Logger::logMessage(const QString &engineName, MessageType type, const QVari
         return;
     }
 
-    if (type > m_d->globalLogLevel)
+    if (type > m_globalLogLevel)
     {
         return;
     }

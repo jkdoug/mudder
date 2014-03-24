@@ -27,9 +27,9 @@
 #include "logging_global.h"
 #include "loggerfactory.h"
 #include <QObject>
+#include <QPointer>
 #include <QVariant>
 
-struct LoggerPrivate;
 class LoggerEngine;
 class FormattingEngine;
 
@@ -58,8 +58,7 @@ public:
         NoMessageContext        = 1 << 0,
         SystemWideMessages      = 1 << 1,
         EngineSpecificMessages  = 1 << 2,
-        PriorityMessages        = 1 << 4,
-        AllMessageContexts      = SystemWideMessages | EngineSpecificMessages | PriorityMessages
+        AllMessageContexts      = SystemWideMessages | EngineSpecificMessages
     };
     Q_DECLARE_FLAGS(MessageContextFlags, MessageContext)
     Q_FLAGS(MessageContextFlags)
@@ -75,11 +74,8 @@ public:
     static Logger * instance();
     ~Logger();
 
-    void initialize(const QString &configFileName = QString());
-    void finalize(const QString &configFileName = QString());
-
-    bool loadSessionConfig(QString configFileName = QString());
-    bool saveSessionConfig(QString configFileName = QString()) const;
+    void initialize();
+    void finalize();
 
     bool attachLoggerEngine(LoggerEngine *engine, bool init = true);
     bool detachLoggerEngine(LoggerEngine *engine, bool del = true);
@@ -140,7 +136,13 @@ private:
 
     static Logger * m_instance;
 
-    LoggerPrivate * m_d;
+    LoggerFactory<LoggerEngine> m_loggerEngineFactory;
+    QList<QPointer<LoggerEngine> > m_loggerEngines;
+    QList<QPointer<FormattingEngine> > m_formattingEngines;
+    QString m_defaultFormattingEngine;
+    Logger::MessageType m_globalLogLevel;
+    bool m_initialized;
+    bool m_isQtMessageHandler;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Logger::MessageTypeFlags)
