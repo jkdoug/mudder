@@ -54,13 +54,13 @@ QtMsgLoggerEngine::~QtMsgLoggerEngine()
 
 bool QtMsgLoggerEngine::initialize()
 {
-    m_d->isInitialized = true;
+    m_initialized = true;
     return true;
 }
 
 void QtMsgLoggerEngine::finalize()
 {
-    m_d->isInitialized = false;
+    m_initialized = false;
 }
 
 QString QtMsgLoggerEngine::description() const
@@ -70,9 +70,9 @@ QString QtMsgLoggerEngine::description() const
 
 QString QtMsgLoggerEngine::status() const
 {
-    if (m_d->isInitialized)
+    if (m_initialized)
     {
-        if (m_d->isActive)
+        if (m_active)
         {
             return "Logging in progress.";
         }

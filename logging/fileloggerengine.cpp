@@ -44,22 +44,22 @@ bool FileLoggerEngine::initialize()
 {
     if (m_fileName.isEmpty())
     {
-//        LOG_ERROR(QString("Failed to initialize file logger engine (%1): File name is empty...").arg(objectName()));
+        LOG_ERROR(QString("Failed to initialize file logger engine (%1): File name is empty...").arg(objectName()));
         return false;
     }
 
-    if (!m_d->formattingEngine)
+    if (!m_formattingEngine)
     {
         QFileInfo fileInfo(m_fileName);
         FormattingEngine* formattingEngine = LOG->formattingEngineReferenceFromExtension(fileInfo.suffix());
         if (!formattingEngine)
         {
-            m_d->formattingEngine = LOG->formattingEngineReference("Default");
-//            LOG_DEBUG(QString("Assigning default formatting engine to file logger engine (%1).").arg(objectName()));
+            m_formattingEngine = LOG->formattingEngineReference("Default");
+            LOG_DEBUG(QString("Assigning default formatting engine to file logger engine (%1).").arg(objectName()));
         }
         else
         {
-            m_d->formattingEngine = formattingEngine;
+            m_formattingEngine = formattingEngine;
         }
     }
 
@@ -73,21 +73,21 @@ bool FileLoggerEngine::initialize()
     QFile file(m_fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-//        LOG_ERROR(QString("Failed to initialize file logger engine (%1): Can't open the specified file (%2) for writing.").arg(objectName()).arg(m_fileName));
+        LOG_ERROR(QString("Failed to initialize file logger engine (%1): Can't open the specified file (%2) for writing.").arg(objectName()).arg(m_fileName));
         return false;
     }
 
     QTextStream out(&file);
-    out << m_d->formattingEngine->initializeString();
+    out << m_formattingEngine->initializeString();
     file.close();
 
-    m_d->isInitialized = true;
+    m_initialized = true;
     return true;
 }
 
 void FileLoggerEngine::finalize()
 {
-    if (m_d->isInitialized)
+    if (m_initialized)
     {
         QFile file(m_fileName);
         if (!file.exists())
@@ -100,10 +100,10 @@ void FileLoggerEngine::finalize()
             return;
         }
 
-        if (m_d->formattingEngine)
+        if (m_formattingEngine)
         {
             QTextStream out(&file);
-            out << m_d->formattingEngine->finalizeString();
+            out << m_formattingEngine->finalizeString();
             file.close();
         }
     }
@@ -116,9 +116,9 @@ QString FileLoggerEngine::description() const
 
 QString FileLoggerEngine::status() const
 {
-    if (m_d->isInitialized)
+    if (m_initialized)
     {
-        if (m_d->isActive)
+        if (m_active)
         {
             return QString("Logging to output file: %1").arg(m_fileName);
         }
@@ -142,7 +142,7 @@ void FileLoggerEngine::logMessage(const QString &message, Logger::MessageType ty
 {
     Q_UNUSED(type)
 
-    if (!m_d->isInitialized)
+    if (!m_initialized)
     {
         return;
     }
@@ -178,7 +178,7 @@ bool FileLoggerEngine::importBinary(QDataStream &stream)
 
 void FileLoggerEngine::setFileName(const QString &fileName)
 {
-    if (!m_d->isInitialized)
+    if (!m_initialized)
     {
         m_fileName = fileName;
     }

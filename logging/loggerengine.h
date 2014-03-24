@@ -29,25 +29,6 @@
 #include "formattingengine.h"
 #include <QObject>
 
-struct LoggerEnginePrivate
-{
-    LoggerEnginePrivate() :
-        formattingEngine(0),
-        isActive(true),
-        isInitialized(false),
-        isRemovable(true),
-        messageContexts(Logger::AllMessageContexts)
-    {}
-
-    Logger::MessageTypeFlags    enabledMessageTypes;
-    FormattingEngine *          formattingEngine;
-    bool                        isActive;
-    bool                        isInitialized;
-    bool                        isRemovable;
-    Logger::MessageContextFlags messageContexts;
-    QString                     engineName;
-};
-
 class LOGGINGSHARED_EXPORT LoggerEngine : public QObject
 {
     Q_OBJECT
@@ -63,35 +44,41 @@ public:
     virtual void logMessage(const QString &message, Logger::MessageType type = Logger::Info) = 0;
     virtual void clearLog() {}
 
-    bool isActive() const;
-    void setActive(bool flag);
+    bool isActive() const { return m_active; }
+    void setActive(bool flag) { m_active = flag; }
 
-    QString name() const;
+    QString name() const { return m_engineName; }
     void setName(const QString &name);
     virtual QString description() const = 0;
     virtual QString status() const = 0;
-    virtual bool removable() const;
-    virtual void setRemovable(bool flag);
+    virtual bool removable() const { return m_removable; }
+    virtual void setRemovable(bool flag) { m_removable = flag; }
 
-    virtual void setEnabledMessageTypes(Logger::MessageTypeFlags types);
+    virtual void setEnabledMessageTypes(Logger::MessageTypeFlags types) { m_enabledMessageTypes = types; }
+    Logger::MessageTypeFlags getEnabledMessageTypes() const { return m_enabledMessageTypes; }
     virtual void enableAllMessageTypes();
-    Logger::MessageTypeFlags getEnabledMessageTypes() const;
 
     void installFormattingEngine(FormattingEngine * engine);
-    FormattingEngine* getInstalledFormattingEngine();
+    FormattingEngine* getInstalledFormattingEngine() { return m_formattingEngine; }
     QString formattingEngineName();
 
     virtual bool isFormattingEngineConstant() const = 0;
 
-    inline Logger::MessageContextFlags messageContexts() const;
-    void setMessageContexts(Logger::MessageContextFlags contexts);
+    inline Logger::MessageContextFlags messageContexts() const { return m_messageContexts; }
+    void setMessageContexts(Logger::MessageContextFlags contexts) { m_messageContexts = contexts; }
 
 public slots:
     virtual void finalize() = 0;
     virtual void newMessages(const QString &engineName, Logger::MessageType type, Logger::MessageContext context, const QList<QVariant> &messages);
 
 protected:
-    LoggerEnginePrivate * m_d;
+    Logger::MessageTypeFlags m_enabledMessageTypes;
+    FormattingEngine *m_formattingEngine;
+    bool m_active;
+    bool m_initialized;
+    bool m_removable;
+    Logger::MessageContextFlags m_messageContexts;
+    QString m_engineName;
 };
 
 #endif // LOGGERENGINE_H

@@ -26,8 +26,6 @@
 
 LoggerEngine::LoggerEngine()
 {
-    m_d = new LoggerEnginePrivate;
-
     connect(this, SIGNAL(destroyed()), SLOT(finalize()));
 
     installEventFilter(this);
@@ -37,53 +35,12 @@ LoggerEngine::LoggerEngine()
 LoggerEngine::~LoggerEngine()
 {
     LOG->detachLoggerEngine(this, false);
-    delete m_d;
-}
-
-inline Logger::MessageContextFlags LoggerEngine::messageContexts() const
-{
-    return m_d->messageContexts;
-}
-
-inline void LoggerEngine::setMessageContexts(Logger::MessageContextFlags contexts)
-{
-    m_d->messageContexts = contexts;
-}
-
-inline bool LoggerEngine::isInitialized() const
-{
-    return m_d->isInitialized;
-}
-
-inline bool LoggerEngine::isActive() const
-{
-    return m_d->isActive;
-}
-
-inline void LoggerEngine::setActive(bool flag)
-{
-    m_d->isActive = flag;
-}
-
-inline QString LoggerEngine::name() const
-{
-    return m_d->engineName;
 }
 
 void LoggerEngine::setName(const QString &name)
 {
     setObjectName(name);
-    m_d->engineName = name;
-}
-
-inline void LoggerEngine::setEnabledMessageTypes(Logger::MessageTypeFlags types)
-{
-    m_d->enabledMessageTypes = types;
-}
-
-inline Logger::MessageTypeFlags LoggerEngine::getEnabledMessageTypes() const
-{
-    return m_d->enabledMessageTypes;
+    m_engineName = name;
 }
 
 inline void LoggerEngine::enableAllMessageTypes()
@@ -93,38 +50,33 @@ inline void LoggerEngine::enableAllMessageTypes()
 
 void LoggerEngine::installFormattingEngine(FormattingEngine *engine)
 {
-    if (engine == m_d->formattingEngine)
+    if (engine == m_formattingEngine)
     {
         return;
     }
 
-    if (!isFormattingEngineConstant() && m_d->formattingEngine && engine)
+    if (!isFormattingEngineConstant() && m_formattingEngine && engine)
     {
-        m_d->formattingEngine = engine;
+        m_formattingEngine = engine;
 #ifndef QT_NO_DEBUG
-        if (m_d->isActive)
+        if (m_active)
         {
             logMessage("Formatting engine change detected.", Logger::Trace);
-            logMessage(QString("This engine now logs messages using the following formatting engine: %1").arg(m_d->formattingEngine->name()), Logger::Trace);
+            logMessage(QString("This engine now logs messages using the following formatting engine: %1").arg(m_formattingEngine->name()), Logger::Trace);
         }
 #endif
     }
-    else if (!m_d->formattingEngine && engine)
+    else if (!m_formattingEngine && engine)
     {
-        m_d->formattingEngine = engine;
+        m_formattingEngine = engine;
     }
-}
-
-FormattingEngine * LoggerEngine::getInstalledFormattingEngine()
-{
-    return m_d->formattingEngine;
 }
 
 QString LoggerEngine::formattingEngineName()
 {
-    if (m_d->formattingEngine)
+    if (m_formattingEngine)
     {
-        return m_d->formattingEngine->objectName();
+        return m_formattingEngine->objectName();
     }
 
     return tr("None");
@@ -137,23 +89,13 @@ void LoggerEngine::newMessages(const QString &engineName, Logger::MessageType ty
         return;
     }
 
-    if (!m_d->messageContexts.testFlag(context))
+    if (!m_messageContexts.testFlag(context))
     {
         return;
     }
 
-    if (m_d->isActive && m_d->formattingEngine && m_d->enabledMessageTypes.testFlag(type))
+    if (m_active && m_formattingEngine && m_enabledMessageTypes.testFlag(type))
     {
-        logMessage(m_d->formattingEngine->formatMessage(type, messages), type);
+        logMessage(m_formattingEngine->formatMessage(type, messages), type);
     }
-}
-
-inline bool LoggerEngine::removable() const
-{
-    return m_d->isRemovable;
-}
-
-inline void LoggerEngine::setRemovable(bool flag)
-{
-    m_d->isRemovable = flag;
 }
