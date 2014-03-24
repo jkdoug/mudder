@@ -22,11 +22,8 @@
 
 
 #include "consoleloggerengine.h"
+#include <QFile>
 #include <QMutex>
-
-#ifndef Q_OS_WIN
-#include <stdio.h>
-#endif
 
 #define CONSOLE_RESET       "\033[0m"
 #define CONSOLE_BLACK       "\033[30m"
@@ -114,55 +111,59 @@ QString ConsoleLoggerEngine::status() const
 
 void ConsoleLoggerEngine::resetConsoleEscapeCodes()
 {
-#ifndef Q_OS_WIN
-    fprintf(stdout, CONSOLE_RESET);
-#endif
+    QFile file;
+    file.open(stdout, QIODevice::WriteOnly);
+    file.write(CONSOLE_RESET);
+    file.close();
 }
 
 void ConsoleLoggerEngine::logMessage(const QString &message, Logger::MessageType type)
 {
+    QFile file;
+    QString logMessage(message + "\n");
+
 #ifdef Q_OS_WIN
     if (type == Logger::Error || type == Logger::Fatal)
     {
-        fprintf(stderr, "%s\n", qPrintable(message));
+        file.open(stderr, QIODevice::WriteOnly);
     }
     else
     {
-        fprintf(stdout, "%s\n", qPrintable(message));
+        file.open(stdout, QIODevice::WriteOnly);
     }
 #else
     if (m_formattingEnabled)
     {
-        if (type == Logger::Info)
+        if (type == Logger::Info || type == Logger::Warning)
         {
-            if (m_colors.contains(Logger::Info))
+            file.open(stdout, QIODevice::WriteOnly);
+
+            if (m_colors.contains(type))
             {
-                fprintf(stdout, qPrintable(QString("%1%s\n%2").arg(m_colors[Logger::Info]).arg(CONSOLE_RESET)), qPrintable(message));
+                logMessage.prepend(m_colors[type]);
+                logMessage.append(CONSOLE_RESET);
             }
             else
             {
-                fprintf(stdout, qPrintable(QString("%1%s\n").arg(CONSOLE_RESET)), qPrintable(message));
+                logMessage.prepend(CONSOLE_RESET);
             }
-        } else if (type == Logger::Warning)
-        {
-            fprintf(stdout, qPrintable(QString("%1%s\n%2").arg(m_colors[Logger::Warning]).arg(CONSOLE_RESET)), qPrintable(message));
         }
-        else if (type == Logger::Error)
+        else if (type == Logger::Error || type == Logger::Fatal)
         {
-            fprintf(stderr, qPrintable(QString("%1%s\n%2").arg(m_colors[Logger::Error]).arg(CONSOLE_RESET)), qPrintable(message));
-        }
-        else if (type == Logger::Fatal)
-        {
-            fprintf(stderr, qPrintable(QString("%1%s\n%2").arg(m_colors[Logger::Fatal]).arg(CONSOLE_RESET)), qPrintable(message));
+            file.open(stderr, QIODevice::WriteOnly);
+
+            logMessage.prepend(m_colors[type]);
+            logMessage.append(CONSOLE_RESET);
         }
         else
         {
-            fprintf(stdout, "%s\n", qPrintable(message));
+            file.open(stdout, QIODevice::WriteOnly);
         }
     }
     else
     {
-        fprintf(stdout, "%s\n", qPrintable(message));
+        file.open(stdout, QIODevice::WriteOnly);
     }
 #endif
+    file.write(qPrintable(logMessage));
 }

@@ -26,6 +26,8 @@
 
 LoggerEngine::LoggerEngine()
 {
+    m_formattingEngine = 0;
+
     connect(this, SIGNAL(destroyed()), SLOT(finalize()));
 
     installEventFilter(this);
