@@ -10,5 +10,7 @@
         <file alias="edit_cut">icons/edit_cut.png</file>
         <file alias="edit_paste">icons/edit_paste.png</file>
         <file alias="win_close">icons/win_close.png</file>
+        <file alias="connect">icons/game_connect.png</file>
+        <file alias="disconnect">icons/game_disconnect.png</file>
     </qresource>
 </RCC>

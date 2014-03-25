@@ -84,6 +84,17 @@ Console::Console(QWidget *parent) :
     connect(m_profile, SIGNAL(optionsChanged()), SLOT(contentsModified()));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
 
+    m_echoOn = true;
+    m_disconnecting = false;
+
+    m_connection = new Connection(this);
+    connect(m_connection, SIGNAL(dataReceived(QByteArray)), SLOT(dataReceived(QByteArray)));
+    connect(m_connection, SIGNAL(connected()), SLOT(connectionEstablished()));
+    connect(m_connection, SIGNAL(disconnected()), SLOT(connectionLost()));
+    connect(m_connection, SIGNAL(hostFound(QHostInfo)), SLOT(lookupComplete(QHostInfo)));
+    connect(m_connection, SIGNAL(echo(bool)), SLOT(echoToggled(bool)));
+    connect(m_connection, SIGNAL(toggleGMCP(bool)), SLOT(gmcpToggled(bool)));
+
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
 
@@ -160,6 +171,20 @@ Console * Console::openFile(const QString &fileName, QWidget *parent)
     return 0;
 }
 
+void Console::connectToServer()
+{
+    m_disconnecting = false;
+
+    m_connection->connectRemote("lusternia.game-host.org", 23); // TODO
+}
+
+void Console::disconnectFromServer()
+{
+    m_disconnecting = true;
+
+    m_connection->disconnectRemote();
+}
+
 void Console::closeEvent(QCloseEvent *e)
 {
     LOG_TRACE("Console::closeEvent");
@@ -184,6 +209,73 @@ void Console::contentsModified()
 void Console::commandEntered(const QString &cmd)
 {
     LOG_TRACE("Console::commandEntered", cmd);
+}
+
+void Console::connectionEstablished()
+{
+    LOG_INFO(tr("Connection established."));
+
+    emit connectionStatusChanged(true);
+}
+
+void Console::connectionLost()
+{
+    quint64 duration = m_connection->connectDuration();
+//    colorNote("dimgray", QColor(), QString(20, QLatin1Char('-')));
+    LOG_INFO(tr("Disconnected from server. Total time connected: %1:%2:%3.%4")
+             .arg((duration / (60 * 60 * 1000)) % 60)
+             .arg((duration / (60 * 1000)) % 60, 2, 10, QLatin1Char('0'))
+             .arg((duration / 1000) % 60, 2, 10, QLatin1Char('0'))
+             .arg(duration % 1000, 3, 10, QLatin1Char('0')));
+
+    emit connectionStatusChanged(false);
+}
+
+void Console::lookupComplete(const QHostInfo &hostInfo)
+{
+    QString address;
+    if (!hostInfo.addresses().isEmpty())
+    {
+        address = hostInfo.addresses().first().toString();
+    }
+    else
+    {
+        address = hostInfo.hostName();
+    }
+    LOG_INFO(tr("Host lookup answer: %1").arg(address));
+}
+
+void Console::dataReceived(const QByteArray &data)
+{
+//    timeLatency(m_connection->latency() / 1000.0);
+
+//    QElapsedTimer processingTime;
+//    processingTime.start();
+
+    m_document->process(data);
+
+//    timeProcessing(processingTime.elapsed() / 1000.0);
+
+//    updateScroll();
+
+//    logLatest();
+}
+
+void Console::echoToggled(bool on)
+{
+    m_echoOn = on;
+}
+
+void Console::gmcpToggled(bool on)
+{
+    if (on)
+    {
+        LOG_INFO(tr("GMCP enabled."));
+    }
+    else
+    {
+        LOG_INFO(tr("GMCP disabled."));
+    }
 }
 
 bool Console::okToContinue()

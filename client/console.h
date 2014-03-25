@@ -24,7 +24,9 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#include "connection.h"
 #include <QCloseEvent>
+#include <QHostInfo>
 #include <QWidget>
 
 namespace Ui {
@@ -49,8 +51,15 @@ public:
     static Console * open(QWidget *parent = 0);
     static Console * openFile(const QString &fileName, QWidget *parent = 0);
 
+    void connectToServer();
+    void disconnectFromServer();
+    bool isConnected() const { return m_connection->isConnected(); }
+
     QAction * windowAction() const { return m_action; }
     const QString & fileName() const { return m_fileName; }
+
+signals:
+    void connectionStatusChanged(bool connected);
 
 protected:
     void closeEvent(QCloseEvent *e);
@@ -58,6 +67,12 @@ protected:
 private slots:
     void contentsModified();
     void commandEntered(const QString &cmd);
+    void connectionEstablished();
+    void connectionLost();
+    void lookupComplete(const QHostInfo &hostInfo);
+    void dataReceived(const QByteArray &data);
+    void echoToggled(bool on);
+    void gmcpToggled(bool on);
 
 private:
     bool okToContinue();
@@ -74,6 +89,10 @@ private:
 
     ConsoleDocument *m_document;
     Profile *m_profile;
+    Connection *m_connection;
+
+    bool m_echoOn;
+    bool m_disconnecting;
 };
 
 #endif // CONSOLE_H

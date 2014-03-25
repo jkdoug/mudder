@@ -68,6 +68,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->actionEditor->setChecked(ui->dockEditor->isVisible());
 
+    updateActions();
+
     LOG_DEBUG("Main window initialized.");
 }
 
@@ -180,6 +182,22 @@ void MainWindow::on_actionSaveAs_triggered()
     }
 }
 
+void MainWindow::on_actionConnect_triggered(bool checked)
+{
+    Console *console = activeConsole();
+    if (console)
+    {
+        if (checked)
+        {
+            console->connectToServer();
+        }
+        else
+        {
+            console->disconnectFromServer();
+        }
+    }
+}
+
 void MainWindow::on_actionClose_triggered()
 {
     ui->mdiArea->closeActiveSubWindow();
@@ -240,9 +258,27 @@ void MainWindow::updateActions()
     ui->actionClose->setEnabled(hasConsole);
     ui->actionCloseAll->setEnabled(hasConsole);
 
+    ui->menuGame->menuAction()->setVisible(hasConsole);
+    ui->actionConnect->setVisible(hasConsole);
+
     if (hasConsole)
     {
-        activeConsole()->windowAction()->setChecked(true);
+        Console *console = activeConsole();
+        console->windowAction()->setChecked(true);
+
+        ui->actionConnect->setChecked(console->isConnected());
+        if (console->isConnected())
+        {
+            ui->actionConnect->setText(tr("&Disconnect"));
+            ui->actionConnect->setToolTip(tr("Disconnect from game server"));
+            ui->actionConnect->setIcon(QIcon(":/icons/disconnect"));
+        }
+        else
+        {
+            ui->actionConnect->setText(tr("&Connect"));
+            ui->actionConnect->setToolTip(tr("Connect to game server"));
+            ui->actionConnect->setIcon(QIcon(":/icons/connect"));
+        }
     }
 }
 
@@ -304,6 +340,8 @@ void MainWindow::saveConsole()
 
 void MainWindow::addConsole(Console *console)
 {
+    connect(console, SIGNAL(connectionStatusChanged(bool)), SLOT(updateActions()));
+
     QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(console);
     ui->menuWindow->addAction(console->windowAction());
     m_windowActions->addAction(console->windowAction());

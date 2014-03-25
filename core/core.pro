@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += gui widgets
+QT += gui widgets network
 
 TARGET = core
 TEMPLATE = lib
@@ -17,7 +17,8 @@ SOURCES += \
     contextmanager.cpp \
     command.cpp \
     shortcutcommand.cpp \
-    proxyaction.cpp
+    proxyaction.cpp \
+    connection.cpp
 
 HEADERS +=\
         core_global.h \
@@ -26,7 +27,8 @@ HEADERS +=\
     contextmanager.h \
     command.h \
     shortcutcommand.h \
-    proxyaction.h
+    proxyaction.h \
+    connection.h
 
 unix {
     target.path = /usr/lib
