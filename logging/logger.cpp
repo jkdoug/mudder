@@ -60,6 +60,11 @@ Logger * Logger::instance()
 
 Logger::Logger()
 {
+    m_initialized = false;
+    m_defaultFormattingEngine = "Uninitialized";
+    m_globalLogLevel = Logger::Debug;
+    m_isQtMessageHandler = false;
+
     qRegisterMetaType<Logger::MessageType>("Logger::MessageType");
     qRegisterMetaType<Logger::MessageContextFlags>("Logger::MessageContextFlags");
 }
