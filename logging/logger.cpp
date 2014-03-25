@@ -63,7 +63,6 @@ Logger::Logger()
     m_initialized = false;
     m_defaultFormattingEngine = "Uninitialized";
     m_globalLogLevel = Logger::Debug;
-    m_isQtMessageHandler = false;
 
     qRegisterMetaType<Logger::MessageType>("Logger::MessageType");
     qRegisterMetaType<Logger::MessageContextFlags>("Logger::MessageContextFlags");
@@ -554,6 +553,7 @@ LoggerEngine * Logger::newLoggerEngine(QString tag, FormattingEngine * formattin
     LoggerEngine * engine = m_loggerEngineFactory.createInstance(tag);
     if (!engine)
     {
+        qDebug() << "Failed to create logger engine:" << tag;
         return 0;
     }
     engine->setName(engineName);

@@ -142,7 +142,6 @@ private:
     QString m_defaultFormattingEngine;
     Logger::MessageType m_globalLogLevel;
     bool m_initialized;
-    bool m_isQtMessageHandler;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Logger::MessageTypeFlags)

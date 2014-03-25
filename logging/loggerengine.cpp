@@ -27,6 +27,8 @@
 LoggerEngine::LoggerEngine()
 {
     m_formattingEngine = 0;
+    m_initialized = false;
+    m_messageContexts = Logger::AllMessageContexts;
 
     connect(this, SIGNAL(destroyed()), SLOT(finalize()));
 
