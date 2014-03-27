@@ -334,8 +334,7 @@
    </property>
    <property name="icon">
     <iconset resource="client.qrc">
-     <normaloff>:/icons/disconnect</normaloff>
-     <normalon>:/icons/connect</normalon>:/icons/disconnect</iconset>
+     <normaloff>:/icons/disconnected</normaloff>:/icons/disconnected</iconset>
    </property>
    <property name="text">
     <string>&amp;Connect</string>

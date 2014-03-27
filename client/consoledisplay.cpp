@@ -22,19 +22,29 @@
 
 
 #include "consoledisplay.h"
-#include <QAbstractTextDocumentLayout>
 #include <QPainter>
 
 ConsoleDisplay::ConsoleDisplay(QWidget *parent) :
     QWidget(parent)
 {
     m_document = 0;
+    m_scrollLines = 0;
 
     QPalette pal(palette());
     pal.setBrush(QPalette::Base, Qt::black);
     pal.setBrush(QPalette::Window, Qt::black);
     pal.setBrush(QPalette::Text, Qt::lightGray);
     setPalette(pal);
+}
+
+QAbstractTextDocumentLayout * ConsoleDisplay::documentLayout()
+{
+    if (!m_document)
+    {
+        return 0;
+    }
+
+    return m_document->documentLayout();
 }
 
 void ConsoleDisplay::paintEvent(QPaintEvent *e)
@@ -52,6 +62,7 @@ void ConsoleDisplay::paintEvent(QPaintEvent *e)
     QAbstractTextDocumentLayout::PaintContext ctx;
     ctx.clip = rect();
     ctx.palette = palette();
+    ctx.cursorPosition = m_scrollLines;
 
     m_document->documentLayout()->draw(&painter, ctx);
 }

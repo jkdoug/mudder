@@ -45,6 +45,9 @@ public:
 
 protected:
     virtual void documentChanged(int from, int charsRemoved, int charsAdded);
+
+private:
+    QTextBlock bottomBlock(int scroll = 0) const;
 };
 
 #endif // CONSOLEDOCUMENTLAYOUT_H

@@ -24,6 +24,7 @@
 #ifndef CONSOLEDISPLAY_H
 #define CONSOLEDISPLAY_H
 
+#include <QAbstractTextDocumentLayout>
 #include <QTextDocument>
 #include <QWidget>
 
@@ -35,11 +36,15 @@ public:
 
     void setDocument(QTextDocument *doc) { m_document = doc; }
 
+    QAbstractTextDocumentLayout * documentLayout();
+
 protected:
     virtual void paintEvent(QPaintEvent *e);
 
 private:
     QTextDocument *m_document;
+
+    int m_scrollLines;
 };
 
 #endif // CONSOLEDISPLAY_H

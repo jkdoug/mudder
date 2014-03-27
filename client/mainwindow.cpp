@@ -266,18 +266,26 @@ void MainWindow::updateActions()
         Console *console = activeConsole();
         console->windowAction()->setChecked(true);
 
-        ui->actionConnect->setChecked(console->isConnected());
-        if (console->isConnected())
+        bool con = console->isConnected() || console->isConnecting();
+        ui->actionConnect->setChecked(con);
+        if (con)
         {
             ui->actionConnect->setText(tr("&Disconnect"));
             ui->actionConnect->setToolTip(tr("Disconnect from game server"));
-            ui->actionConnect->setIcon(QIcon(":/icons/disconnect"));
         }
         else
         {
             ui->actionConnect->setText(tr("&Connect"));
             ui->actionConnect->setToolTip(tr("Connect to game server"));
-            ui->actionConnect->setIcon(QIcon(":/icons/connect"));
+        }
+
+        if (console->isConnected())
+        {
+            ui->actionConnect->setIcon(QIcon(":/icons/connected"));
+        }
+        else
+        {
+            ui->actionConnect->setIcon(QIcon(":/icons/disconnected"));
         }
     }
 }

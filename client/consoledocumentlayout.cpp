@@ -40,7 +40,7 @@ void ConsoleDocumentLayout::draw(QPainter *painter, const PaintContext &context)
 
     int y = r.height();
 
-    QTextBlock textBlock(document()->lastBlock());
+    QTextBlock textBlock(bottomBlock(context.cursorPosition));
     while (y > 0 && textBlock.isValid())
     {
         QTextLayout * textLayout = textBlock.layout();
@@ -82,15 +82,6 @@ void ConsoleDocumentLayout::draw(QPainter *painter, const PaintContext &context)
     }
 }
 
-void ConsoleDocumentLayout::documentChanged(int from, int charsRemoved, int charsAdded)
-{
-    Q_UNUSED(from)
-    Q_UNUSED(charsRemoved)
-    Q_UNUSED(charsAdded)
-
-//    LOG_DEBUG("ConsoleDocumentLayout::documentChanged", from, charsRemoved, charsAdded);
-}
-
 int ConsoleDocumentLayout::hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const
 {
     Q_UNUSED(point)
@@ -125,4 +116,33 @@ QRectF ConsoleDocumentLayout::blockBoundingRect(const QTextBlock &block) const
     }
 
     return QRectF();
+}
+
+void ConsoleDocumentLayout::documentChanged(int from, int charsRemoved, int charsAdded)
+{
+    Q_UNUSED(from)
+    Q_UNUSED(charsRemoved)
+    Q_UNUSED(charsAdded)
+
+//    LOG_DEBUG("ConsoleDocumentLayout::documentChanged", from, charsRemoved, charsAdded);
+}
+
+QTextBlock ConsoleDocumentLayout::bottomBlock(int scroll) const
+{
+    if (!document())
+    {
+        return QTextBlock();
+    }
+
+    if (scroll > 0)
+    {
+        return document()->findBlockByNumber(scroll - 1);
+    }
+
+    if (document()->lastBlock().text().isEmpty())
+    {
+        return document()->lastBlock().previous();
+    }
+
+    return document()->lastBlock();
 }

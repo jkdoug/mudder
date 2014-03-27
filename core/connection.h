@@ -45,7 +45,10 @@ public:
 
     void setEncoding(const QString &encoding);
 
-    bool isConnected() const { return m_socket.state() != QAbstractSocket::UnconnectedState; }
+    bool isConnected() const { return m_socket.state() == QAbstractSocket::ConnectedState; }
+    bool isConnecting() const { return m_socket.state() == QAbstractSocket::ConnectingState; }
+    bool isDisconnected() const { return m_socket.state() == QAbstractSocket::UnconnectedState; }
+    bool isDisconnecting() const { return m_socket.state() == QAbstractSocket::ClosingState; }
     const QDateTime & connectTime() const { return m_connectTime; }
     quint64 connectDuration();
     int latency() const { return m_latency; }

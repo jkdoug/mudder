@@ -70,9 +70,9 @@ static const uchar TelnetOption_GMCP = 201u;
 Connection::Connection(QObject *parent) :
     QObject(parent)
 {
-    connect(&m_socket, SIGNAL(connected()), this, SLOT(connectionEstablished()));
-    connect(&m_socket, SIGNAL(disconnected()), this, SLOT(connectionLost()));
-    connect(&m_socket, SIGNAL(readyRead()), this, SLOT(readyToRead()));
+    connect(&m_socket, SIGNAL(connected()), SLOT(connectionEstablished()));
+    connect(&m_socket, SIGNAL(disconnected()), SLOT(connectionLost()));
+    connect(&m_socket, SIGNAL(readyRead()), SLOT(readyToRead()));
 
     setEncoding("UTF-8");
 

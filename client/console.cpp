@@ -78,14 +78,13 @@ Console::Console(QWidget *parent) :
                     "                 [35m3.[37m Quit.\n"
                     "\n"
                     "Enter an option or enter your character's name. \xFF\xFF");
-    m_document->process(test);
+//    m_document->process(test);
 
     m_profile = new Profile(this);
     connect(m_profile, SIGNAL(optionsChanged()), SLOT(contentsModified()));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
 
     m_echoOn = true;
-    m_disconnecting = false;
 
     m_connection = new Connection(this);
     connect(m_connection, SIGNAL(dataReceived(QByteArray)), SLOT(dataReceived(QByteArray)));
@@ -94,6 +93,10 @@ Console::Console(QWidget *parent) :
     connect(m_connection, SIGNAL(hostFound(QHostInfo)), SLOT(lookupComplete(QHostInfo)));
     connect(m_connection, SIGNAL(echo(bool)), SLOT(echoToggled(bool)));
     connect(m_connection, SIGNAL(toggleGMCP(bool)), SLOT(gmcpToggled(bool)));
+
+    connect(m_document, SIGNAL(contentsChanged()), ui->output, SLOT(update()));
+    connect(m_document, SIGNAL(contentsChanged()), SLOT(updateScroll()));
+    connect(ui->scrollbar, SIGNAL(valueChanged(int)), SLOT(scrollbarMoved(int)));
 
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
@@ -173,16 +176,41 @@ Console * Console::openFile(const QString &fileName, QWidget *parent)
 
 void Console::connectToServer()
 {
-    m_disconnecting = false;
-
     m_connection->connectRemote("lusternia.game-host.org", 23); // TODO
 }
 
 void Console::disconnectFromServer()
 {
-    m_disconnecting = true;
-
     m_connection->disconnectRemote();
+}
+
+void Console::scrollUp(int lines)
+{
+    scrollTo(ui->scrollbar->value() - lines);
+}
+
+void Console::scrollDown(int lines)
+{
+    scrollTo(ui->scrollbar->value() + lines);
+}
+
+void Console::scrollTo(int line)
+{
+    line = qBound(ui->scrollbar->minimum(), line, ui->scrollbar->maximum());
+
+    ui->scrollbar->setValue(line);
+
+    LOG_TRACE("Console::scrollTo " + QString::number(line));
+}
+
+void Console::scrollToTop()
+{
+    scrollTo(ui->scrollbar->minimum());
+}
+
+void Console::scrollToBottom()
+{
+    scrollTo(ui->scrollbar->maximum());
 }
 
 void Console::closeEvent(QCloseEvent *e)
@@ -256,7 +284,8 @@ void Console::dataReceived(const QByteArray &data)
 
 //    timeProcessing(processingTime.elapsed() / 1000.0);
 
-//    updateScroll();
+    updateScroll();
+    scrollToBottom();
 
 //    logLatest();
 }
@@ -276,6 +305,28 @@ void Console::gmcpToggled(bool on)
     {
         LOG_INFO(tr("GMCP disabled."));
     }
+}
+
+void Console::scrollbarMoved(int pos)
+{
+    disconnect(ui->scrollbar, SIGNAL(valueChanged(int)), this, SLOT(scrollbarMoved(int)));
+
+    scrollTo(pos);
+
+    connect(ui->scrollbar, SIGNAL(valueChanged(int)), SLOT(scrollbarMoved(int)));
+}
+
+void Console::updateScroll()
+{
+    if (ui->output->documentLayout())
+    {
+        ui->scrollbar->setRange(1, ui->output->documentLayout()->documentSize().height());
+    }
+    else
+    {
+        ui->scrollbar->setRange(1, 1);
+    }
+    ui->scrollbar->setPageStep(10);
 }
 
 bool Console::okToContinue()

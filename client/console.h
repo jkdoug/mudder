@@ -54,9 +54,18 @@ public:
     void connectToServer();
     void disconnectFromServer();
     bool isConnected() const { return m_connection->isConnected(); }
+    bool isConnecting() const { return m_connection->isConnecting(); }
+    bool isDisconnected() const { return m_connection->isDisconnected(); }
+    bool isDisconnecting() const { return m_connection->isDisconnecting(); }
 
     QAction * windowAction() const { return m_action; }
     const QString & fileName() const { return m_fileName; }
+
+    void scrollUp(int lines);
+    void scrollDown(int lines);
+    void scrollTo(int line);
+    void scrollToTop();
+    void scrollToBottom();
 
 signals:
     void connectionStatusChanged(bool connected);
@@ -73,6 +82,8 @@ private slots:
     void dataReceived(const QByteArray &data);
     void echoToggled(bool on);
     void gmcpToggled(bool on);
+    void scrollbarMoved(int pos);
+    void updateScroll();
 
 private:
     bool okToContinue();
@@ -92,7 +103,6 @@ private:
     Connection *m_connection;
 
     bool m_echoOn;
-    bool m_disconnecting;
 };
 
 #endif // CONSOLE_H
