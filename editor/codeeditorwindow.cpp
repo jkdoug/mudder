@@ -287,6 +287,8 @@ void CodeEditorWindow::focusOutEvent(QFocusEvent *e)
 
 bool CodeEditorWindow::eventFilter(QObject *obj, QEvent *e)
 {
+    Q_UNUSED(obj)
+
     if (e->type() == QEvent::FocusIn)
     {
 //        LOG_TRACE("CodeEditorWindow::eventFilter - FocusIn", obj->metaObject()->className());
