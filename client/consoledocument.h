@@ -40,6 +40,7 @@ public:
 
 public slots:
     void process(const QByteArray &data);
+    void command(const QString &cmd);
 
 private:
     void newLine();

@@ -89,6 +89,11 @@ void ConsoleDocument::process(const QByteArray &data)
 {
     LOG_TRACE("ConsoleDocument::process", data);
 
+    if (m_isPrompt)
+    {
+        newLine();
+    }
+
     for (int pos = 0; pos < data.length(); pos++)
     {
         uchar ch = (uchar)data.at(pos);
@@ -167,6 +172,19 @@ void ConsoleDocument::process(const QByteArray &data)
 
         m_text.append(ch);
     }
+}
+
+void ConsoleDocument::command(const QString &cmd)
+{
+    QTextCharFormat previousFormat(m_cursor->charFormat());
+
+    m_cursor->mergeCharFormat(m_formatCommand);
+
+    m_cursor->insertText(cmd);
+
+    newLine();
+
+    m_cursor->setCharFormat(previousFormat);
 }
 
 void ConsoleDocument::newLine()

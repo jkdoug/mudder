@@ -36,6 +36,9 @@ public:
 
     void setDocument(QTextDocument *doc) { m_document = doc; }
 
+    void setScrollLines(int lines) { m_scrollLines = lines; }
+    int scrollLines() const { return m_scrollLines; }
+
     QAbstractTextDocumentLayout * documentLayout();
 
 protected:

@@ -199,6 +199,8 @@ void Console::scrollTo(int line)
     line = qBound(ui->scrollbar->minimum(), line, ui->scrollbar->maximum());
 
     ui->scrollbar->setValue(line);
+    ui->output->setScrollLines(line);
+    ui->output->update();
 
     LOG_TRACE("Console::scrollTo " + QString::number(line));
 }
@@ -237,6 +239,13 @@ void Console::contentsModified()
 void Console::commandEntered(const QString &cmd)
 {
     LOG_TRACE("Console::commandEntered", cmd);
+
+    m_connection->send(cmd);
+
+    if (m_echoOn)
+    {
+        m_document->command(cmd);
+    }
 }
 
 void Console::connectionEstablished()
