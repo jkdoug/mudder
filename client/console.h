@@ -27,6 +27,7 @@
 #include "connection.h"
 #include <QCloseEvent>
 #include <QHostInfo>
+#include <QTextBlock>
 #include <QWidget>
 
 namespace Ui {
@@ -84,6 +85,7 @@ private slots:
     void gmcpToggled(bool on);
     void scrollbarMoved(int pos);
     void updateScroll();
+    void processTriggers(QTextBlock block, bool prompt);
 
 private:
     bool okToContinue();

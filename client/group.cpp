@@ -24,6 +24,7 @@
 #include "group.h"
 #include "logger.h"
 #include "xmlerror.h"
+#include "trigger.h"
 #include <QRegularExpression>
 
 Group::Group(QObject *parent) :
@@ -42,16 +43,46 @@ QString Group::path() const
     return QString("%1/%2").arg(up->path()).arg(name());
 }
 
+QList<Trigger *> Group::sortedTriggers()
+{
+    QList<Trigger *> triggers(m_triggers);
+    foreach (Group *group, m_groups)
+    {
+        triggers << group->sortedTriggers();
+    }
+
+    qSort(triggers.begin(), triggers.end(), Trigger::lessSequence);
+
+    return triggers;
+}
+
 void Group::addItem(ProfileItem *item)
 {
     LOG_TRACE("Group::addItem", path(), item->name());
 
+    item->setParent(this);
     m_items << item;
+
+    Group *group = qobject_cast<Group *>(item);
+    if (group)
+    {
+        m_groups << group;
+        return;
+    }
+
+    Trigger *trigger = qobject_cast<Trigger *>(item);
+    if (trigger)
+    {
+        m_triggers << trigger;
+        return;
+    }
 }
 
 bool Group::removeItem(ProfileItem *item)
 {
     LOG_TRACE("Group::removeItem", path(), item->name());
+
+    // TODO: remove groups, triggers, etc
 
     return m_items.removeOne(item);
 }

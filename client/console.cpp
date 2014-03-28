@@ -28,6 +28,9 @@
 #include "consoledocument.h"
 #include "profile.h"
 #include "xmlerror.h"
+#include "alias.h"
+#include "group.h"
+#include "trigger.h"
 #include <QAbstractTextDocumentLayout>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -54,32 +57,6 @@ Console::Console(QWidget *parent) :
 
     connect(ui->input, SIGNAL(command(QString)), SLOT(commandEntered(QString)));
 
-    QByteArray test("Rapture Runtime Environment v2.2.0 -- (c) 2012 -- Iron Realms Entertainment\n"
-                    "Multi-User License: 100-0000-000\n"
-                    "\n"
-                    "[0;37m[33m   o0==============================~o[0]o~==============================0o\n"
-                    "    IP Address:[35m 69.65.42.86[33m              Questions: [35msupport@lusternia.com\n"
-                    "    [33mCurrently On-Line: [35m52\n"
-                    "\n"
-                    "[1;35m     .____                     __                         .__\n"
-                    "     |    |     __ __  _______/  |_  _____ _______  ____  |__|_____\n"
-                    "     |    |    |  |  \\/  ___/\\   __\\/  __ \\\\_  __ \\/    \\ |  |\\__  \\\n"
-                    "     |    |___ |  |  /\\___ \\  |  |  \\  ___/ |  | \\/|  |  \\|  | / __ \\\n"
-                    "     |_______ \\|____/ /____ \\ |__|   \\___ \\ |__|   |__|  /|__|/_____ \\\n"
-                    "             \\/            \\/            \\/            \\/           \\/\n"
-                    "\n"
-                    "[0;35m                        A G E  O F  A S C E N S I O N\n"
-                    "\n"
-                    "\n"
-                    "[33m   o0===================================================================0o\n"
-                    "\n"
-                    "[37m                 [35m1.[37m Enter the game.\n"
-                    "                 [35m2.[37m Create a new character.\n"
-                    "                 [35m3.[37m Quit.\n"
-                    "\n"
-                    "Enter an option or enter your character's name. \xFF\xFF");
-//    m_document->process(test);
-
     m_profile = new Profile(this);
     connect(m_profile, SIGNAL(optionsChanged()), SLOT(contentsModified()));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
@@ -94,6 +71,7 @@ Console::Console(QWidget *parent) :
     connect(m_connection, SIGNAL(echo(bool)), SLOT(echoToggled(bool)));
     connect(m_connection, SIGNAL(toggleGMCP(bool)), SLOT(gmcpToggled(bool)));
 
+    connect(m_document, SIGNAL(blockAdded(QTextBlock, bool)), SLOT(processTriggers(QTextBlock, bool)));
     connect(m_document, SIGNAL(contentsChanged()), ui->output, SLOT(update()));
     connect(m_document, SIGNAL(contentsChanged()), SLOT(updateScroll()));
     connect(ui->scrollbar, SIGNAL(valueChanged(int)), SLOT(scrollbarMoved(int)));
@@ -202,7 +180,7 @@ void Console::scrollTo(int line)
     ui->output->setScrollLines(line);
     ui->output->update();
 
-    LOG_TRACE("Console::scrollTo " + QString::number(line));
+//    LOG_TRACE("Console::scrollTo " + QString::number(line));
 }
 
 void Console::scrollToTop()
@@ -338,6 +316,21 @@ void Console::updateScroll()
     ui->scrollbar->setPageStep(10);
 }
 
+void Console::processTriggers(QTextBlock block, bool prompt)
+{
+    LOG_TRACE("Console::processTriggers", block.text(), prompt?"[Prompt]":"[Not a prompt]");
+
+    QList<Trigger *> triggers(m_profile->rootGroup()->sortedTriggers());
+    foreach (Trigger *trigger, triggers)
+    {
+        LOG_TRACE(QString("Trigger[%1] = %2").arg(trigger->name()).arg(trigger->pattern()));
+        if (trigger->match(block.text()))
+        {
+            LOG_DEBUG(QString("Trigger match found!"));
+        }
+    }
+}
+
 bool Console::okToContinue()
 {
     if (isWindowModified())
@@ -422,6 +415,38 @@ bool Console::readFile(const QString &fileName)
         delete err;
     }
     errors.clear();
+
+    Trigger *trigTest = new Trigger;
+    trigTest->setPattern("\\bE(nte)r\\b");
+    trigTest->setName("trigTest");
+    trigTest->setContents("print('hello world')");
+    m_profile->rootGroup()->addItem(trigTest);
+
+    QByteArray test("Rapture Runtime Environment v2.2.0 -- (c) 2012 -- Iron Realms Entertainment\n"
+                    "Multi-User License: 100-0000-000\n"
+                    "\n"
+                    "[0;37m[33m   o0==============================~o[0]o~==============================0o\n"
+                    "    IP Address:[35m 69.65.42.86[33m              Questions: [35msupport@lusternia.com\n"
+                    "    [33mCurrently On-Line: [35m52\n"
+                    "\n"
+                    "[1;35m     .____                     __                         .__\n"
+                    "     |    |     __ __  _______/  |_  _____ _______  ____  |__|_____\n"
+                    "     |    |    |  |  \\/  ___/\\   __\\/  __ \\\\_  __ \\/    \\ |  |\\__  \\\n"
+                    "     |    |___ |  |  /\\___ \\  |  |  \\  ___/ |  | \\/|  |  \\|  | / __ \\\n"
+                    "     |_______ \\|____/ /____ \\ |__|   \\___ \\ |__|   |__|  /|__|/_____ \\\n"
+                    "             \\/            \\/            \\/            \\/           \\/\n"
+                    "\n"
+                    "[0;35m                        A G E  O F  A S C E N S I O N\n"
+                    "\n"
+                    "\n"
+                    "[33m   o0===================================================================0o\n"
+                    "\n"
+                    "[37m                 [35m1.[37m Enter the game.\n"
+                    "                 [35m2.[37m Create a new character.\n"
+                    "                 [35m3.[37m Quit.\n"
+                    "\n"
+                    "Enter an option or enter your character's name. \xFF");
+    dataReceived(test);
 
     return true;
 }

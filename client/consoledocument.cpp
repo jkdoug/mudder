@@ -85,9 +85,29 @@ QString ConsoleDocument::toPlainText(QTextCursor cur)
     return cur.selection().toPlainText();
 }
 
+void ConsoleDocument::deleteBlock(int num)
+{
+    num = qBound(0, num, blockCount() - 1);
+
+    QTextBlock block(findBlockByNumber(num));
+    if (!block.isValid())
+    {
+        return;
+    }
+
+    QTextCursor cur(block);
+    cur.select(QTextCursor::LineUnderCursor);
+    if (cur.isNull() || !cur.hasSelection())
+    {
+        return;
+    }
+
+    cur.removeSelectedText();
+}
+
 void ConsoleDocument::process(const QByteArray &data)
 {
-    LOG_TRACE("ConsoleDocument::process", data);
+//    LOG_TRACE("ConsoleDocument::process", data);
 
     if (m_isPrompt)
     {
@@ -158,9 +178,18 @@ void ConsoleDocument::process(const QByteArray &data)
             m_cursor->insertText(m_text);
             m_text.clear();
 
-//            emit lineAdded(m_cursor->block());
+//            QTextBlock b(m_cursor->block());
+//            LOG_DEBUG("Text line number: " + QString::number(b.blockNumber()));
+//            for (QTextBlock::iterator it = b.begin(); !it.atEnd(); it++)
+//            {
+//                QTextFragment f(it.fragment());
+//                if (f.isValid())
+//                {
+//                    LOG_DEBUG(QString("Text fragment: %1 [%2, %3] - %4").arg(f.text()).arg(f.position()).arg(f.length()).arg(f.charFormat().foreground().color().name()));
+//                }
+//            }
 
-            // TODO: gag/replace lines
+            emit blockAdded(m_cursor->block(), m_isPrompt);
 
             if (!m_isPrompt)
             {

@@ -25,6 +25,7 @@
 #define CONSOLEDOCUMENT_H
 
 #include <QList>
+#include <QTextBlock>
 #include <QTextCharFormat>
 #include <QTextCursor>
 #include <QTextDocument>
@@ -38,9 +39,14 @@ public:
     QString toPlainText(int start, int stop);
     QString toPlainText(QTextCursor cur = QTextCursor());
 
+    void deleteBlock(int num);
+
 public slots:
     void process(const QByteArray &data);
     void command(const QString &cmd);
+
+signals:
+    void blockAdded(QTextBlock block, bool prompt);
 
 private:
     void newLine();
@@ -62,6 +68,8 @@ private:
     bool m_bgHighColorMode;
     bool m_isHighColorMode;
     bool m_isPrompt;
+
+    int m_gagLine;
 
     QTextCharFormat m_formatDefault;
     QTextCharFormat m_formatCommand;

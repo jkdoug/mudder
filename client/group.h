@@ -27,6 +27,7 @@
 #include "profileitem.h"
 #include <QList>
 
+class Trigger;
 class XmlError;
 
 class Group : public ProfileItem
@@ -39,6 +40,8 @@ public:
 
     virtual int sequence() const { return 0; }
 
+    QList<Trigger *> sortedTriggers();
+
     void addItem(ProfileItem *item);
     bool removeItem(ProfileItem *item);
 
@@ -48,6 +51,9 @@ public:
 
 private:
     QList<ProfileItem *> m_items;
+
+    QList<Group *> m_groups;
+    QList<Trigger *> m_triggers;
 };
 
 #endif // GROUP_H
