@@ -35,6 +35,7 @@ class Console;
 }
 
 class ConsoleDocument;
+class Engine;
 class Profile;
 
 class Console : public QWidget
@@ -85,6 +86,7 @@ private slots:
     void gmcpToggled(bool on);
     void scrollbarMoved(int pos);
     void updateScroll();
+    void print(const QString &msg);
     void processTriggers(QTextBlock block, bool prompt);
 
 private:
@@ -101,6 +103,7 @@ private:
     bool m_isUntitled;
 
     ConsoleDocument *m_document;
+    Engine *m_engine;
     Profile *m_profile;
     Connection *m_connection;
 

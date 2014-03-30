@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     accelerator.cpp \
     timer.cpp \
     commandline.cpp \
-    consoledisplay.cpp
+    consoledisplay.cpp \
+    engine.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -50,7 +51,8 @@ HEADERS  += mainwindow.h \
     accelerator.h \
     timer.h \
     commandline.h \
-    consoledisplay.h
+    consoledisplay.h \
+    engine.h
 
 FORMS    += mainwindow.ui \
     console.ui

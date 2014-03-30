@@ -26,6 +26,7 @@
 #include "coreapplication.h"
 #include "logger.h"
 #include "consoledocument.h"
+#include "engine.h"
 #include "profile.h"
 #include "xmlerror.h"
 #include "alias.h"
@@ -75,6 +76,11 @@ Console::Console(QWidget *parent) :
     connect(m_document, SIGNAL(contentsChanged()), ui->output, SLOT(update()));
     connect(m_document, SIGNAL(contentsChanged()), SLOT(updateScroll()));
     connect(ui->scrollbar, SIGNAL(valueChanged(int)), SLOT(scrollbarMoved(int)));
+
+    m_engine = new Engine(this);
+    connect(m_engine, SIGNAL(output(QString)), SLOT(print(QString)));
+
+    m_engine->initialize();
 
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
@@ -314,6 +320,11 @@ void Console::updateScroll()
         ui->scrollbar->setRange(1, 1);
     }
     ui->scrollbar->setPageStep(10);
+}
+
+void Console::print(const QString &msg)
+{
+    LOG_TRACE("Console::print", msg);
 }
 
 void Console::processTriggers(QTextBlock block, bool prompt)
