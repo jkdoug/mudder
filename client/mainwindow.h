@@ -36,6 +36,7 @@ class MainWindow;
 
 class CodeEditorWindow;
 class Console;
+class SettingsWindow;
 
 class MainWindow : public QMainWindow
 {
@@ -85,6 +86,7 @@ private:
     QActionGroup *m_windowActions;
 
     CodeEditorWindow *m_editor;
+    SettingsWindow *m_settings;
 };
 
 #endif // MAINWINDOW_H

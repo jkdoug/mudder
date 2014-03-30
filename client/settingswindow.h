@@ -21,39 +21,25 @@
 */
 
 
-#ifndef ENGINE_H
-#define ENGINE_H
+#ifndef SETTINGSWINDOW_H
+#define SETTINGSWINDOW_H
 
-#include <QObject>
-#include <QString>
+#include <QMainWindow>
 
-extern "C"
-{
-    #include <lua.h>
-    #include <lualib.h>
-    #include <lauxlib.h>
+namespace Ui {
+class SettingsWindow;
 }
 
-class Engine : public QObject
+class SettingsWindow : public QMainWindow
 {
     Q_OBJECT
+
 public:
-    explicit Engine(QObject *parent = 0);
-    ~Engine();
-
-    void initialize();
-
-    void setRegistryData(const QString &name, void *data);
-    template <class C>
-    C * registryData(const QString &name, lua_State *L = 0);
-
-signals:
-    void output(const QString &str);
-
-public slots:
+    explicit SettingsWindow(QWidget *parent = 0);
+    ~SettingsWindow();
 
 private:
-    lua_State *m_global;
+    Ui::SettingsWindow *ui;
 };
 
-#endif // ENGINE_H
+#endif // SETTINGSWINDOW_H

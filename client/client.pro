@@ -31,7 +31,9 @@ SOURCES += main.cpp\
     timer.cpp \
     commandline.cpp \
     consoledisplay.cpp \
-    engine.cpp
+    engine.cpp \
+    settingswindow.cpp \
+    settingswidget.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -52,10 +54,14 @@ HEADERS  += mainwindow.h \
     timer.h \
     commandline.h \
     consoledisplay.h \
-    engine.h
+    engine.h \
+    settingswindow.h \
+    settingswidget.h
 
 FORMS    += mainwindow.ui \
-    console.ui
+    console.ui \
+    settingswindow.ui \
+    settingswidget.ui
 
 RESOURCES += \
     client.qrc

@@ -29,6 +29,7 @@
 #include "coreapplication.h"
 #include "console.h"
 #include "contextmanager.h"
+#include "settingswindow.h"
 #include <QtDebug>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -50,6 +51,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_editor = new CodeEditorWindow(this);
     ui->dockEditor->setWidget(m_editor);
+
+    m_settings = new SettingsWindow(this);
+    ui->dockSettings->setWidget(m_settings);
 
     QTabBar *mdiTabBar = ui->mdiArea->findChild<QTabBar *>();
     mdiTabBar->setExpanding(false);

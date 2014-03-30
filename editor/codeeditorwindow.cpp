@@ -50,7 +50,8 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
 {
     QString contextName("lib.core.CodeEditorWindow");
     int count = 1;
-    while (CONTEXT_MANAGER->hasContext(contextName + QString::number(count))) {
+    while (CONTEXT_MANAGER->hasContext(contextName + QString::number(count)))
+    {
         count++;
     }
     setObjectName(contextName + QString::number(count));

@@ -58,3 +58,29 @@ void Engine::initialize()
 
     emit output("Script engine initialized.");
 }
+
+void Engine::setRegistryData(const QString &name, void *data)
+{
+    if (!data)
+    {
+        return;
+    }
+
+    lua_pushlightuserdata(m_global, data);
+    lua_setfield(m_global, LUA_REGISTRYINDEX, qPrintable(name));
+}
+
+template <class C>
+C * Engine::registryData(const QString &name, lua_State *L)
+{
+    if (!L)
+    {
+        L = m_global;
+    }
+
+    lua_getfield(L, LUA_REGISTRYINDEX, qPrintable(name));
+    C *data = static_cast<C *>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+
+    return data;
+}

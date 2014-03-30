@@ -81,6 +81,7 @@ Console::Console(QWidget *parent) :
     connect(m_engine, SIGNAL(output(QString)), SLOT(print(QString)));
 
     m_engine->initialize();
+    m_engine->setRegistryData("CONSOLE", (void *)this);
 
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
