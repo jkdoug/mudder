@@ -1,17 +1,18 @@
 TEMPLATE = subdirs
 
-CONFIG += ordered
-
 SUBDIRS += \
     lua52 \
-    core \
     logging \
+    core \
     editor \
     client
+
+core.depends = logging
+
+editor.depends = core \
+                 logging
 
 client.depends = lua52 \
                  core \
                  logging \
                  editor
-
-editor.depends = core
