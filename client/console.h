@@ -25,6 +25,7 @@
 #define CONSOLE_H
 
 #include "connection.h"
+#include "profile.h"
 #include <QCloseEvent>
 #include <QHostInfo>
 #include <QTextBlock>
@@ -36,7 +37,6 @@ class Console;
 
 class ConsoleDocument;
 class Engine;
-class Profile;
 
 class Console : public QWidget
 {
@@ -52,6 +52,8 @@ public:
 
     static Console * open(QWidget *parent = 0);
     static Console * openFile(const QString &fileName, QWidget *parent = 0);
+
+    Profile * profile() { return m_profile; }
 
     void connectToServer();
     void disconnectFromServer();
