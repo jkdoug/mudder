@@ -230,6 +230,7 @@ void Console::commandEntered(const QString &cmd)
     if (m_echoOn)
     {
         m_document->command(cmd);
+        scrollToBottom();
     }
 }
 
@@ -422,11 +423,13 @@ bool Console::readFile(const QString &fileName)
     {
         LOG_WARNING(err->toString());
 
-        // TODO: append to console document
+        m_document->warning(err->toString());
 
         delete err;
     }
     errors.clear();
+
+    scrollToBottom();
 
     Trigger *trigTest = new Trigger;
     trigTest->setPattern("\\bE(nte)r\\b");
@@ -458,7 +461,7 @@ bool Console::readFile(const QString &fileName)
                     "                 [35m3.[37m Quit.\n"
                     "\n"
                     "Enter an option or enter your character's name. \xFF");
-    dataReceived(test);
+//    dataReceived(test);
 
     return true;
 }

@@ -44,6 +44,7 @@ public:
 public slots:
     void process(const QByteArray &data);
     void command(const QString &cmd);
+    void warning(const QString &msg);
 
 signals:
     void blockAdded(QTextBlock block, bool prompt);
@@ -52,6 +53,7 @@ private:
     void newLine();
     void processAnsi(int code);
     QColor translateColor(const QString &name);
+    void appendText(const QTextCharFormat &fmt, const QString &text, bool newline = true);
 
     QTextCursor *m_cursor;
 
@@ -74,6 +76,7 @@ private:
     QTextCharFormat m_formatDefault;
     QTextCharFormat m_formatCommand;
     QTextCharFormat m_formatCurrent;
+    QTextCharFormat m_formatWarning;
 };
 
 #endif // CONSOLEDOCUMENT_H

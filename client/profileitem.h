@@ -70,6 +70,8 @@ public:
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
+    static bool validateName(const QString &name, bool allowEmpty = false);
+
 protected:
     void clone(const ProfileItem &rhs);
 

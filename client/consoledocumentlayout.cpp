@@ -134,15 +134,20 @@ QTextBlock ConsoleDocumentLayout::bottomBlock(int scroll) const
         return QTextBlock();
     }
 
+    QTextBlock block;
     if (scroll > 0)
     {
-        return document()->findBlockByNumber(scroll - 1);
+        block = document()->findBlockByNumber(scroll - 1);
     }
-
-    if (document()->lastBlock().text().isEmpty())
+    else
     {
-        return document()->lastBlock().previous();
+        block = document()->lastBlock();
     }
 
-    return document()->lastBlock();
+    if (block.text().isEmpty())
+    {
+        return block.previous();
+    }
+
+    return block;
 }

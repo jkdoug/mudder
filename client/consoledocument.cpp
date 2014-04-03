@@ -52,11 +52,11 @@ ConsoleDocument::ConsoleDocument(QObject *parent) :
     m_isPrompt = false;
 
     m_formatCommand.setForeground(Qt::darkYellow);
-    m_formatCommand.setBackground(Qt::black);
+
+    m_formatWarning.setForeground(Qt::red);
 
     m_formatDefault.setFont(QFont("Consolas", 10));
     m_formatDefault.setForeground(Qt::lightGray);
-    m_formatDefault.setBackground(Qt::black);
 
     m_formatCurrent = m_formatDefault;
 
@@ -205,15 +205,17 @@ void ConsoleDocument::process(const QByteArray &data)
 
 void ConsoleDocument::command(const QString &cmd)
 {
-    QTextCharFormat previousFormat(m_cursor->charFormat());
+    appendText(m_formatCommand, cmd);
+}
 
-    m_cursor->mergeCharFormat(m_formatCommand);
+void ConsoleDocument::warning(const QString &msg)
+{
+    if (m_isPrompt)
+    {
+        newLine();
+    }
 
-    m_cursor->insertText(cmd);
-
-    newLine();
-
-    m_cursor->setCharFormat(previousFormat);
+    appendText(m_formatWarning, msg);
 }
 
 void ConsoleDocument::newLine()
@@ -502,4 +504,20 @@ inline QColor ConsoleDocument::translateColor(const QString &name)
     }
 
     return colors[name];
+}
+
+inline void ConsoleDocument::appendText(const QTextCharFormat &fmt, const QString &text, bool newline)
+{
+    QTextCharFormat previousFormat(m_cursor->charFormat());
+
+    m_cursor->mergeCharFormat(fmt);
+
+    m_cursor->insertText(text);
+
+    if (newline)
+    {
+        newLine();
+    }
+
+    m_cursor->setCharFormat(previousFormat);
 }

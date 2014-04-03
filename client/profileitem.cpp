@@ -125,8 +125,8 @@ void ProfileItem::toXml(QXmlStreamWriter &xml)
 
 void ProfileItem::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
-    QString name(xml.attributes().value("name").toString());
-    if (name.isEmpty() || name.contains(QRegularExpression("\\W")))
+    QString name(xml.attributes().value("name").toString().trimmed());
+    if (!validateName(name))
     {
         XmlError *err = new XmlError(xml.lineNumber(), xml.columnNumber());
         if (name.isEmpty())
@@ -160,4 +160,20 @@ void ProfileItem::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
         }
     }
     setSequence(qBound(1, sequence, 100000));
+}
+
+bool ProfileItem::validateName(const QString &name, bool allowEmpty)
+{
+    if (name.isEmpty())
+    {
+        return allowEmpty;
+    }
+
+    const QRegularExpression validName("^[\\w,'\"@#%& \\-\\$\\*\\(\\)\\[\\]\\.]+$");
+    if (!validName.match(name).hasMatch())
+    {
+        return false;
+    }
+
+    return true;
 }

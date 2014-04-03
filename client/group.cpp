@@ -127,7 +127,7 @@ void Group::toXml(QXmlStreamWriter &xml)
 void Group::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
     QString name(xml.attributes().value("name").toString());
-    if ((name.isEmpty() && group()) || name.contains(QRegularExpression("\\W")))
+    if (!validateName(name, group() != 0))
     {
         XmlError *err = new XmlError(xml.lineNumber(), xml.columnNumber());
         if (name.isEmpty())
