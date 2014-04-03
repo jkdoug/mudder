@@ -339,6 +339,8 @@ void MainWindow::openConsole(const QString &fileName)
         SETTINGS->addRecentFile(console->fileName());
 
         addConsole(console);
+
+        m_settings->setRootGroup(console->profile()->rootGroup());
     }
 }
 

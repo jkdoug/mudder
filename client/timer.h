@@ -62,6 +62,7 @@ public:
     void setOnce(bool flag = true) { m_once = flag; }
     int firedCount() const { return m_firedCount; }
 
+    virtual QIcon icon() const { return QIcon(":/icons/timer"); }
     virtual QString value() const { return interval().toString(); }
     virtual int sequence() const { return 0; }
 

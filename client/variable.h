@@ -46,12 +46,12 @@ public:
     bool operator !=(const Variable &rhs);
 
     bool operator <(const Variable &rhs);
-    static bool lessName(const Variable *lhs, const Variable *rhs);
 
     const QVariant & contents() const { return m_contents; }
     void setContents(const QVariant &contents) { m_contents = contents; }
     QString typeName();
 
+    virtual QIcon icon() const { return QIcon(":/icons/variable"); }
     virtual QString value() const { return contents().toString(); }
     virtual int sequence() const { return 0; }
 

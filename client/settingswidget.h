@@ -30,6 +30,9 @@ namespace Ui {
 class SettingsWidget;
 }
 
+class Group;
+class SettingsModel;
+
 class SettingsWidget : public QWidget
 {
     Q_OBJECT
@@ -38,8 +41,12 @@ public:
     explicit SettingsWidget(QWidget *parent = 0);
     ~SettingsWidget();
 
+    void setRootGroup(Group *group);
+
 private:
     Ui::SettingsWidget *ui;
+
+    SettingsModel *m_model;
 };
 
 #endif // SETTINGSWIDGET_H

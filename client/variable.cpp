@@ -78,11 +78,6 @@ bool Variable::operator <(const Variable &rhs)
     return name().compare(rhs.name()) < 0;
 }
 
-bool Variable::lessName(const Variable *lhs, const Variable *rhs)
-{
-    return lhs->name().compare(rhs->name()) < 0;
-}
-
 QString Variable::typeName()
 {
     switch (m_contents.type())

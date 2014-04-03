@@ -105,11 +105,6 @@ bool Timer::operator <(const Timer &rhs)
     return interval() < rhs.interval();
 }
 
-bool Timer::lessInterval(const Timer *lhs, const Timer *rhs)
-{
-    return lhs->interval() < rhs->interval();
-}
-
 void Timer::setProfile(Profile *profile)
 {
     m_profile = profile;

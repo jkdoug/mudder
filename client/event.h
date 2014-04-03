@@ -38,7 +38,7 @@ public:
     bool operator ==(const Event &rhs);
     bool operator !=(const Event &rhs);
 
-    static bool lessSequence(const Event *lhs, const Event *rhs);
+    virtual QIcon icon() const { return QIcon(":/icons/event"); }
 
     virtual QString tagName() const { return "event"; }
     virtual void toXml(QXmlStreamWriter &xml);

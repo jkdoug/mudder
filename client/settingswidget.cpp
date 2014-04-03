@@ -23,15 +23,26 @@
 
 #include "settingswidget.h"
 #include "ui_settingswidget.h"
+#include "settingsmodel.h"
+#include "group.h"
 
 SettingsWidget::SettingsWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SettingsWidget)
 {
     ui->setupUi(this);
+
+    m_model = new SettingsModel(this);
+    ui->listView->setModel(m_model);
+    ui->treeView->setModel(m_model);
 }
 
 SettingsWidget::~SettingsWidget()
 {
     delete ui;
+}
+
+void SettingsWidget::setRootGroup(Group *group)
+{
+    m_model->setRootGroup(group);
 }

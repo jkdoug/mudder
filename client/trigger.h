@@ -44,13 +44,12 @@ public:
     bool operator ==(const Trigger &rhs);
     bool operator !=(const Trigger &rhs);
 
-    bool operator <(const Trigger &rhs);
-    static bool lessSequence(const Trigger *lhs, const Trigger *rhs);
-
     bool omit() const { return m_omit; }
     void setOmit(bool flag = true) { m_omit = flag; }
     bool repeat() const { return m_repeat; }
     void setRepeat(bool flag = true) { m_repeat = flag; }
+
+    virtual QIcon icon() const { return QIcon(":/icons/trigger"); }
 
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);

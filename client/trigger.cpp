@@ -77,16 +77,6 @@ void Trigger::clone(const Trigger &rhs)
     m_repeat = rhs.m_repeat;
 }
 
-bool Trigger::operator <(const Trigger &rhs)
-{
-    return Matchable::operator <(rhs);
-}
-
-bool Trigger::lessSequence(const Trigger *lhs, const Trigger *rhs)
-{
-    return Matchable::lessSequence(lhs, rhs);
-}
-
 void Trigger::toXml(QXmlStreamWriter &xml)
 {
     if (repeat())

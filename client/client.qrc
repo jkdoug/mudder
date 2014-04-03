@@ -12,5 +12,12 @@
         <file alias="win_close">icons/win_close.png</file>
         <file alias="connected">icons/game_connect.png</file>
         <file alias="disconnected">icons/game_disconnect.png</file>
+        <file alias="accelerator">icons/item_accelerator.png</file>
+        <file alias="alias">icons/item_alias.png</file>
+        <file alias="event">icons/item_event.png</file>
+        <file alias="group">icons/item_group.png</file>
+        <file alias="timer">icons/item_timer.png</file>
+        <file alias="trigger">icons/item_trigger.png</file>
+        <file alias="variable">icons/item_variable.png</file>
     </qresource>
 </RCC>

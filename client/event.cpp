@@ -52,11 +52,6 @@ bool Event::operator !=(const Event &rhs)
     return !(*this == rhs);
 }
 
-bool Event::lessSequence(const Event *lhs, const Event *rhs)
-{
-    return ProfileItem::lessSequence(lhs, rhs);
-}
-
 void Event::clone(const Event &rhs)
 {
     if (this == &rhs)

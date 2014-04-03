@@ -76,11 +76,6 @@ bool ProfileItem::operator <(const ProfileItem &rhs)
     return sequence() < rhs.sequence();
 }
 
-bool ProfileItem::lessSequence(const ProfileItem *lhs, const ProfileItem *rhs)
-{
-    return lhs->sequence() < rhs->sequence();
-}
-
 void ProfileItem::clone(const ProfileItem &rhs)
 {
     if (this == &rhs)

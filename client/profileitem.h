@@ -24,6 +24,7 @@
 #ifndef PROFILEITEM_H
 #define PROFILEITEM_H
 
+#include <QIcon>
 #include <QList>
 #include <QObject>
 #include <QXmlStreamReader>
@@ -51,7 +52,6 @@ public:
     bool operator !=(const ProfileItem &rhs);
 
     bool operator <(const ProfileItem &rhs);
-    static bool lessSequence(const ProfileItem *lhs, const ProfileItem *rhs);
 
     virtual const QString & name() const { return m_name; }
     void setName(const QString &name) { m_name = name; }
@@ -63,6 +63,7 @@ public:
     void setSequence(int sequence) { m_sequence = sequence; }
     Group * group() const;
 
+    virtual QIcon icon() const { return QIcon(); }
     virtual QString value() const { return QString(); }
 
     virtual QString tagName() const { return "item"; }

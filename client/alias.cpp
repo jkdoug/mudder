@@ -58,16 +58,6 @@ bool Alias::operator !=(const Alias &rhs)
     return !(*this == rhs);
 }
 
-bool Alias::operator <(const Alias &rhs)
-{
-    return Matchable::operator <(rhs);
-}
-
-bool Alias::lessSequence(const Alias *lhs, const Alias *rhs)
-{
-    return Matchable::lessSequence(lhs, rhs);
-}
-
 void Alias::clone(const Alias &rhs)
 {
     if (this == &rhs)

@@ -43,11 +43,10 @@ public:
     bool operator ==(const Alias &rhs);
     bool operator !=(const Alias &rhs);
 
-    bool operator <(const Alias &rhs);
-    static bool lessSequence(const Alias *lhs, const Alias *rhs);
-
     bool echo() const { return m_echo; }
     void setEcho(bool flag = true) { m_echo = flag; }
+
+    virtual QIcon icon() const { return QIcon(":/icons/alias"); }
 
     virtual QString tagName() const { return "alias"; }
     virtual void toXml(QXmlStreamWriter &xml);

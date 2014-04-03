@@ -30,6 +30,8 @@ namespace Ui {
 class SettingsWindow;
 }
 
+class Group;
+
 class SettingsWindow : public QMainWindow
 {
     Q_OBJECT
@@ -37,6 +39,8 @@ class SettingsWindow : public QMainWindow
 public:
     explicit SettingsWindow(QWidget *parent = 0);
     ~SettingsWindow();
+
+    void setRootGroup(Group *group);
 
 private:
     Ui::SettingsWindow *ui;

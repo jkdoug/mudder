@@ -21,23 +21,35 @@
 */
 
 
-#include "settingswindow.h"
-#include "ui_settingswindow.h"
-#include "group.h"
+#ifndef SETTINGSMODEL_H
+#define SETTINGSMODEL_H
 
-SettingsWindow::SettingsWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::SettingsWindow)
-{
-    ui->setupUi(this);
-}
+#include <QAbstractItemModel>
 
-SettingsWindow::~SettingsWindow()
-{
-    delete ui;
-}
+class Group;
+class ProfileItem;
 
-void SettingsWindow::setRootGroup(Group *group)
+class SettingsModel : public QAbstractItemModel
 {
-    ui->editor->setRootGroup(group);
-}
+    Q_OBJECT
+public:
+    explicit SettingsModel(QObject *parent = 0);
+
+    void setRootGroup(Group *group);
+
+    QModelIndex index(int row, int column, const QModelIndex &parent) const;
+    QModelIndex parent(const QModelIndex &child) const;
+
+    int rowCount(const QModelIndex &parent) const;
+    int columnCount(const QModelIndex &parent) const;
+
+    QVariant data(const QModelIndex &index, int role) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+private:
+    ProfileItem * itemFromIndex(const QModelIndex &index) const;
+
+    Group *m_rootGroup;
+};
+
+#endif // SETTINGSMODEL_H

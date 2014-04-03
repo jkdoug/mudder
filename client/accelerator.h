@@ -50,6 +50,7 @@ public:
     QKeySequence key() const { return m_key; }
     void setKey(const QKeySequence &key) { m_key = key; }
 
+    virtual QIcon icon() const { return QIcon(":/icons/accelerator"); }
     virtual QString value() const { return key().toString(); }
     virtual int sequence() const { return 0; }
 

@@ -27,7 +27,12 @@
 #include "profileitem.h"
 #include <QList>
 
+class Accelerator;
+class Alias;
+class Event;
+class Timer;
 class Trigger;
+class Variable;
 class XmlError;
 
 class Group : public ProfileItem
@@ -40,20 +45,32 @@ public:
 
     virtual int sequence() const { return 0; }
 
-    QList<Trigger *> sortedTriggers();
+    QList<ProfileItem *> items() { return m_items; }
+
+    QList<Accelerator *> sortedAccelerators(bool all = true) const;
+    QList<Alias *> sortedAliases(bool all = true) const;
+    QList<Event *> sortedEvents(bool all = true) const;
+    QList<Group *> sortedGroups(bool all = true) const;
+    QList<Timer *> sortedTimers(bool all = true) const;
+    QList<Trigger *> sortedTriggers(bool all = true) const;
+    QList<Variable *> sortedVariables(bool all = true) const;
 
     void addItem(ProfileItem *item);
     bool removeItem(ProfileItem *item);
+
+    virtual QIcon icon() const { return QIcon(":/icons/group"); }
 
     virtual QString tagName() const { return "group"; }
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 private:
+    template<class C>
+    QList<C *> sortedItems(bool all = true) const;
+
     QList<ProfileItem *> m_items;
 
     QList<Group *> m_groups;
-    QList<Trigger *> m_triggers;
 };
 
 #endif // GROUP_H

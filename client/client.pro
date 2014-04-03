@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     consoledisplay.cpp \
     engine.cpp \
     settingswindow.cpp \
-    settingswidget.cpp
+    settingswidget.cpp \
+    settingsmodel.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -56,7 +57,8 @@ HEADERS  += mainwindow.h \
     consoledisplay.h \
     engine.h \
     settingswindow.h \
-    settingswidget.h
+    settingswidget.h \
+    settingsmodel.h
 
 FORMS    += mainwindow.ui \
     console.ui \
