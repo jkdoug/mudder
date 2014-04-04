@@ -64,7 +64,7 @@ QModelIndex SettingsModel::index(int row, int column, const QModelIndex &parent)
         return QModelIndex();
     }
 
-//    LOG_TRACE("SettingsModel index created", row, column, parent.row(), parent.column());
+//    LOG_TRACE("SettingsModel index created", row, column, parent.row(), parent.column(), children.at(row)->name(), children.at(row)->metaObject()->className());
     return createIndex(row, column, children.at(row));
 }
 
@@ -102,7 +102,7 @@ int SettingsModel::rowCount(const QModelIndex &parent) const
 //    LOG_TRACE("SettingsModel::rowCount", parent.row(), parent.column());
 
     ProfileItem *parentItem = itemFromIndex(parent);
-    Group *group = static_cast<Group *>(parentItem);
+    Group *group = qobject_cast<Group *>(parentItem);
     if (!group)
     {
         return 0;
