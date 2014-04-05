@@ -45,6 +45,7 @@ public slots:
     void process(const QByteArray &data);
     void command(const QString &cmd);
     void warning(const QString &msg);
+    void info(const QString &msg);
 
 signals:
     void blockAdded(QTextBlock block, bool prompt);
@@ -77,6 +78,7 @@ private:
     QTextCharFormat m_formatCommand;
     QTextCharFormat m_formatCurrent;
     QTextCharFormat m_formatWarning;
+    QTextCharFormat m_formatInfo;
 };
 
 #endif // CONSOLEDOCUMENT_H

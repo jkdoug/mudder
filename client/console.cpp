@@ -327,6 +327,8 @@ void Console::updateScroll()
 void Console::print(const QString &msg)
 {
     LOG_TRACE("Console::print", msg);
+
+    m_document->info(msg);
 }
 
 void Console::processTriggers(QTextBlock block, bool prompt)
