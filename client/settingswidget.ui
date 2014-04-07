@@ -11,9 +11,12 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Settings</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1">
+   <property name="spacing">
+    <number>2</number>
+   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -27,17 +30,10 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,3">
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QTreeView" name="treeView"/>
-     </item>
-     <item>
-      <widget class="QListView" name="listView"/>
-     </item>
-    </layout>
+    <widget class="QTreeView" name="treeView"/>
+   </item>
+   <item>
+    <widget class="QWidget" name="form" native="true"/>
    </item>
   </layout>
  </widget>

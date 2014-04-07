@@ -114,7 +114,9 @@ int SettingsModel::rowCount(const QModelIndex &parent) const
 
 int SettingsModel::columnCount(const QModelIndex &parent) const
 {
-    return 3;
+    Q_UNUSED(parent)
+
+    return 1;
 }
 
 QVariant SettingsModel::data(const QModelIndex &index, int role) const
@@ -136,9 +138,9 @@ QVariant SettingsModel::data(const QModelIndex &index, int role) const
             case 0:
                 return item->name();
             case 1:
-                return item->sequence();
+                return !item->value().isEmpty()?item->value():QVariant();
             case 2:
-                return item->value();
+                return item->sequence() > 0?item->sequence():QVariant();
             default:
                 return "???";
             }
@@ -158,6 +160,8 @@ QVariant SettingsModel::data(const QModelIndex &index, int role) const
 
 QVariant SettingsModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    Q_UNUSED(orientation)
+
     if (role == Qt::DisplayRole)
     {
         switch (section)
@@ -165,9 +169,9 @@ QVariant SettingsModel::headerData(int section, Qt::Orientation orientation, int
         case 0:
             return tr("Name");
         case 1:
-            return tr("Sequence");
-        case 2:
             return tr("Value");
+        case 2:
+            return tr("Sequence");
         }
     }
 

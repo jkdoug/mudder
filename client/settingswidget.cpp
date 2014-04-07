@@ -33,7 +33,6 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
     ui->setupUi(this);
 
     m_model = new SettingsModel(this);
-    ui->listView->setModel(m_model);
     ui->treeView->setModel(m_model);
 }
 
