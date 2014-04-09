@@ -23,6 +23,7 @@
 
 #include "settingswidget.h"
 #include "ui_settingswidget.h"
+#include "logger.h"
 #include "settingsmodel.h"
 #include "group.h"
 
@@ -34,6 +35,9 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
 
     m_model = new SettingsModel(this);
     ui->treeView->setModel(m_model);
+
+    m_selection = ui->treeView->selectionModel();
+    connect(m_selection, SIGNAL(currentChanged(QModelIndex, QModelIndex)), SLOT(currentChanged(QModelIndex, QModelIndex)));
 }
 
 SettingsWidget::~SettingsWidget()
@@ -44,4 +48,11 @@ SettingsWidget::~SettingsWidget()
 void SettingsWidget::setRootGroup(Group *group)
 {
     m_model->setRootGroup(group);
+}
+
+void SettingsWidget::currentChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+    Q_UNUSED(previous)
+
+    LOG_TRACE("SettingsWidget::currentChanged", current.data());
 }

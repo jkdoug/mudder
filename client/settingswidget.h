@@ -24,6 +24,7 @@
 #ifndef SETTINGSWIDGET_H
 #define SETTINGSWIDGET_H
 
+#include <QItemSelectionModel>
 #include <QWidget>
 
 namespace Ui {
@@ -43,10 +44,14 @@ public:
 
     void setRootGroup(Group *group);
 
+private slots:
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+
 private:
     Ui::SettingsWidget *ui;
 
     SettingsModel *m_model;
+    QItemSelectionModel *m_selection;
 };
 
 #endif // SETTINGSWIDGET_H
