@@ -21,42 +21,29 @@
 */
 
 
-#ifndef SETTINGSWIDGET_H
-#define SETTINGSWIDGET_H
+#ifndef EDITVARIABLE_H
+#define EDITVARIABLE_H
 
-#include <QItemSelectionModel>
-#include <QWidget>
 #include "editsetting.h"
+#include "variable.h"
 
 namespace Ui {
-class SettingsWidget;
+class EditVariable;
 }
 
-class Group;
-class SettingsModel;
-
-class SettingsWidget : public QWidget
+class EditVariable : public EditSetting
 {
     Q_OBJECT
 
 public:
-    explicit SettingsWidget(QWidget *parent = 0);
-    ~SettingsWidget();
+    explicit EditVariable(QWidget *parent = 0);
+    ~EditVariable();
 
-    void setRootGroup(Group *group);
-
-private slots:
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
-    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    virtual bool load(ProfileItem *item);
+    virtual bool save(ProfileItem *item);
 
 private:
-    Ui::SettingsWidget *ui;
-
-    QWidget *m_defaultForm;
-    EditSetting *m_editor;
-
-    SettingsModel *m_model;
-    QItemSelectionModel *m_selection;
+    Ui::EditVariable *ui;
 };
 
-#endif // SETTINGSWIDGET_H
+#endif // EDITVARIABLE_H

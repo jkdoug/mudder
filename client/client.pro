@@ -34,7 +34,9 @@ SOURCES += main.cpp\
     engine.cpp \
     settingswindow.cpp \
     settingswidget.cpp \
-    settingsmodel.cpp
+    settingsmodel.cpp \
+    editvariable.cpp \
+    editsetting.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -58,12 +60,15 @@ HEADERS  += mainwindow.h \
     engine.h \
     settingswindow.h \
     settingswidget.h \
-    settingsmodel.h
+    settingsmodel.h \
+    editvariable.h \
+    editsetting.h
 
 FORMS    += mainwindow.ui \
     console.ui \
     settingswindow.ui \
-    settingswidget.ui
+    settingswidget.ui \
+    editvariable.ui
 
 RESOURCES += \
     client.qrc
