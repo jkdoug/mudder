@@ -26,6 +26,7 @@
 
 #include <QString>
 
+class EditSetting;
 class Group;
 class ProfileItem;
 
@@ -33,6 +34,7 @@ class ProfileItemFactory
 {
 public:
     static ProfileItem * create(const QString &name, Group *parent = 0);
+    static EditSetting * editor(const QString &name);
 
 private:
     ProfileItemFactory() {}

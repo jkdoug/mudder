@@ -26,8 +26,9 @@
 #include "ui_settingswidget.h"
 #include "logger.h"
 #include "settingsmodel.h"
+#include "profileitemfactory.h"
 #include "group.h"
-#include "editvariable.h"
+#include "variable.h"
 
 SettingsWidget::SettingsWidget(QWidget *parent) :
     QWidget(parent),
@@ -35,15 +36,18 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    m_layoutEdit = new QStackedLayout(this);
+    ui->layoutWidget->addLayout(m_layoutEdit);
+
     m_defaultForm = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(m_defaultForm);
     QLabel *label = new QLabel(tr("Select an item in the tree."), m_defaultForm);
     layout->addWidget(label);
     layout->setAlignment(label, Qt::AlignCenter);
     m_defaultForm->setLayout(layout);
-    ui->layoutEdit->addWidget(m_defaultForm);
+    m_layoutEdit->addWidget(m_defaultForm);
 
-    m_editor = 0;
+    m_layoutEdit->addWidget(ProfileItemFactory::editor("variable"));
 
     m_model = new SettingsModel(this);
     ui->treeView->setModel(m_model);
@@ -72,20 +76,16 @@ void SettingsWidget::currentChanged(const QModelIndex &current, const QModelInde
     if (current.isValid())
     {
         ProfileItem *item = static_cast<ProfileItem *>(current.internalPointer());
-        if (item)
+
+        Variable *var = qobject_cast<Variable *>(item);
+        if (var)
         {
-            if (m_editor)
-            {
-                ui->layoutEdit->removeWidget(m_editor);
-
-                delete m_editor;
-            }
-
-            m_editor = new EditVariable(this);
-            ui->layoutEdit->removeWidget(m_defaultForm);
-            ui->layoutEdit->addWidget(m_editor);
+            m_layoutEdit->setCurrentIndex(1);
+            return;
         }
     }
+
+    m_layoutEdit->setCurrentIndex(0);
 }
 
 void SettingsWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
@@ -94,12 +94,8 @@ void SettingsWidget::selectionChanged(const QItemSelection &selected, const QIte
 
     LOG_TRACE("SettingsWidget::selectionChanged", selected.count());
 
-    if (selected.isEmpty() && m_editor)
+    if (selected.isEmpty())
     {
-        ui->layoutEdit->removeWidget(m_editor);
-        ui->layoutEdit->addWidget(m_defaultForm);
-
-        delete m_editor;
-        m_editor = 0;
+        m_layoutEdit->setCurrentIndex(0);
     }
 }

@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Settings</string>
   </property>
-  <layout class="QHBoxLayout" name="layoutWidget" stretch="1,1">
+  <layout class="QHBoxLayout" name="layoutWidget" stretch="1">
    <property name="spacing">
     <number>2</number>
    </property>
@@ -31,9 +31,6 @@
    </property>
    <item>
     <widget class="QTreeView" name="treeView"/>
-   </item>
-   <item>
-    <layout class="QVBoxLayout" name="layoutEdit"/>
    </item>
   </layout>
  </widget>

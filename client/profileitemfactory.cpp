@@ -30,43 +30,49 @@
 #include "timer.h"
 #include "trigger.h"
 #include "variable.h"
+#include "editsetting.h"
+#include "editvariable.h"
 
 ProfileItem * ProfileItemFactory::create(const QString &name, Group *parent)
 {
-    ProfileItem *item = 0;
-
     if (name == "accelerator")
     {
-        item = new Accelerator(parent);
+        return new Accelerator(parent);
     }
     else if (name == "alias")
     {
-        item = new Alias(parent);
+        return new Alias(parent);
     }
     else if (name == "event")
     {
-        item = new Event(parent);
+        return new Event(parent);
     }
     else if (name == "group")
     {
-        item = new Group(parent);
+        return new Group(parent);
     }
     else if (name == "timer")
     {
-        item = new Timer(parent);
+        return new Timer(parent);
     }
     else if (name == "trigger")
     {
-        item = new Trigger(parent);
+        return new Trigger(parent);
     }
     else if (name == "variable")
     {
-        item = new Variable(parent);
-    }
-    else
-    {
-        return 0;
+        return new Variable(parent);
     }
 
-    return item;
+    return 0;
+}
+
+EditSetting * ProfileItemFactory::editor(const QString &name)
+{
+    if (name == "variable")
+    {
+        return new EditVariable;
+    }
+
+    return 0;
 }

@@ -25,6 +25,7 @@
 #define SETTINGSWIDGET_H
 
 #include <QItemSelectionModel>
+#include <QStackedLayout>
 #include <QWidget>
 #include "editsetting.h"
 
@@ -52,6 +53,7 @@ private slots:
 private:
     Ui::SettingsWidget *ui;
 
+    QStackedLayout *m_layoutEdit;
     QWidget *m_defaultForm;
     EditSetting *m_editor;
 
