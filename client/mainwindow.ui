@@ -95,7 +95,6 @@
     <addaction name="actionNext"/>
     <addaction name="actionPrevious"/>
     <addaction name="separator"/>
-    <addaction name="actionEditor"/>
    </widget>
    <widget class="QMenu" name="menuGame">
     <property name="title">
@@ -162,7 +161,7 @@
     <string>Settings</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>1</number>
+    <number>2</number>
    </attribute>
    <widget class="QWidget" name="settings"/>
   </widget>
@@ -334,7 +333,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Editor</string>
+    <string>&amp;Editor</string>
    </property>
    <property name="toolTip">
     <string>Toggle display of the editor window</string>
@@ -353,6 +352,20 @@
    </property>
    <property name="toolTip">
     <string>Connect to game server</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle display of the settings window</string>
    </property>
   </action>
  </widget>
