@@ -27,7 +27,7 @@
 
 CoreSettings::CoreSettings(QObject *parent) :
     QObject(parent),
-    m_settings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::applicationName())
+    m_settings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName())
 {
 }
 
