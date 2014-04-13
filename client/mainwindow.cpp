@@ -51,9 +51,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_editor = new CodeEditorWindow(this);
     ui->dockEditor->setWidget(m_editor);
+    ui->menuWindow->addAction(ui->dockEditor->toggleViewAction());
 
     m_settings = new SettingsWindow(this);
     ui->dockSettings->setWidget(m_settings);
+    ui->menuWindow->addAction(ui->dockSettings->toggleViewAction());
 
     QTabBar *mdiTabBar = ui->mdiArea->findChild<QTabBar *>();
     mdiTabBar->setExpanding(false);
@@ -69,8 +71,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     restoreGeometry(SETTINGS->value("MainWindow/Geometry").toByteArray());
     restoreState(SETTINGS->value("MainWindow/State").toByteArray());
-
-    ui->actionEditor->setChecked(ui->dockEditor->isVisible());
 
     updateActions();
 
@@ -220,11 +220,6 @@ void MainWindow::on_actionNext_triggered()
 void MainWindow::on_actionPrevious_triggered()
 {
     ui->mdiArea->activatePreviousSubWindow();
-}
-
-void MainWindow::on_actionEditor_triggered(bool checked)
-{
-    ui->dockEditor->setVisible(checked);
 }
 
 void MainWindow::on_actionExit_triggered()

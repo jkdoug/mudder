@@ -62,7 +62,6 @@ private slots:
     void on_actionCloseAll_triggered();
     void on_actionNext_triggered();
     void on_actionPrevious_triggered();
-    void on_actionEditor_triggered(bool checked);
     void on_actionExit_triggered();
     void on_actionAbout_triggered();
     void on_actionAboutQt_triggered();
