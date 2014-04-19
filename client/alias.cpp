@@ -27,63 +27,10 @@
 Alias::Alias(QObject *parent) :
     Matchable(parent)
 {
-    m_echo = false;
-}
-
-Alias::Alias(const Alias &rhs, QObject *parent) :
-    Matchable(parent)
-{
-    clone(rhs);
-}
-
-Alias & Alias::operator =(const Alias &rhs)
-{
-    clone(rhs);
-
-    return *this;
-}
-
-bool Alias::operator ==(const Alias &rhs)
-{
-    if (m_echo != rhs.m_echo)
-    {
-        return false;
-    }
-
-    return Matchable::operator ==(rhs);
-}
-
-bool Alias::operator !=(const Alias &rhs)
-{
-    return !(*this == rhs);
-}
-
-void Alias::clone(const Alias &rhs)
-{
-    if (this == &rhs)
-    {
-        return;
-    }
-
-    Matchable::clone(rhs);
-
-    m_echo = rhs.m_echo;
-}
-
-void Alias::toXml(QXmlStreamWriter &xml)
-{
-    if (echo())
-    {
-        xml.writeAttribute("echo", "y");
-    }
-
-    Matchable::toXml(xml);
 }
 
 void Alias::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
-    setEcho(xml.attributes().value("echo").compare("y", Qt::CaseInsensitive) == 0);
-
     Matchable::fromXml(xml, errors);
 
     if (contents().isEmpty())

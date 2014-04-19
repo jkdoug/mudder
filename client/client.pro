@@ -36,7 +36,13 @@ SOURCES += main.cpp\
     settingswidget.cpp \
     settingsmodel.cpp \
     editvariable.cpp \
-    editsetting.cpp
+    editsetting.cpp \
+    editaccelerator.cpp \
+    editalias.cpp \
+    edittimer.cpp \
+    editgroup.cpp \
+    editevent.cpp \
+    edittrigger.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -62,13 +68,25 @@ HEADERS  += mainwindow.h \
     settingswidget.h \
     settingsmodel.h \
     editvariable.h \
-    editsetting.h
+    editsetting.h \
+    editaccelerator.h \
+    editalias.h \
+    edittimer.h \
+    editgroup.h \
+    editevent.h \
+    edittrigger.h
 
 FORMS    += mainwindow.ui \
     console.ui \
     settingswindow.ui \
     settingswidget.ui \
-    editvariable.ui
+    editvariable.ui \
+    editaccelerator.ui \
+    editalias.ui \
+    edittimer.ui \
+    editgroup.ui \
+    editevent.ui \
+    edittrigger.ui
 
 RESOURCES += \
     client.qrc

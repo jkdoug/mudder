@@ -21,33 +21,36 @@
 */
 
 
-#include "settingswindow.h"
-#include "ui_settingswindow.h"
-#include "group.h"
-#include "logger.h"
+#ifndef EDITACCELERATOR_H
+#define EDITACCELERATOR_H
 
-SettingsWindow::SettingsWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::SettingsWindow)
-{
-    ui->setupUi(this);
+#include <QKeySequence>
+#include "editsetting.h"
 
-    connect(ui->editor, SIGNAL(settingModified(bool, bool)), SLOT(settingModified(bool, bool)));
-    connect(ui->actionSave, SIGNAL(triggered()), ui->editor, SLOT(saveCurrentItem()));
+namespace Ui {
+class EditAccelerator;
 }
 
-SettingsWindow::~SettingsWindow()
+class EditAccelerator : public EditSetting
 {
-    delete ui;
-}
+    Q_OBJECT
 
-void SettingsWindow::setRootGroup(Group *group)
-{
-    ui->editor->setRootGroup(group);
-}
+public:
+    explicit EditAccelerator(QWidget *parent = 0);
+    ~EditAccelerator();
 
-void SettingsWindow::settingModified(bool changed, bool valid)
-{
-    ui->actionSave->setEnabled(changed && valid);
-    ui->actionDiscard->setEnabled(changed);
-}
+    virtual bool load(ProfileItem *item);
+    virtual bool save(ProfileItem *item);
+
+private slots:
+    void changed();
+
+private:
+    Ui::EditAccelerator *ui;
+
+    QKeySequence m_key;
+
+    QString m_contents;
+};
+
+#endif // EDITACCELERATOR_H

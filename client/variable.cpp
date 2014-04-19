@@ -202,6 +202,18 @@ void Variable::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
     ProfileItem::fromXml(xml, errors);
 
+    if (!name().startsWith('!'))
+    {
+        QString varName(xml.attributes().value("name").toString().trimmed());
+        if (!validateName(varName))
+        {
+            errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid value for 'name' attribute: %1").arg(varName));
+
+            varName = unnamed();
+        }
+        setName(varName);
+    }
+
     QString type(xml.attributes().value("type").toString());
     QVariant::Type enumType = Variable::translateType(type);
     if (enumType == QVariant::Invalid)
@@ -218,4 +230,15 @@ void Variable::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 
         setContents(val);
     }
+}
+
+bool Variable::validateName(const QString &name)
+{
+    const QRegularExpression validName("^\\w+$");
+    if (!validName.match(name).hasMatch())
+    {
+        return false;
+    }
+
+    return true;
 }

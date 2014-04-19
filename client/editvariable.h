@@ -24,8 +24,8 @@
 #ifndef EDITVARIABLE_H
 #define EDITVARIABLE_H
 
+#include <QVariant>
 #include "editsetting.h"
-#include "variable.h"
 
 namespace Ui {
 class EditVariable;
@@ -42,8 +42,13 @@ public:
     virtual bool load(ProfileItem *item);
     virtual bool save(ProfileItem *item);
 
+private slots:
+    void changed();
+
 private:
     Ui::EditVariable *ui;
+
+    QVariant m_contents;
 };
 
 #endif // EDITVARIABLE_H

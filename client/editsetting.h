@@ -35,6 +35,16 @@ public:
 
     virtual bool load(ProfileItem *item) = 0;
     virtual bool save(ProfileItem *item) = 0;
+
+signals:
+    void itemModified(bool changed, bool valid);
+
+protected:
+    QString m_name;
+
+    bool m_enabled;
+
+    int m_sequence;
 };
 
 #endif // EDITSETTING_H

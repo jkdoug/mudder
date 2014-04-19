@@ -21,33 +21,32 @@
 */
 
 
-#include "settingswindow.h"
-#include "ui_settingswindow.h"
-#include "group.h"
-#include "logger.h"
+#include "editevent.h"
+#include "ui_editevent.h"
 
-SettingsWindow::SettingsWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::SettingsWindow)
+EditEvent::EditEvent(QWidget *parent) :
+    EditSetting(parent),
+    ui(new Ui::EditEvent)
 {
     ui->setupUi(this);
-
-    connect(ui->editor, SIGNAL(settingModified(bool, bool)), SLOT(settingModified(bool, bool)));
-    connect(ui->actionSave, SIGNAL(triggered()), ui->editor, SLOT(saveCurrentItem()));
 }
 
-SettingsWindow::~SettingsWindow()
+EditEvent::~EditEvent()
 {
     delete ui;
 }
 
-void SettingsWindow::setRootGroup(Group *group)
+bool EditEvent::load(ProfileItem *item)
 {
-    ui->editor->setRootGroup(group);
+    return false;
 }
 
-void SettingsWindow::settingModified(bool changed, bool valid)
+bool EditEvent::save(ProfileItem *item)
 {
-    ui->actionSave->setEnabled(changed && valid);
-    ui->actionDiscard->setEnabled(changed);
+    return false;
+}
+
+void EditEvent::changed()
+{
+
 }

@@ -24,16 +24,17 @@
 #ifndef SETTINGSWIDGET_H
 #define SETTINGSWIDGET_H
 
+#include <QMap>
 #include <QItemSelectionModel>
 #include <QStackedLayout>
 #include <QWidget>
-#include "editsetting.h"
 
 namespace Ui {
 class SettingsWidget;
 }
 
 class Group;
+class ProfileItem;
 class SettingsModel;
 
 class SettingsWidget : public QWidget
@@ -46,16 +47,23 @@ public:
 
     void setRootGroup(Group *group);
 
+public slots:
+    void updateCurrentItem(bool changed, bool valid);
+    void saveCurrentItem();
+    void discardCurrentItem();
+
 private slots:
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
+signals:
+    void settingModified(bool changed, bool valid);
 
 private:
     Ui::SettingsWidget *ui;
 
     QStackedLayout *m_layoutEdit;
-    QWidget *m_defaultForm;
-    EditSetting *m_editor;
+    QMap<QString, int> m_editors;
 
     SettingsModel *m_model;
     QItemSelectionModel *m_selection;

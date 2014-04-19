@@ -42,6 +42,9 @@ public:
 
     void setRootGroup(Group *group);
 
+public slots:
+    void settingModified(bool changed, bool valid);
+
 private:
     Ui::SettingsWindow *ui;
 };

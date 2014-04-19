@@ -21,14 +21,22 @@
 */
 
 
+#include <QMessageBox>
 #include "editvariable.h"
 #include "ui_editvariable.h"
+#include "logger.h"
+#include "variable.h"
 
 EditVariable::EditVariable(QWidget *parent) :
     EditSetting(parent),
     ui(new Ui::EditVariable)
 {
     ui->setupUi(this);
+
+    ui->type->addItems(QStringList() << "string" << "numeric" << "boolean");
+
+    connect(ui->name, SIGNAL(textChanged(QString)), SLOT(changed()));
+    connect(ui->contents, SIGNAL(textChanged()), SLOT(changed()));
 }
 
 EditVariable::~EditVariable()
@@ -38,10 +46,109 @@ EditVariable::~EditVariable()
 
 bool EditVariable::load(ProfileItem *item)
 {
+    Q_ASSERT(item != 0);
+    if (!item)
+    {
+        LOG_ERROR("Attempted to load a variable from a null address.");
+        return false;
+    }
+
+    LOG_TRACE("EditVariable::load", item->fullName());
+
+    Variable *variable = qobject_cast<Variable *>(item);
+    if (!variable)
+    {
+        LOG_ERROR("Attempted to load a variable from a non-variable item.");
+        return false;
+    }
+
+    m_name = item->name();
+    ui->name->setText(m_name);
+
+    m_contents = variable->contents();
+    switch (m_contents.type())
+    {
+        case QVariant::Bool:
+            ui->type->setCurrentIndex(2);
+            break;
+
+        case QVariant::Double:
+            ui->type->setCurrentIndex(1);
+            break;
+
+        default:
+            ui->type->setCurrentIndex(0);
+            break;
+    }
+
+    ui->contents->setPlainText(m_contents.toString());
+
+    changed();
+
     return true;
 }
 
 bool EditVariable::save(ProfileItem *item)
 {
+    Q_ASSERT(item != 0);
+    if (!item)
+    {
+        LOG_ERROR("Attempted to save a variable to a null address.");
+        return false;
+    }
+
+    Variable *variable = qobject_cast<Variable *>(item);
+    Q_ASSERT(variable != 0);
+    if (!variable)
+    {
+        LOG_ERROR("Attempted to save a variable to a non-variable item.");
+        return false;
+    }
+
+    LOG_TRACE("EditVariable::save", item->fullName());
+
+    QString name(ui->name->text());
+    if (!Variable::validateName(name))
+    {
+        QMessageBox::critical(this, tr("Invalid Variable"), tr("You may only use alphanumeric characters and underscores in variable names."));
+        return false;
+    }
+
+    QString type(ui->type->itemText(ui->type->currentIndex()));
+    QVariant::Type enumType = Variable::translateType(type);
+
+    QVariant val(ui->contents->toPlainText().trimmed());
+    if (!val.convert(enumType))
+    {
+        QMessageBox::critical(this, tr("Invalid Variable"), tr("The selected data type does not allow this data to be stored."));
+        return false;
+    }
+
+    variable->setName(name);
+
+    variable->setContents(val);
+
+    changed();
+
     return true;
+}
+
+void EditVariable::changed()
+{
+    if (m_name.isNull())
+    {
+        emit itemModified(false, false);
+        return;
+    }
+
+    bool changed = m_name != ui->name->text() ||
+            m_contents.toString() != ui->contents->toPlainText();
+
+    QString type(ui->type->itemText(ui->type->currentIndex()));
+    QVariant::Type enumType = Variable::translateType(type);
+
+    QVariant val(ui->contents->toPlainText().trimmed());
+    bool valid = !ui->name->text().isEmpty() && val.convert(enumType);
+
+    emit itemModified(changed, valid);
 }

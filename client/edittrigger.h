@@ -21,33 +21,39 @@
 */
 
 
-#include "settingswindow.h"
-#include "ui_settingswindow.h"
-#include "group.h"
-#include "logger.h"
+#ifndef EDITTRIGGER_H
+#define EDITTRIGGER_H
 
-SettingsWindow::SettingsWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::SettingsWindow)
-{
-    ui->setupUi(this);
+#include "editsetting.h"
 
-    connect(ui->editor, SIGNAL(settingModified(bool, bool)), SLOT(settingModified(bool, bool)));
-    connect(ui->actionSave, SIGNAL(triggered()), ui->editor, SLOT(saveCurrentItem()));
+namespace Ui {
+class EditTrigger;
 }
 
-SettingsWindow::~SettingsWindow()
+class EditTrigger : public EditSetting
 {
-    delete ui;
-}
+    Q_OBJECT
 
-void SettingsWindow::setRootGroup(Group *group)
-{
-    ui->editor->setRootGroup(group);
-}
+public:
+    explicit EditTrigger(QWidget *parent = 0);
+    ~EditTrigger();
 
-void SettingsWindow::settingModified(bool changed, bool valid)
-{
-    ui->actionSave->setEnabled(changed && valid);
-    ui->actionDiscard->setEnabled(changed);
-}
+    virtual bool load(ProfileItem *item);
+    virtual bool save(ProfileItem *item);
+
+private slots:
+    void changed();
+
+private:
+    Ui::EditTrigger *ui;
+
+    QString m_pattern;
+    QString m_script;
+
+    bool m_caseSensitive;
+    bool m_keepEvaluating;
+    bool m_repeat;
+    bool m_omit;
+};
+
+#endif // EDITTRIGGER_H

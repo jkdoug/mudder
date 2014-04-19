@@ -62,6 +62,8 @@ public:
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
+    static bool validateName(const QString &name);
+
 private:
     void clone(const Variable &rhs);
 

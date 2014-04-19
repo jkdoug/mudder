@@ -139,8 +139,7 @@ void ProfileItem::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
         }
         errors << err;
 
-        static int unnamed = 0;
-        name = QString("!unnamed%1").arg(++unnamed);
+        name = unnamed();
     }
     setName(name);
 
@@ -176,4 +175,10 @@ bool ProfileItem::validateName(const QString &name, bool allowEmpty)
     }
 
     return true;
+}
+
+QString ProfileItem::unnamed()
+{
+    static int counter = 0;
+    return QString("!unnamed%1").arg(++counter);
 }

@@ -32,30 +32,13 @@ class Alias : public Matchable
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool echo READ echo WRITE setEcho)
-
 public:
     explicit Alias(QObject *parent = 0);
-    Alias(const Alias &rhs, QObject *parent = 0);
-
-    Alias & operator =(const Alias &rhs);
-
-    bool operator ==(const Alias &rhs);
-    bool operator !=(const Alias &rhs);
-
-    bool echo() const { return m_echo; }
-    void setEcho(bool flag = true) { m_echo = flag; }
 
     virtual QIcon icon() const { return QIcon(":/icons/alias"); }
 
     virtual QString tagName() const { return "alias"; }
-    virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
-
-private:
-    void clone(const Alias &rhs);
-
-    bool m_echo;
 };
 
 #endif // ALIAS_H

@@ -51,6 +51,7 @@ public:
 
     virtual QIcon icon() const { return QIcon(":/icons/trigger"); }
 
+    virtual QString tagName() const { return "trigger"; }
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 

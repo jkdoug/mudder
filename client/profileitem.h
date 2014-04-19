@@ -75,6 +75,8 @@ public:
 protected:
     void clone(const ProfileItem &rhs);
 
+    QString unnamed();
+
 private:
     QString m_name;
 

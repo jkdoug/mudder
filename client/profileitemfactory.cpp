@@ -31,6 +31,12 @@
 #include "trigger.h"
 #include "variable.h"
 #include "editsetting.h"
+#include "editaccelerator.h"
+#include "editalias.h"
+#include "editevent.h"
+#include "editgroup.h"
+#include "edittimer.h"
+#include "edittrigger.h"
 #include "editvariable.h"
 
 ProfileItem * ProfileItemFactory::create(const QString &name, Group *parent)
@@ -69,7 +75,31 @@ ProfileItem * ProfileItemFactory::create(const QString &name, Group *parent)
 
 EditSetting * ProfileItemFactory::editor(const QString &name)
 {
-    if (name == "variable")
+    if (name == "accelerator")
+    {
+        return new EditAccelerator;
+    }
+    else if (name == "alias")
+    {
+        return new EditAlias;
+    }
+    else if (name == "event")
+    {
+        return new EditEvent;
+    }
+    else if (name == "group")
+    {
+        return new EditGroup;
+    }
+    else if (name == "timer")
+    {
+        return new EditTimer;
+    }
+    else if (name == "trigger")
+    {
+        return new EditTrigger;
+    }
+    else if (name == "variable")
     {
         return new EditVariable;
     }

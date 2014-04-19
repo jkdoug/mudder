@@ -21,33 +21,38 @@
 */
 
 
-#include "settingswindow.h"
-#include "ui_settingswindow.h"
-#include "group.h"
-#include "logger.h"
+#ifndef EDITTIMER_H
+#define EDITTIMER_H
 
-SettingsWindow::SettingsWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::SettingsWindow)
-{
-    ui->setupUi(this);
+#include "editsetting.h"
+#include <QTime>
 
-    connect(ui->editor, SIGNAL(settingModified(bool, bool)), SLOT(settingModified(bool, bool)));
-    connect(ui->actionSave, SIGNAL(triggered()), ui->editor, SLOT(saveCurrentItem()));
+namespace Ui {
+class EditTimer;
 }
 
-SettingsWindow::~SettingsWindow()
+class EditTimer : public EditSetting
 {
-    delete ui;
-}
+    Q_OBJECT
 
-void SettingsWindow::setRootGroup(Group *group)
-{
-    ui->editor->setRootGroup(group);
-}
+public:
+    explicit EditTimer(QWidget *parent = 0);
+    ~EditTimer();
 
-void SettingsWindow::settingModified(bool changed, bool valid)
-{
-    ui->actionSave->setEnabled(changed && valid);
-    ui->actionDiscard->setEnabled(changed);
-}
+    virtual bool load(ProfileItem *item);
+    virtual bool save(ProfileItem *item);
+
+private slots:
+    void changed();
+
+private:
+    Ui::EditTimer *ui;
+
+    QTime m_interval;
+
+    bool m_once;
+
+    QString m_script;
+};
+
+#endif // EDITTIMER_H
