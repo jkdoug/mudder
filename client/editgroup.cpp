@@ -43,11 +43,19 @@ EditGroup::~EditGroup()
 
 bool EditGroup::load(ProfileItem *item)
 {
+    Q_ASSERT(item != 0);
+    if (!item)
+    {
+        LOG_ERROR("Attempted to load a group from a null address.");
+        return false;
+    }
+
     LOG_TRACE("EditGroup::load", item->fullName());
 
     Group *group = qobject_cast<Group *>(item);
     if (!group)
     {
+        LOG_ERROR("Attempted to load a group from a non-group item.");
         return false;
     }
 

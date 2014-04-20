@@ -47,11 +47,19 @@ EditTimer::~EditTimer()
 
 bool EditTimer::load(ProfileItem *item)
 {
+    Q_ASSERT(item != 0);
+    if (!item)
+    {
+        LOG_ERROR("Attempted to load a timer from a null address.");
+        return false;
+    }
+
     LOG_TRACE("EditTimer::load", item->fullName());
 
     Timer *timer = qobject_cast<Timer *>(item);
     if (!timer)
     {
+        LOG_ERROR("Attempted to load a timer from a non-timer item.");
         return false;
     }
 

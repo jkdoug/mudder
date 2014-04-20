@@ -84,7 +84,7 @@ void SettingsWidget::setRootGroup(Group *group)
 
 void SettingsWidget::updateCurrentItem(bool changed, bool valid)
 {
-    LOG_TRACE("SettingsWidget::updateCurrentItem", changed, valid);
+    LOG_TRACE("SettingsWidget::updateCurrentItem", sender()->metaObject()->className(), changed, valid);
 
     emit settingModified(changed, valid);
 }
@@ -133,13 +133,16 @@ void SettingsWidget::currentChanged(const QModelIndex &current, const QModelInde
 
     LOG_TRACE("SettingsWidget::currentChanged", current.data());
 
-    disconnect(SLOT(updateCurrentItem(bool, bool)));
+    for (int page = 0; page < m_layoutEdit->count(); page++)
+    {
+        EditSetting *editor = qobject_cast<EditSetting *>(m_layoutEdit->widget(page));
+        disconnect(editor, 0, this, 0);
+    }
 
     int index = 0;
     if (current.isValid())
     {
         ProfileItem *item = static_cast<ProfileItem *>(current.internalPointer());
-        LOG_TRACE(tr("Loading %1 editor for %2").arg(item->tagName()).arg(item->fullName()));
         Q_ASSERT(m_editors.contains(item->tagName()));
 
         index = m_editors[item->tagName()];

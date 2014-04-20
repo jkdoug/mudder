@@ -46,11 +46,19 @@ EditAccelerator::~EditAccelerator()
 
 bool EditAccelerator::load(ProfileItem *item)
 {
+    Q_ASSERT(item != 0);
+    if (!item)
+    {
+        LOG_ERROR("Attempted to load an accelerator from a null address.");
+        return false;
+    }
+
     LOG_TRACE("EditAccelerator::load", item->fullName());
 
     Accelerator *accelerator = qobject_cast<Accelerator *>(item);
     if (!accelerator)
     {
+        LOG_ERROR("Attempted to load an accelerator from a non-accelerator item.");
         return false;
     }
 
@@ -81,15 +89,14 @@ bool EditAccelerator::save(ProfileItem *item)
         return false;
     }
 
+    LOG_TRACE("EditAccelerator::save", item->fullName());
+
     Accelerator *accelerator = qobject_cast<Accelerator *>(item);
-    Q_ASSERT(accelerator != 0);
     if (!accelerator)
     {
         LOG_ERROR("Attempted to save an accelerator to a non-accelerator item.");
         return false;
     }
-
-    LOG_TRACE("EditAccelerator::save", item->fullName());
 
     accelerator->setKey(ui->key->keySequence());
     accelerator->setName(ui->name->text());

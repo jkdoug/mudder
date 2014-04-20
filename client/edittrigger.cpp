@@ -68,8 +68,6 @@ bool EditTrigger::load(ProfileItem *item)
         return false;
     }
 
-    blockSignals(true);
-
     m_name = trigger->name();
     ui->name->setText(m_name);
 
@@ -109,8 +107,6 @@ bool EditTrigger::load(ProfileItem *item)
         ui->lastFired->setText(tr("Never"));
     }
     ui->avgTime->setText(QString::number(trigger->averageTime()));
-
-    blockSignals(false);
 
     changed();
 
