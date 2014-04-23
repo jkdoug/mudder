@@ -34,6 +34,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
 
     connect(ui->editor, SIGNAL(settingModified(bool, bool)), SLOT(settingModified(bool, bool)));
     connect(ui->actionSave, SIGNAL(triggered()), ui->editor, SLOT(saveCurrentItem()));
+    connect(ui->actionDiscard, SIGNAL(triggered()), ui->editor, SLOT(discardCurrentItem()));
 }
 
 SettingsWindow::~SettingsWindow()

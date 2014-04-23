@@ -124,7 +124,35 @@ void SettingsWidget::saveCurrentItem()
 
 void SettingsWidget::discardCurrentItem()
 {
+    QModelIndex current(m_selection->currentIndex());
+    if (!current.isValid())
+    {
+        return;
+    }
 
+    ProfileItem *item = static_cast<ProfileItem *>(current.internalPointer());
+    Q_ASSERT(item != 0);
+    if (!item)
+    {
+        LOG_ERROR(tr("Attempted to discard an invalid profile item."));
+        return;
+    }
+
+    Q_ASSERT(m_editors.contains(item->tagName()));
+    if (!m_editors.contains(item->tagName()))
+    {
+        LOG_WARNING(tr("No editor in place for %1 items.").arg(item->tagName()));
+        return;
+    }
+
+    int index = m_editors[item->tagName()];
+    EditSetting *editor = qobject_cast<EditSetting *>(m_layoutEdit->widget(index));
+    Q_ASSERT(editor != 0);
+
+    if (!editor->load(item))
+    {
+        LOG_WARNING(tr("Something got in the way of loading %1 called %2.").arg(item->tagName()).arg(item->fullName()));
+    }
 }
 
 void SettingsWidget::currentChanged(const QModelIndex &current, const QModelIndex &previous)
