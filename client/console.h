@@ -71,6 +71,10 @@ public:
     void scrollToTop();
     void scrollToBottom();
 
+    void printInfo(const QString &msg);
+    void printWarning(const QString &msg);
+    void printError(const QString &msg);
+
 signals:
     void connectionStatusChanged(bool connected);
 
@@ -80,6 +84,7 @@ protected:
 private slots:
     void contentsModified();
     void commandEntered(const QString &cmd);
+    void scriptEntered(const QString &code);
     void connectionEstablished();
     void connectionLost();
     void lookupComplete(const QHostInfo &hostInfo);
@@ -88,7 +93,6 @@ private slots:
     void gmcpToggled(bool on);
     void scrollbarMoved(int pos);
     void updateScroll();
-    void print(const QString &msg);
     void processTriggers(QTextBlock block, bool prompt);
 
 private:

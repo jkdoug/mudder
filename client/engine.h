@@ -26,13 +26,9 @@
 
 #include <QObject>
 #include <QString>
+#include "lua.hpp"
 
-extern "C"
-{
-    #include <lua.h>
-    #include <lualib.h>
-    #include <lauxlib.h>
-}
+class Console;
 
 class Engine : public QObject
 {
@@ -41,19 +37,31 @@ public:
     explicit Engine(QObject *parent = 0);
     ~Engine();
 
-    void initialize();
+    void initialize(Console *c);
 
     void setRegistryData(const QString &name, void *data);
     template <class C>
-    C * registryData(const QString &name, lua_State *L = 0);
+    static C * registryData(const QString &name, lua_State *L);
+    template <class C>
+    static C * registryObject(const QString &name, lua_State *L);
 
-signals:
-    void output(const QString &str);
+    static int panic(lua_State *L);
+    void error(lua_State *L, const QString &event);
+    void findTraceback(lua_State *L);
 
-public slots:
+    bool execute(const QString &code, const QObject * const item = 0);
+
+    static int print(lua_State *L);
+
+protected:
+    static QString concatArgs(lua_State *L, const QString &delimiter = "", const int first = 1);
 
 private:
     lua_State *m_global;
+
+    QString m_chunk;
+
+    bool m_gmcpEnabled;
 };
 
 #endif // ENGINE_H

@@ -44,6 +44,7 @@ public:
 public slots:
     void process(const QByteArray &data);
     void command(const QString &cmd);
+    void error(const QString &msg);
     void warning(const QString &msg);
     void info(const QString &msg);
 
@@ -77,6 +78,7 @@ private:
     QTextCharFormat m_formatDefault;
     QTextCharFormat m_formatCommand;
     QTextCharFormat m_formatCurrent;
+    QTextCharFormat m_formatError;
     QTextCharFormat m_formatWarning;
     QTextCharFormat m_formatInfo;
 };

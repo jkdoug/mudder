@@ -57,6 +57,7 @@ Console::Console(QWidget *parent) :
     ui->output->setDocument(m_document);
 
     connect(ui->input, SIGNAL(command(QString)), SLOT(commandEntered(QString)));
+    connect(ui->input, SIGNAL(script(QString)), SLOT(scriptEntered(QString)));
 
     m_profile = new Profile(this);
     connect(m_profile, SIGNAL(optionsChanged()), SLOT(contentsModified()));
@@ -78,10 +79,7 @@ Console::Console(QWidget *parent) :
     connect(ui->scrollbar, SIGNAL(valueChanged(int)), SLOT(scrollbarMoved(int)));
 
     m_engine = new Engine(this);
-    connect(m_engine, SIGNAL(output(QString)), SLOT(print(QString)));
-
-    m_engine->initialize();
-    m_engine->setRegistryData("CONSOLE", (void *)this);
+    m_engine->initialize(this);
 
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
@@ -161,7 +159,7 @@ Console * Console::openFile(const QString &fileName, QWidget *parent)
 
 void Console::connectToServer()
 {
-    m_connection->connectRemote("lusternia.game-host.org", 23); // TODO
+    m_connection->connectRemote("jkdoug.no-ip.biz", 23); // TODO
 }
 
 void Console::disconnectFromServer()
@@ -200,6 +198,30 @@ void Console::scrollToBottom()
     scrollTo(ui->scrollbar->maximum());
 }
 
+void Console::printInfo(const QString &msg)
+{
+    LOG_TRACE("Console::printInfo", msg);
+
+    m_document->info(msg);
+    scrollToBottom();
+}
+
+void Console::printWarning(const QString &msg)
+{
+    LOG_TRACE("Console::printWarning", msg);
+
+    m_document->warning(msg);
+    scrollToBottom();
+}
+
+void Console::printError(const QString &msg)
+{
+    LOG_TRACE("Console::printError", msg);
+
+    m_document->error(msg);
+    scrollToBottom();
+}
+
 void Console::closeEvent(QCloseEvent *e)
 {
     LOG_TRACE("Console::closeEvent");
@@ -232,6 +254,13 @@ void Console::commandEntered(const QString &cmd)
         m_document->command(cmd);
         scrollToBottom();
     }
+}
+
+void Console::scriptEntered(const QString &code)
+{
+    LOG_TRACE("Console::scriptEntered", code);
+
+    m_engine->execute(code);
 }
 
 void Console::connectionEstablished()
@@ -322,13 +351,6 @@ void Console::updateScroll()
         ui->scrollbar->setRange(1, 1);
     }
     ui->scrollbar->setPageStep(10);
-}
-
-void Console::print(const QString &msg)
-{
-    LOG_TRACE("Console::print", msg);
-
-    m_document->info(msg);
 }
 
 void Console::processTriggers(QTextBlock block, bool prompt)

@@ -55,6 +55,8 @@ ConsoleDocument::ConsoleDocument(QObject *parent) :
 
     m_formatWarning.setForeground(Qt::red);
 
+    m_formatError.setForeground(QColor(0xFF, 0x33, 0x00));
+
     m_formatInfo.setForeground(Qt::gray);
 
     m_formatDefault.setFont(QFont("Consolas", 10));
@@ -208,6 +210,16 @@ void ConsoleDocument::process(const QByteArray &data)
 void ConsoleDocument::command(const QString &cmd)
 {
     appendText(m_formatCommand, cmd);
+}
+
+void ConsoleDocument::error(const QString &msg)
+{
+    if (m_isPrompt)
+    {
+        newLine();
+    }
+
+    appendText(m_formatError, msg);
 }
 
 void ConsoleDocument::warning(const QString &msg)

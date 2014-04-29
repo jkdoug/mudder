@@ -74,7 +74,10 @@ HEADERS  += mainwindow.h \
     edittimer.h \
     editgroup.h \
     editevent.h \
-    edittrigger.h
+    edittrigger.h \
+    ../luabridge/LuaBridge.h \
+    ../luabridge/RefCountedObject.h \
+    ../luabridge/RefCountedPtr.h
 
 FORMS    += mainwindow.ui \
     console.ui \
@@ -91,6 +94,7 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     client.qrc
 
+INCLUDEPATH += $$PWD/../luabridge
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../lua52/release/ -llua52
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../lua52/debug/ -llua52
