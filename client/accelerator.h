@@ -54,6 +54,7 @@ public:
     virtual QString value() const { return key().toString(); }
     virtual int sequence() const { return 0; }
 
+    virtual QString tagName() const { return "accelerator"; }
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
