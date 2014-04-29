@@ -11,7 +11,7 @@ A powerful, cross-platform MUD client developed using the Qt SDK
 * Build.
 * Run.
 
-Lua 5.2.2 is included in the source, and everything else is pure Qt/C++. There are no other outside dependencies.
+Lua 5.2.3 is included in the source, and everything else is pure Qt/C++. There are no outside dependencies.
 
 ###Linux
 ```
