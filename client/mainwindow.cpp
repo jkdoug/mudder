@@ -235,9 +235,10 @@ void MainWindow::on_actionAbout_triggered()
                 .arg(QApplication::applicationDisplayName())
                 .arg(QApplication::applicationVersion())
                 .arg(__DATE__).arg(__TIME__));
-    msg += QString("<p>%1<br/>%2</p>").arg("Copyright (C) 2014 Jason K. Douglas").arg("<a href='mailto:jkdoug@gmail.com'>jkdoug@gmail.com</a>");
-    msg += QString("<p>%1<br/>%2</p>").arg(LUA_COPYRIGHT).arg(LUA_AUTHORS);
-    msg += QString("<p>%1</p>").arg("Portions inspired by <a href='https://github.com/JPNaude'>Jaco Naude</a>");
+    msg += QString("<p>%1<br/>%2</p>").arg("Copyright (C) 2014 Jason K. Douglas").arg("<a href='https://github.com/jkdoug/mudder'>https://github.com/jkdoug/mudder</a>");
+    msg += QString("<p>%1<br/>%2<br/>%3</p>").arg(LUA_COPYRIGHT).arg(LUA_AUTHORS).arg("<a href='http://lua.org'>http://lua.org</a>");
+    msg += QString("<p>%1<br/>%2</p>").arg("LuaBridge 2.0 Copyright (C) 2012 Vinnie Falco").arg("<a href='https://github.com/vinniefalco/LuaBridge'>https://github.com/vinniefalco/LuaBridge</a>");
+    msg += QString("<p>%1<br/>%2</p>").arg("Portions inspired by Jaco Naude's Qtilities project").arg("<a href='https://github.com/JPNaude'>https://github.com/JPNaude/Qtilities</a>");
 
     QMessageBox::about(this, tr("About"), msg);
 }
