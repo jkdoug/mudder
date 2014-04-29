@@ -35,9 +35,10 @@ class SettingsModel : public QAbstractItemModel
 public:
     explicit SettingsModel(QObject *parent = 0);
 
+    Group * rootGroup() const { return m_rootGroup; }
     void setRootGroup(Group *group);
 
-    QModelIndex index(int row, int column, const QModelIndex &parent) const;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &child) const;
 
     int rowCount(const QModelIndex &parent) const;
@@ -45,6 +46,8 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+    bool appendItem(ProfileItem *item, const QModelIndex &parent);
 
 private:
     ProfileItem * itemFromIndex(const QModelIndex &index) const;

@@ -60,7 +60,7 @@ Console::Console(QWidget *parent) :
     connect(ui->input, SIGNAL(script(QString)), SLOT(scriptEntered(QString)));
 
     m_profile = new Profile(this);
-    connect(m_profile, SIGNAL(optionsChanged()), SLOT(contentsModified()));
+    connect(m_profile, SIGNAL(optionChanged(QString)), SLOT(contentsModified()));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
 
     m_echoOn = true;
@@ -97,6 +97,7 @@ void Console::newFile()
     static int fileNumber = 1;
 
     m_fileName = tr("profile%1").arg(fileNumber++);
+    m_profile->setName(m_fileName);
     setWindowTitle(m_fileName + "[*]");
     m_action->setText(m_fileName);
     m_isUntitled = true;
@@ -410,7 +411,12 @@ void Console::setCurrentFile(const QString &fileName)
 
     m_action->setText(QFileInfo(fileName).fileName());
 
-    setWindowTitle(QFileInfo(fileName).fileName() + "[*]");
+    if (m_profile->name().isEmpty())
+    {
+        m_profile->setName(QFileInfo(fileName).fileName());
+    }
+
+    setWindowTitle(m_profile->name() + "[*]");
     setWindowModified(false);
 }
 

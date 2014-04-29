@@ -286,6 +286,12 @@ void MainWindow::updateActions()
         {
             ui->actionConnect->setIcon(QIcon(":/icons/disconnected"));
         }
+
+        m_settings->setRootGroup(console->profile()->rootGroup());
+    }
+    else
+    {
+        m_settings->setRootGroup(0);
     }
 }
 

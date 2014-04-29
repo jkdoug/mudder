@@ -82,6 +82,27 @@ void SettingsWidget::setRootGroup(Group *group)
     m_model->setRootGroup(group);
 }
 
+Group * SettingsWidget::rootGroup() const
+{
+    return m_model->rootGroup();
+}
+
+void SettingsWidget::addItem(ProfileItem *item)
+{
+    QModelIndex current(m_selection->currentIndex());
+    if (current.isValid())
+    {
+        ProfileItem *parentItem = static_cast<ProfileItem *>(current.internalPointer());
+        Group *parentGroup = qobject_cast<Group *>(parentItem);
+        if (!parentGroup)
+        {
+            current = current.parent();
+        }
+    }
+
+    m_model->appendItem(item, current);
+}
+
 void SettingsWidget::updateCurrentItem(bool changed, bool valid)
 {
     LOG_TRACE("SettingsWidget::updateCurrentItem", sender()->metaObject()->className(), changed, valid);
@@ -164,7 +185,7 @@ void SettingsWidget::currentChanged(const QModelIndex &current, const QModelInde
     for (int page = 0; page < m_layoutEdit->count(); page++)
     {
         EditSetting *editor = qobject_cast<EditSetting *>(m_layoutEdit->widget(page));
-        disconnect(editor, 0, this, 0);
+        editor->disconnect(SIGNAL(itemModified(bool, bool)));
     }
 
     int index = 0;

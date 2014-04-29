@@ -44,18 +44,38 @@ public:
     Group * activeGroup() const { return m_activeGroup?m_activeGroup:m_root; }
     void setActiveGroup(Group *group);
 
+    const QString & name() const { return m_name; }
+    void setName(const QString &name);
+
+    const QString & address() const { return m_address; }
+    void setAddress(const QString &address);
+    int port() const { return m_port; }
+    void setPort(int port);
+    bool autoConnect() const { return m_autoConnect; }
+    void setAutoConnect(bool flag = true);
+    bool autoReconnect() const { return m_autoReconnect; }
+    void setAutoReconnect(bool flag = true);
+
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 signals:
-    void optionsChanged();
+    void optionChanged(const QString &key);
     void settingsChanged();
+
+protected:
+    void readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 private:
     Group *m_root;
     Group *m_activeGroup;
 
-    QHash<QString, ProfileItem *> m_itemMap;
+    QString m_name;
+
+    QString m_address;
+    int m_port;
+    bool m_autoConnect;
+    bool m_autoReconnect;
 };
 
 #endif // PROFILE_H

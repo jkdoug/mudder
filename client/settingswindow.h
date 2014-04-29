@@ -25,6 +25,7 @@
 #define SETTINGSWINDOW_H
 
 #include <QMainWindow>
+#include <QToolButton>
 
 namespace Ui {
 class SettingsWindow;
@@ -41,12 +42,23 @@ public:
     ~SettingsWindow();
 
     void setRootGroup(Group *group);
+    Group * rootGroup() const;
 
 public slots:
     void settingModified(bool changed, bool valid);
 
+    void addAccelerator();
+    void addAlias();
+    void addEvent();
+    void addGroup();
+    void addTimer();
+    void addTrigger();
+    void addVariable();
+
 private:
     Ui::SettingsWindow *ui;
+
+    QToolButton *m_buttonNew;
 };
 
 #endif // SETTINGSWINDOW_H

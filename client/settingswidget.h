@@ -46,6 +46,8 @@ public:
     ~SettingsWidget();
 
     void setRootGroup(Group *group);
+    Group * rootGroup() const;
+    void addItem(ProfileItem *item);
 
 public slots:
     void updateCurrentItem(bool changed, bool valid);

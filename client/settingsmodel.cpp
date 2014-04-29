@@ -28,18 +28,20 @@
 #include "alias.h"
 
 SettingsModel::SettingsModel(QObject *parent) :
-    QAbstractItemModel(parent)
+    QAbstractItemModel(parent),
+    m_rootGroup(0)
 {
     LOG_TRACE("Settings model initializing.");
-
-    m_rootGroup = 0;
 }
 
 void SettingsModel::setRootGroup(Group *group)
 {
-    beginResetModel();
-    m_rootGroup = group;
-    endResetModel();
+    if (group != m_rootGroup)
+    {
+        beginResetModel();
+        m_rootGroup = group;
+        endResetModel();
+    }
 }
 
 QModelIndex SettingsModel::index(int row, int column, const QModelIndex &parent) const
@@ -176,6 +178,26 @@ QVariant SettingsModel::headerData(int section, Qt::Orientation orientation, int
     }
 
     return QVariant();
+}
+
+bool SettingsModel::appendItem(ProfileItem *item, const QModelIndex &parent)
+{
+    if (!m_rootGroup || !parent.isValid())
+    {
+        return false;
+    }
+
+    Group *group = qobject_cast<Group *>(itemFromIndex(parent));
+    if (!group)
+    {
+        return false;
+    }
+
+    beginInsertRows(parent, 0, 0);
+    group->addItem(item);
+    endInsertRows();
+
+    return true;
 }
 
 ProfileItem * SettingsModel::itemFromIndex(const QModelIndex &index) const

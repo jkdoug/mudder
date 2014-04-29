@@ -21,16 +21,71 @@
 */
 
 
+#include <QMenu>
 #include "settingswindow.h"
 #include "ui_settingswindow.h"
 #include "group.h"
 #include "logger.h"
+#include "profileitemfactory.h"
 
 SettingsWindow::SettingsWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SettingsWindow)
 {
     ui->setupUi(this);
+
+    QAction *newAccelerator = new QAction(tr("A&ccelerator"), this);
+    newAccelerator->setStatusTip(tr("Create a new key accelerator"));
+    newAccelerator->setIcon(QIcon(":/icons/accelerator"));
+    connect(newAccelerator, SIGNAL(triggered()), SLOT(addAccelerator()));
+
+    QAction *newAlias = new QAction(tr("&Alias"), this);
+    newAlias->setStatusTip(tr("Create a new alias"));
+    newAlias->setIcon(QIcon(":/icons/alias"));
+    connect(newAlias, SIGNAL(triggered()), SLOT(addAlias()));
+
+    QAction *newEvent = new QAction(tr("&Event"), this);
+    newEvent->setStatusTip(tr("Create a new event handler"));
+    newEvent->setIcon(QIcon(":/icons/event"));
+    connect(newEvent, SIGNAL(triggered()), SLOT(addEvent()));
+
+    QAction *newGroup = new QAction(tr("&Group"), this);
+    newGroup->setStatusTip(tr("Create a new group"));
+    newGroup->setIcon(QIcon(":/icons/group"));
+    connect(newGroup, SIGNAL(triggered()), SLOT(addGroup()));
+
+    QAction *newTimer = new QAction(tr("&Timer"), this);
+    newTimer->setStatusTip(tr("Create a new timer"));
+    newTimer->setIcon(QIcon(":/icons/timer"));
+    connect(newTimer, SIGNAL(triggered()), SLOT(addTimer()));
+
+    QAction *newTrigger = new QAction(tr("T&rigger"), this);
+    newTrigger->setStatusTip(tr("Create a new trigger"));
+    newTrigger->setIcon(QIcon(":/icons/trigger"));
+    connect(newTrigger, SIGNAL(triggered()), SLOT(addTrigger()));
+
+    QAction *newVariable = new QAction(tr("&Variable"), this);
+    newVariable->setStatusTip(tr("Create a new variable"));
+    newVariable->setIcon(QIcon(":/icons/variable"));
+    connect(newVariable, SIGNAL(triggered()), SLOT(addVariable()));
+
+    QMenu *menuNew = new QMenu(this);
+    menuNew->addAction(newAccelerator);
+    menuNew->addAction(newAlias);
+    menuNew->addAction(newEvent);
+    menuNew->addAction(newGroup);
+    menuNew->addAction(newTimer);
+    menuNew->addAction(newTrigger);
+    menuNew->addAction(newVariable);
+
+    m_buttonNew = new QToolButton(this);
+    m_buttonNew->setDefaultAction(newTrigger);
+    m_buttonNew->setEnabled(false);
+    m_buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
+    m_buttonNew->setMenu(menuNew);
+
+    ui->toolBar->insertWidget(ui->actionSave, m_buttonNew);
+    ui->toolBar->insertSeparator(ui->actionSave);
 
     connect(ui->editor, SIGNAL(settingModified(bool, bool)), SLOT(settingModified(bool, bool)));
     connect(ui->actionSave, SIGNAL(triggered()), ui->editor, SLOT(saveCurrentItem()));
@@ -45,10 +100,51 @@ SettingsWindow::~SettingsWindow()
 void SettingsWindow::setRootGroup(Group *group)
 {
     ui->editor->setRootGroup(group);
+    m_buttonNew->setEnabled(group != 0);
+}
+
+Group * SettingsWindow::rootGroup() const
+{
+    return ui->editor->rootGroup();
 }
 
 void SettingsWindow::settingModified(bool changed, bool valid)
 {
     ui->actionSave->setEnabled(changed && valid);
     ui->actionDiscard->setEnabled(changed);
+}
+
+void SettingsWindow::addAccelerator()
+{
+    ui->editor->addItem(ProfileItemFactory::create("accelerator"));
+}
+
+void SettingsWindow::addAlias()
+{
+    ui->editor->addItem(ProfileItemFactory::create("alias"));
+}
+
+void SettingsWindow::addEvent()
+{
+    ui->editor->addItem(ProfileItemFactory::create("event"));
+}
+
+void SettingsWindow::addGroup()
+{
+    ui->editor->addItem(ProfileItemFactory::create("group"));
+}
+
+void SettingsWindow::addTimer()
+{
+    ui->editor->addItem(ProfileItemFactory::create("timer"));
+}
+
+void SettingsWindow::addTrigger()
+{
+    ui->editor->addItem(ProfileItemFactory::create("trigger"));
+}
+
+void SettingsWindow::addVariable()
+{
+    ui->editor->addItem(ProfileItemFactory::create("variable"));
 }
