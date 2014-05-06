@@ -71,7 +71,6 @@ Console::Console(QWidget *parent) :
     connect(m_connection, SIGNAL(disconnected()), SLOT(connectionLost()));
     connect(m_connection, SIGNAL(hostFound(QHostInfo)), SLOT(lookupComplete(QHostInfo)));
     connect(m_connection, SIGNAL(echo(bool)), SLOT(echoToggled(bool)));
-    connect(m_connection, SIGNAL(toggleGMCP(bool)), SLOT(gmcpToggled(bool)));
 
     connect(m_document, SIGNAL(blockAdded(QTextBlock, bool)), SLOT(processTriggers(QTextBlock, bool)));
     connect(m_document, SIGNAL(contentsChanged()), ui->output, SLOT(update()));
@@ -80,6 +79,8 @@ Console::Console(QWidget *parent) :
 
     m_engine = new Engine(this);
     m_engine->initialize(this);
+    connect(m_connection, SIGNAL(toggleGMCP(bool)), m_engine, SLOT(enableGMCP(bool)));
+    connect(m_connection, SIGNAL(receivedGMCP(QString, QString)), m_engine, SLOT(handleGMCP(QString, QString)));
 
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
@@ -320,18 +321,6 @@ void Console::echoToggled(bool on)
     m_echoOn = on;
 }
 
-void Console::gmcpToggled(bool on)
-{
-    if (on)
-    {
-        LOG_INFO(tr("GMCP enabled."));
-    }
-    else
-    {
-        LOG_INFO(tr("GMCP disabled."));
-    }
-}
-
 void Console::scrollbarMoved(int pos)
 {
     disconnect(ui->scrollbar, SIGNAL(valueChanged(int)), this, SLOT(scrollbarMoved(int)));
@@ -356,15 +345,15 @@ void Console::updateScroll()
 
 void Console::processTriggers(QTextBlock block, bool prompt)
 {
-    LOG_TRACE("Console::processTriggers", block.text(), prompt?"[Prompt]":"[Not a prompt]");
+//    LOG_TRACE("Console::processTriggers", block.text(), prompt?"[Prompt]":"[Not a prompt]");
 
     QList<Trigger *> triggers(m_profile->rootGroup()->sortedTriggers());
     foreach (Trigger *trigger, triggers)
     {
-        LOG_TRACE(QString("Trigger[%1] = %2").arg(trigger->name()).arg(trigger->pattern()));
+//        LOG_TRACE(QString("Trigger[%1] = %2").arg(trigger->name()).arg(trigger->pattern()));
         if (trigger->match(block.text()))
         {
-            LOG_DEBUG(QString("Trigger match found!"));
+//            LOG_DEBUG(QString("Trigger match found!"));
         }
     }
 }

@@ -90,7 +90,6 @@ private slots:
     void lookupComplete(const QHostInfo &hostInfo);
     void dataReceived(const QByteArray &data);
     void echoToggled(bool on);
-    void gmcpToggled(bool on);
     void scrollbarMoved(int pos);
     void updateScroll();
     void processTriggers(QTextBlock block, bool prompt);

@@ -20,4 +20,19 @@
         <file alias="trigger">icons/item_trigger.png</file>
         <file alias="variable">icons/item_variable.png</file>
     </qresource>
+    <qresource prefix="/lua">
+        <file alias="io_exists">lua/io_exists.lua</file>
+        <file alias="string_commas">lua/string_commas.lua</file>
+        <file alias="string_explode">lua/string_explode.lua</file>
+        <file alias="string_join">lua/string_join.lua</file>
+        <file alias="string_split">lua/string_split.lua</file>
+        <file alias="string_title">lua/string_title.lua</file>
+        <file alias="string_trim">lua/string_trim.lua</file>
+        <file alias="string_wrap">lua/string_wrap.lua</file>
+        <file alias="table_contains">lua/table_contains.lua</file>
+        <file alias="table_copy">lua/table_copy.lua</file>
+        <file alias="table_ordered">lua/table_ordered.lua</file>
+        <file alias="table_print">lua/table_print.lua</file>
+        <file alias="table_size">lua/table_size.lua</file>
+    </qresource>
 </RCC>

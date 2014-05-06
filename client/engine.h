@@ -53,7 +53,13 @@ public:
 
     static int print(lua_State *L);
 
+public slots:
+    void enableGMCP(bool flag);
+    void handleGMCP(const QString &name, const QString &args);
+
 protected:
+    int loadResource(lua_State *L, const QString &resource);
+
     static QString concatArgs(lua_State *L, const QString &delimiter = "", const int first = 1);
 
 private:
@@ -61,7 +67,7 @@ private:
 
     QString m_chunk;
 
-    bool m_gmcpEnabled;
+    bool m_GMCP;
 };
 
 #endif // ENGINE_H

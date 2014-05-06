@@ -23,6 +23,7 @@
 
 #include "connection.h"
 #include <QApplication>
+#include "logger.h"
 
 static const QLatin1Char ESC('\x1B');
 static const QLatin1Char ANSI_START('[');
@@ -328,6 +329,7 @@ void Connection::handleTelnetCommand(const QString &cmd)
         case Telnet_Will:
         {
             option = cmd.at(2).toLatin1();
+            LOG_DEBUG(tr("Telnet WILL: %1 (%2)").arg(option).arg(TelnetOption_GMCP));
             switch (option)
             {
                 case TelnetOption_Echo:
@@ -381,6 +383,7 @@ void Connection::handleTelnetCommand(const QString &cmd)
         case Telnet_Wont:
         {
             option = cmd.at(2).toLatin1();
+            LOG_DEBUG(tr("Telnet WONT: %1 (%2)").arg(option).arg(TelnetOption_GMCP));
             switch (option)
             {
                 case TelnetOption_Echo:
@@ -396,6 +399,7 @@ void Connection::handleTelnetCommand(const QString &cmd)
         case Telnet_Do:
         {
             option = cmd.at(2).toLatin1();
+            LOG_DEBUG(tr("Telnet DO: %1 (%2)").arg(option).arg(TelnetOption_GMCP));
             if (option == TelnetOption_GMCP)
             {
                 m_GMCP = true;
@@ -414,6 +418,7 @@ void Connection::handleTelnetCommand(const QString &cmd)
         case Telnet_Dont:
         {
             // TODO: Telnet Dont handling
+            LOG_DEBUG(tr("Telnet DONT: %1").arg(option));
             break;
         }
 

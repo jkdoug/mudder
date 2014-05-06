@@ -35,7 +35,7 @@ Engine::Engine(QObject *parent) :
     QObject(parent)
 {
     m_global = 0;
-    m_gmcpEnabled = false;
+    m_GMCP = false;
 }
 
 Engine::~Engine()
@@ -68,11 +68,25 @@ void Engine::initialize(Console *c)
 
     getGlobalNamespace(m_global)
         .beginNamespace("gmcp")
-            .addVariable("enabled", &m_gmcpEnabled, false)
+            .addVariable("enabled", &m_GMCP, false)
         .endNamespace()
         .addCFunction("print", Engine::print);
 
     lua_settop(m_global, 0);
+
+    Q_ASSERT(loadResource(m_global, ":/lua/io_exists") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/string_commas") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/string_explode") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/string_join") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/string_split") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/string_title") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/string_trim") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/string_wrap") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/table_contains") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/table_copy") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/table_ordered") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/table_print") == LUA_OK);
+    Q_ASSERT(loadResource(m_global, ":/lua/table_size") == LUA_OK);
 
     setRegistryData("CONSOLE", (void *)c);
     c->printInfo("Script engine initialized.");
@@ -134,15 +148,14 @@ void Engine::error(lua_State *L, const QString &event)
     Profile *p = c->profile();
     if (p)
     {
-//        if (!p->name().isEmpty())
-//        {
-//            raisedBy = tr("Profile: %1").arg(p->name());
-//        }
-//        else if (!p->name().isNull())
-//        {
-//            raisedBy = tr("Host: %1:%2").arg(p->address()).arg(p->port());
-//        }
-        raisedBy = tr("Profile");
+        if (!p->name().isEmpty())
+        {
+            raisedBy = tr("Profile: %1").arg(p->name());
+        }
+        else if (!p->name().isNull())
+        {
+            raisedBy = tr("Host: %1:%2").arg(p->address()).arg(p->port());
+        }
     }
 
     QString calledBy(tr("Immediate execution"));
@@ -269,6 +282,43 @@ int Engine::print(lua_State *L)
     c->printInfo(concatArgs(L, " "));
 
     return 0;
+}
+
+void Engine::enableGMCP(bool flag)
+{
+    LOG_TRACE("Engine::enableGMCP", flag);
+
+    if (m_GMCP != flag)
+    {
+        m_GMCP = flag;
+
+        Console *c = registryObject<Console>("CONSOLE", m_global);
+        if (c)
+        {
+            c->printInfo(m_GMCP?tr("GMCP enabled."):tr("GMCP disabled."));
+        }
+    }
+}
+
+void Engine::handleGMCP(const QString &name, const QString &args)
+{
+//    LOG_TRACE(tr("GMCP Message '%1' -> '%2'").arg(name).arg(args));
+}
+
+int Engine::loadResource(lua_State *L, const QString &resource)
+{
+    QFile res(resource);
+    res.open(QFile::ReadOnly | QFile::Text);
+    QTextStream ts(&res);
+    QString code(ts.readAll());
+
+    int ret = luaL_dostring(L, code.toLatin1().data());
+    if (ret != LUA_OK)
+    {
+        luaL_error(L, qPrintable(tr("failed to load resource '%1': %2").arg(resource).arg(lua_tostring(L, -1))));
+    }
+
+    return ret;
 }
 
 QString Engine::concatArgs(lua_State *L, const QString &delimiter, const int first)
