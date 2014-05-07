@@ -176,7 +176,6 @@ void Engine::error(lua_State *L, const QString &event)
     int errLine = errDescription.section(":", 1, 1).toInt(&okLine);
     if (okLine && !m_chunk.isEmpty())
     {
-        printLines.clear();
         QStringList errLines(m_chunk.split("\n"));
         if (errLine <= errLines.size())
         {
