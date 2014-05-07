@@ -104,6 +104,8 @@ void Console::newFile()
     m_isUntitled = true;
 
     LOG_INFO("Created a new profile:", m_fileName);
+
+    m_engine->handleGMCP("Room.Info", "{ \"num\": 931, \"name\": \"The Moonhart Mother Tree\", \"area\": \"the Serenwilde Forest\", \"environment\": \"forest\", \"coords\": \"188,0,0,0\", \"map\": \"www.lusternia.com/irex/maps/clientmap.php?map=188&building=0&level=0 22 10\", \"exits\": { \"n\": 5809, \"s\": 854, \"x\": 0 } }");
 }
 
 bool Console::save()
@@ -222,6 +224,21 @@ void Console::printError(const QString &msg)
 
     m_document->error(msg);
     scrollToBottom();
+}
+
+bool Console::send(const QString &cmd, bool show)
+{
+    bool result = m_connection->send(cmd);
+    if (show)
+    {
+        m_document->command(cmd);
+    }
+    return result;
+}
+
+bool Console::sendGmcp(const QString &msg, const QString &data)
+{
+    return m_connection->sendGmcp(msg, data);
 }
 
 void Console::closeEvent(QCloseEvent *e)

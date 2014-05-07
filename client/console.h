@@ -75,6 +75,9 @@ public:
     void printWarning(const QString &msg);
     void printError(const QString &msg);
 
+    bool send(const QString &cmd, bool show = true);
+    bool sendGmcp(const QString &msg, const QString &data = QString());
+
 signals:
     void connectionStatusChanged(bool connected);
 

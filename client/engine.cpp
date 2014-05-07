@@ -31,6 +31,255 @@
 
 using namespace luabridge;
 
+
+inline bool lua_isarray(lua_State *L, int index)
+{
+    if (!lua_istable(L, index))
+    {
+        return false;
+    }
+
+    lua_pushvalue(L, index);
+    lua_pushnil(L);
+
+    while (lua_next(L, -2))
+    {
+        lua_pushvalue(L, -2);
+
+        if (!lua_isnumber(L, -1))
+        {
+            return false;
+        }
+
+        lua_pop(L, 2);
+    }
+
+    lua_pop(L, 1);
+
+    return true;
+}
+
+
+template <>
+struct Stack <QVariant>
+{
+    static void push(lua_State *L, QVariant value)
+    {
+        switch (value.type())
+        {
+        case QMetaType::Bool:
+            lua_pushboolean(L, value.toBool());
+            break;
+
+        case QMetaType::Double:
+            lua_pushnumber(L, value.toDouble());
+            break;
+
+        case QMetaType::Int:
+            lua_pushnumber(L, value.toInt());
+            break;
+
+        case QMetaType::QRegularExpression:
+        {
+            QRegularExpression regex(value.value<QRegularExpression>());
+            lua_newtable(L);
+            lua_pushliteral(L, "pattern");
+            lua_pushstring(L, qPrintable(regex.pattern()));
+            lua_settable(L, -3);
+            lua_pushliteral(L, "options");
+            lua_pushnumber(L, regex.patternOptions());
+            lua_settable(L, -3);
+            lua_pushliteral(L, "valid");
+            lua_pushboolean(L, regex.isValid());
+            lua_settable(L, -3);
+            if (!regex.errorString().isEmpty())
+            {
+                lua_pushliteral(L, "error");
+                lua_pushstring(L, qPrintable(regex.errorString()));
+                lua_settable(L, -3);
+                lua_pushliteral(L, "errorOffset");
+                lua_pushnumber(L, regex.patternErrorOffset());
+                lua_settable(L, -3);
+            }
+        }
+            break;
+
+        case QMetaType::QPoint:
+        {
+            QPoint point(value.value<QPoint>());
+            lua_newtable(L);
+            lua_pushliteral(L, "x");
+            lua_pushnumber(L, point.x());
+            lua_settable(L, -3);
+            lua_pushliteral(L, "y");
+            lua_pushnumber(L, point.y());
+            lua_settable(L, -3);
+        }
+            break;
+
+        case QMetaType::QFont:
+        {
+            QFont font(value.value<QFont>());
+            lua_newtable(L);
+            lua_pushliteral(L, "family");
+            lua_pushstring(L, qPrintable(font.family()));
+            lua_settable(L, -3);
+            lua_pushliteral(L, "size");
+            lua_pushnumber(L, font.pointSize());
+            lua_settable(L, -3);
+            lua_pushliteral(L, "antialias");
+            lua_pushboolean(L, font.styleStrategy() & QFont::PreferAntialias);
+            lua_settable(L, -3);
+        }
+            break;
+
+        case QMetaType::QJsonDocument:
+        {
+            QJsonDocument json(value.toJsonDocument());
+
+            if (json.isNull())
+            {
+                lua_pushnil(L);
+                return;
+            }
+
+            lua_newtable(L);
+
+            if (json.isEmpty())
+            {
+                return;
+            }
+
+            if (json.isArray())
+            {
+                push(L, json.array());
+            }
+            else if (json.isObject())
+            {
+                push(L, json.object());
+            }
+        }
+            break;
+
+        case QMetaType::QJsonArray:
+        {
+            Q_ASSERT(lua_istable(L, -1));
+
+            QJsonArray json(value.toJsonArray());
+
+            int n = 0;
+            foreach (QJsonValue element, json)
+            {
+                lua_pushnumber(L, ++n);
+                push(L, element);
+                lua_settable(L, -3);
+            }
+        }
+            break;
+
+        case QMetaType::QJsonObject:
+        {
+            Q_ASSERT(lua_istable(L, -1));
+
+            QJsonObject json(value.toJsonObject());
+
+            QStringList keys(json.keys());
+            foreach (QString key, keys)
+            {
+                lua_pushstring(L, qPrintable(key));
+                push(L, json.value(key));
+                lua_settable(L, -3);
+            }
+        }
+            break;
+
+        case QMetaType::QJsonValue:
+        {
+            QJsonValue json(value.toJsonValue());
+            if (json.isArray())
+            {
+                lua_newtable(L);
+                push(L, json.toArray());
+            }
+            else if (json.isObject())
+            {
+                lua_newtable(L);
+                push(L, json.toObject());
+            }
+            else
+            {
+                push(L, json.toVariant());
+            }
+        }
+            break;
+
+        default:
+            lua_pushstring(L, qPrintable(value.toString()));
+            break;
+        }
+    }
+
+    static QVariant get(lua_State *L, int index)
+    {
+        QVariant v;
+        if (lua_isnumber(L, index))
+        {
+            v = QVariant(luaL_checknumber(L, index));
+        }
+        else if (lua_isboolean(L, index))
+        {
+            v = QVariant(lua_toboolean(L, index) != 0);
+        }
+        else if (lua_isarray(L, index))
+        {
+            QVariantList list;
+
+            lua_pushvalue(L, index);
+            lua_pushnil(L);
+
+            while (lua_next(L, -2))
+            {
+                lua_pushvalue(L, -2);
+
+                list.insert(lua_tonumber(L, -1), get(L, -2));
+
+                lua_pop(L, 2);
+            }
+
+            lua_pop(L, 1);
+
+            v = list;
+        }
+        else if (lua_istable(L, index))
+        {
+            QVariantMap map;
+
+            lua_pushvalue(L, index);
+            lua_pushnil(L);
+
+            while (lua_next(L, -2))
+            {
+                lua_pushvalue(L, -2);
+
+                map.insert(lua_tostring(L, -1), get(L, -2));
+
+                lua_pop(L, 2);
+            }
+
+            lua_pop(L, 1);
+
+            v = map;
+        }
+        else
+        {
+            v = QVariant(luaL_checkstring(L, index));
+        }
+
+        return v;
+    }
+};
+
+
 Engine::Engine(QObject *parent) :
     QObject(parent)
 {
@@ -283,6 +532,26 @@ int Engine::print(lua_State *L)
     return 0;
 }
 
+int Engine::sendGmcp(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+
+    QString msg(LuaRef::fromStack(L, 1));
+
+    bool result = false;
+    if (!lua_isnone(L, 2))
+    {
+        result = c->sendGmcp(msg, LuaRef::fromStack(L, 2));
+    }
+    else
+    {
+        result = c->sendGmcp(msg);
+    }
+
+    lua_pushboolean(L, result);
+    return 1;
+}
+
 void Engine::enableGMCP(bool flag)
 {
     LOG_TRACE("Engine::enableGMCP", flag);
@@ -301,7 +570,35 @@ void Engine::enableGMCP(bool flag)
 
 void Engine::handleGMCP(const QString &name, const QString &args)
 {
-//    LOG_TRACE(tr("GMCP Message '%1' -> '%2'").arg(name).arg(args));
+    QStringList modules(name.split('.', QString::SkipEmptyParts));
+    if (modules.isEmpty())
+    {
+        return;
+    }
+
+    LuaRef gmcp = getGlobal(m_global, "gmcp");
+
+    LuaRef data(gmcp);
+    for (int n = 0; n < modules.count() - 1; n++)
+    {
+        QString key(modules.at(n));
+        LuaRef val(data[qPrintable(key)]);
+        if (val.isNil())
+        {
+            data[qPrintable(key)] = newTable(m_global);
+        }
+        data = LuaRef(data[qPrintable(key)]);
+    }
+
+    QJsonDocument doc(QJsonDocument::fromJson(args.toUtf8()));
+    if (doc.isEmpty())
+    {
+        data[qPrintable(modules.last())] = args;
+    }
+    else
+    {
+        data[qPrintable(modules.last())] = QVariant(doc);
+    }
 }
 
 int Engine::loadResource(lua_State *L, const QString &resource)
