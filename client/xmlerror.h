@@ -77,9 +77,7 @@ private:
 
 inline QDebug operator<<(QDebug dbg, const XmlError &err)
 {
-    dbg.nospace() << "XmlError(" << err.line() << ":" << err.column();
-    dbg.space() << err.message();
-    dbg.nospace() << ")";
+    dbg.nospace() << err.toString();
     return dbg.maybeSpace();
 }
 

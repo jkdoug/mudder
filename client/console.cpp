@@ -24,7 +24,6 @@
 #include "console.h"
 #include "ui_console.h"
 #include "coreapplication.h"
-#include "logger.h"
 #include "consoledocument.h"
 #include "engine.h"
 #include "profile.h"
@@ -38,11 +37,15 @@
 #include <QMessageBox>
 #include <QPainter>
 
+Q_LOGGING_CATEGORY(MUDDER_CONSOLE, "mudder.console")
+Q_LOGGING_CATEGORY(MUDDER_NETWORK, "mudder.network")
+Q_LOGGING_CATEGORY(MUDDER_PROFILE, "mudder.profile")
+
 Console::Console(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Console)
 {
-    LOG_DEBUG("Setting up a new console window.");
+    qCDebug(MUDDER_CONSOLE) << "Setting up a new console window.";
 
     ui->setupUi(this);
 
@@ -85,7 +88,7 @@ Console::Console(QWidget *parent) :
     setWindowTitle("[*]");
     setAttribute(Qt::WA_DeleteOnClose);
 
-    LOG_DEBUG("Console window initialized.");
+    qCDebug(MUDDER_CONSOLE) << "Console window initialized.";
 }
 
 Console::~Console()
@@ -103,14 +106,14 @@ void Console::newFile()
     m_action->setText(m_fileName);
     m_isUntitled = true;
 
-    LOG_INFO("Created a new profile:", m_fileName);
+    qCDebug(MUDDER_PROFILE) << "Created a new profile:" << m_fileName;
 
     m_engine->handleGMCP("Room.Info", "{ \"num\": 931, \"name\": \"The Moonhart Mother Tree\", \"area\": \"the Serenwilde Forest\", \"environment\": \"forest\", \"coords\": \"188,0,0,0\", \"map\": \"www.lusternia.com/irex/maps/clientmap.php?map=188&building=0&level=0 22 10\", \"exits\": { \"n\": 5809, \"s\": 854, \"x\": 0 } }");
 }
 
 bool Console::save()
 {
-    LOG_TRACE("Console::save", QString("Untitled: %1").arg(m_isUntitled), m_fileName);
+    qCDebug(MUDDER_PROFILE) << "Save: filename =" << m_fileName << "untitled =" << m_isUntitled;
 
     if (m_isUntitled)
     {
@@ -124,7 +127,9 @@ bool Console::saveAs()
 {
     QString fileName(QFileDialog::getSaveFileName(this, tr("Save Profile"),
                                                   m_fileName, tr("Mudder Profiles (*.mp);;All files (*)")));
-    LOG_TRACE("Console::saveAs", fileName);
+
+    qCDebug(MUDDER_PROFILE) << "SaveAs: filename =" << fileName;
+
     if (fileName.isEmpty())
     {
         return false;
@@ -137,7 +142,9 @@ Console * Console::open(QWidget *parent)
 {
     QString fileName(QFileDialog::getOpenFileName(parent, tr("Open Profile"),
                                                   QString(), tr("Mudder profiles (*.mp);;All files (*)")));
-    LOG_TRACE("Console::open", fileName);
+
+    qCDebug(MUDDER_PROFILE) << "Open: filename =" << fileName;
+
     if (fileName.isEmpty())
     {
         return 0;
@@ -148,7 +155,7 @@ Console * Console::open(QWidget *parent)
 
 Console * Console::openFile(const QString &fileName, QWidget *parent)
 {
-    LOG_TRACE("Console::openFile", fileName);
+    qCDebug(MUDDER_PROFILE) << "OpenFile: filename =" << fileName;
 
     Console *console = new Console(parent);
     if (console->readFile(fileName))
@@ -188,8 +195,6 @@ void Console::scrollTo(int line)
     ui->scrollbar->setValue(line);
     ui->output->setScrollLines(line);
     ui->output->update();
-
-//    LOG_TRACE("Console::scrollTo " + QString::number(line));
 }
 
 void Console::scrollToTop()
@@ -204,24 +209,18 @@ void Console::scrollToBottom()
 
 void Console::printInfo(const QString &msg)
 {
-    LOG_TRACE("Console::printInfo", msg);
-
     m_document->info(msg);
     scrollToBottom();
 }
 
 void Console::printWarning(const QString &msg)
 {
-    LOG_TRACE("Console::printWarning", msg);
-
     m_document->warning(msg);
     scrollToBottom();
 }
 
 void Console::printError(const QString &msg)
 {
-    LOG_TRACE("Console::printError", msg);
-
     m_document->error(msg);
     scrollToBottom();
 }
@@ -243,8 +242,6 @@ bool Console::sendGmcp(const QString &msg, const QString &data)
 
 void Console::closeEvent(QCloseEvent *e)
 {
-    LOG_TRACE("Console::closeEvent");
-
     if (okToContinue())
     {
         e->accept();
@@ -257,14 +254,12 @@ void Console::closeEvent(QCloseEvent *e)
 
 void Console::contentsModified()
 {
-    LOG_TRACE("Console::contentsModified");
-
     setWindowModified(true);
 }
 
 void Console::commandEntered(const QString &cmd)
 {
-    LOG_TRACE("Console::commandEntered", cmd);
+    qCDebug(MUDDER_CONSOLE) << "Command entered:" << cmd;
 
     m_connection->send(cmd);
 
@@ -277,27 +272,30 @@ void Console::commandEntered(const QString &cmd)
 
 void Console::scriptEntered(const QString &code)
 {
-    LOG_TRACE("Console::scriptEntered", code);
+    qCDebug(MUDDER_CONSOLE) << "Script entered:" << code;
 
     m_engine->execute(code);
 }
 
 void Console::connectionEstablished()
 {
-    LOG_INFO(tr("Connection established."));
+    qCDebug(MUDDER_NETWORK) << "Connection established.";
+
+    printInfo(tr("Connected to server."));
 
     emit connectionStatusChanged(true);
 }
 
 void Console::connectionLost()
 {
+    qCDebug(MUDDER_NETWORK) << "Connection lost.";
+
     quint64 duration = m_connection->connectDuration();
-//    colorNote("dimgray", QColor(), QString(20, QLatin1Char('-')));
-    LOG_INFO(tr("Disconnected from server. Total time connected: %1:%2:%3.%4")
-             .arg((duration / (60 * 60 * 1000)) % 60)
-             .arg((duration / (60 * 1000)) % 60, 2, 10, QLatin1Char('0'))
-             .arg((duration / 1000) % 60, 2, 10, QLatin1Char('0'))
-             .arg(duration % 1000, 3, 10, QLatin1Char('0')));
+    printInfo(tr("Disconnected from server. Total time connected: %1:%2:%3.%4")
+              .arg((duration / (60 * 60 * 1000)) % 60)
+              .arg((duration / (60 * 1000)) % 60, 2, 10, QLatin1Char('0'))
+              .arg((duration / 1000) % 60, 2, 10, QLatin1Char('0'))
+              .arg(duration % 1000, 3, 10, QLatin1Char('0')));
 
     emit connectionStatusChanged(false);
 }
@@ -313,24 +311,16 @@ void Console::lookupComplete(const QHostInfo &hostInfo)
     {
         address = hostInfo.hostName();
     }
-    LOG_INFO(tr("Host lookup answer: %1").arg(address));
+
+    qCDebug(MUDDER_NETWORK) << "Host lookup result:" << address;
 }
 
 void Console::dataReceived(const QByteArray &data)
 {
-//    timeLatency(m_connection->latency() / 1000.0);
-
-//    QElapsedTimer processingTime;
-//    processingTime.start();
-
     m_document->process(data);
-
-//    timeProcessing(processingTime.elapsed() / 1000.0);
 
     updateScroll();
     scrollToBottom();
-
-//    logLatest();
 }
 
 void Console::echoToggled(bool on)
@@ -362,15 +352,12 @@ void Console::updateScroll()
 
 void Console::processTriggers(QTextBlock block, bool prompt)
 {
-//    LOG_TRACE("Console::processTriggers", block.text(), prompt?"[Prompt]":"[Not a prompt]");
-
     QList<Trigger *> triggers(m_profile->rootGroup()->sortedTriggers());
     foreach (Trigger *trigger, triggers)
     {
-//        LOG_TRACE(QString("Trigger[%1] = %2").arg(trigger->name()).arg(trigger->pattern()));
         if (trigger->match(block.text()))
         {
-//            LOG_DEBUG(QString("Trigger match found!"));
+            // TODO: execute trigger script
         }
     }
 }
@@ -397,7 +384,7 @@ bool Console::okToContinue()
 
 bool Console::saveFile(const QString &fileName)
 {
-    LOG_TRACE("Console::saveFile", fileName);
+    qCDebug(MUDDER_PROFILE) << "SaveFile: filename =" << fileName;
 
     if (writeFile(fileName))
     {
@@ -410,7 +397,7 @@ bool Console::saveFile(const QString &fileName)
 
 void Console::setCurrentFile(const QString &fileName)
 {
-    LOG_TRACE("Console::setCurrentFile", fileName);
+    qCDebug(MUDDER_PROFILE) << "CurrentFile: filename =" << fileName;
 
     m_fileName = fileName;
     m_isUntitled = false;
@@ -428,23 +415,21 @@ void Console::setCurrentFile(const QString &fileName)
 
 bool Console::readFile(const QString &fileName)
 {
-    LOG_TRACE("Console::readFile", fileName);
-
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
+        qCWarning(MUDDER_PROFILE) << "Cannot read:" << fileName << file.errorString();
+
         QMessageBox::warning(this, tr("Console"),
                              tr("Cannot read file %1:\n%2.")
                              .arg(file.fileName())
                              .arg(file.errorString()));
-
-        LOG_WARNING("Cannot read profile:", fileName, file.errorString());
         return false;
     }
 
     CoreApplication::setApplicationBusy(true);
 
-    LOG_INFO("Reading profile:", fileName);
+    qCDebug(MUDDER_PROFILE) << "Reading:" << fileName;
 
     QXmlStreamReader xml(&file);
 
@@ -457,7 +442,7 @@ bool Console::readFile(const QString &fileName)
 
     foreach (XmlError *err, errors)
     {
-        LOG_WARNING(err->toString());
+        qCWarning(MUDDER_PROFILE) << *err;
 
         m_document->warning(err->toString());
 
@@ -467,36 +452,36 @@ bool Console::readFile(const QString &fileName)
 
     scrollToBottom();
 
-    Trigger *trigTest = new Trigger;
-    trigTest->setPattern("\\bE(nte)r\\b");
-    trigTest->setName("trigTest");
-    trigTest->setContents("print('hello world')");
-    m_profile->rootGroup()->addItem(trigTest);
+//    Trigger *trigTest = new Trigger;
+//    trigTest->setPattern("\\bE(nte)r\\b");
+//    trigTest->setName("trigTest");
+//    trigTest->setContents("print('hello world')");
+//    m_profile->rootGroup()->addItem(trigTest);
 
-    QByteArray test("Rapture Runtime Environment v2.2.0 -- (c) 2012 -- Iron Realms Entertainment\n"
-                    "Multi-User License: 100-0000-000\n"
-                    "\n"
-                    "[0;37m[33m   o0==============================~o[0]o~==============================0o\n"
-                    "    IP Address:[35m 69.65.42.86[33m              Questions: [35msupport@lusternia.com\n"
-                    "    [33mCurrently On-Line: [35m52\n"
-                    "\n"
-                    "[1;35m     .____                     __                         .__\n"
-                    "     |    |     __ __  _______/  |_  _____ _______  ____  |__|_____\n"
-                    "     |    |    |  |  \\/  ___/\\   __\\/  __ \\\\_  __ \\/    \\ |  |\\__  \\\n"
-                    "     |    |___ |  |  /\\___ \\  |  |  \\  ___/ |  | \\/|  |  \\|  | / __ \\\n"
-                    "     |_______ \\|____/ /____ \\ |__|   \\___ \\ |__|   |__|  /|__|/_____ \\\n"
-                    "             \\/            \\/            \\/            \\/           \\/\n"
-                    "\n"
-                    "[0;35m                        A G E  O F  A S C E N S I O N\n"
-                    "\n"
-                    "\n"
-                    "[33m   o0===================================================================0o\n"
-                    "\n"
-                    "[37m                 [35m1.[37m Enter the game.\n"
-                    "                 [35m2.[37m Create a new character.\n"
-                    "                 [35m3.[37m Quit.\n"
-                    "\n"
-                    "Enter an option or enter your character's name. \xFF");
+//    QByteArray test("Rapture Runtime Environment v2.2.0 -- (c) 2012 -- Iron Realms Entertainment\n"
+//                    "Multi-User License: 100-0000-000\n"
+//                    "\n"
+//                    "[0;37m[33m   o0==============================~o[0]o~==============================0o\n"
+//                    "    IP Address:[35m 69.65.42.86[33m              Questions: [35msupport@lusternia.com\n"
+//                    "    [33mCurrently On-Line: [35m52\n"
+//                    "\n"
+//                    "[1;35m     .____                     __                         .__\n"
+//                    "     |    |     __ __  _______/  |_  _____ _______  ____  |__|_____\n"
+//                    "     |    |    |  |  \\/  ___/\\   __\\/  __ \\\\_  __ \\/    \\ |  |\\__  \\\n"
+//                    "     |    |___ |  |  /\\___ \\  |  |  \\  ___/ |  | \\/|  |  \\|  | / __ \\\n"
+//                    "     |_______ \\|____/ /____ \\ |__|   \\___ \\ |__|   |__|  /|__|/_____ \\\n"
+//                    "             \\/            \\/            \\/            \\/           \\/\n"
+//                    "\n"
+//                    "[0;35m                        A G E  O F  A S C E N S I O N\n"
+//                    "\n"
+//                    "\n"
+//                    "[33m   o0===================================================================0o\n"
+//                    "\n"
+//                    "[37m                 [35m1.[37m Enter the game.\n"
+//                    "                 [35m2.[37m Create a new character.\n"
+//                    "                 [35m3.[37m Quit.\n"
+//                    "\n"
+//                    "Enter an option or enter your character's name. \xFF");
 //    dataReceived(test);
 
     return true;
@@ -507,18 +492,18 @@ bool Console::writeFile(const QString &fileName)
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
+        qCWarning(MUDDER_PROFILE) << "Cannot write:" << fileName << file.errorString();
+
         QMessageBox::warning(this, tr("Console"),
                              tr("Cannot write file %1:\n%2.")
                              .arg(file.fileName())
                              .arg(file.errorString()));
-
-        LOG_WARNING("Cannot write profile:", fileName, file.errorString());
         return false;
     }
 
     CoreApplication::setApplicationBusy(true);
 
-    LOG_INFO("Writing profile:", fileName);
+    qCDebug(MUDDER_PROFILE) << "Writing:" << fileName;
 
     QXmlStreamWriter xml(&file);
     xml.setAutoFormatting(true);

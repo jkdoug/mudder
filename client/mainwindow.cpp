@@ -84,20 +84,19 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
-    if (!m_editor->close())
-    {
-        LOG_DEBUG("Main window will not close yet; editor windows still open.");
-
-        e->ignore();
-        return;
-    }
-
     ui->mdiArea->closeAllSubWindows();
     if (!ui->mdiArea->subWindowList().isEmpty())
     {
         LOG_DEBUG("Main window will not close yet; console windows still open.");
 
         e->ignore();
+    }
+    else if (!m_editor->close())
+    {
+        LOG_DEBUG("Main window will not close yet; editor windows still open.");
+
+        e->ignore();
+        return;
     }
     else
     {
@@ -143,7 +142,9 @@ void MainWindow::onRecentFilesChanged(const QStringList &fileNames)
     {
         if (QFile::exists(fileNames[i]))
         {
-            m_recentFileActions[i]->setText(tr("&%1 %2").arg(count++).arg(QFileInfo(fileNames[i]).fileName()));
+            QFileInfo fi(fileNames[i]);
+            m_recentFileActions[i]->setText(tr("&%1 %2").arg(count++).arg(fi.fileName()));
+            m_recentFileActions[i]->setStatusTip(fi.canonicalFilePath());
             m_recentFileActions[i]->setVisible(true);
             m_recentSignalMapper->setMapping(m_recentFileActions[i], fileNames[i]);
         }

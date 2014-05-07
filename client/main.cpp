@@ -24,6 +24,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDateTime>
+#include <QLoggingCategory>
 #include "coreapplication.h"
 #include "coresettings.h"
 #include "logger.h"
@@ -35,11 +36,13 @@ int main(int argc, char *argv[])
     a.setApplicationVersion("0.3");
     a.setOrganizationName("Iasmos");
 
+    QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
+
     SETTINGS->setValue("LastRun", QDateTime::currentDateTime());
 
     LOG_INITIALIZE();
 
-    LOG->setGlobalLogLevel(Logger::Trace);
+    LOG->setGlobalLogLevel(Logger::Warning);
 
     LOG->newFileEngine("Mudder XML", "mudder_log.xml");
     LOG->newFileEngine("Mudder Text", "mudder_log.txt");
