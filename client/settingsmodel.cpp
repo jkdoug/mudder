@@ -24,14 +24,12 @@
 #include <QIcon>
 #include "settingsmodel.h"
 #include "group.h"
-#include "logger.h"
 #include "alias.h"
 
 SettingsModel::SettingsModel(QObject *parent) :
     QAbstractItemModel(parent),
     m_rootGroup(0)
 {
-    LOG_TRACE("Settings model initializing.");
 }
 
 void SettingsModel::setRootGroup(Group *group)
@@ -46,8 +44,6 @@ void SettingsModel::setRootGroup(Group *group)
 
 QModelIndex SettingsModel::index(int row, int column, const QModelIndex &parent) const
 {
-//    LOG_TRACE("SettingsModel::index", row, column);
-
     if (!m_rootGroup || row < 0 || column < 0)
     {
         return QModelIndex();
@@ -66,7 +62,6 @@ QModelIndex SettingsModel::index(int row, int column, const QModelIndex &parent)
         return QModelIndex();
     }
 
-//    LOG_TRACE("SettingsModel index created", row, column, parent.row(), parent.column(), children.at(row)->name(), children.at(row)->metaObject()->className());
     return createIndex(row, column, children.at(row));
 }
 
@@ -101,8 +96,6 @@ int SettingsModel::rowCount(const QModelIndex &parent) const
         return 0;
     }
 
-//    LOG_TRACE("SettingsModel::rowCount", parent.row(), parent.column());
-
     ProfileItem *parentItem = itemFromIndex(parent);
     Group *group = qobject_cast<Group *>(parentItem);
     if (!group)
@@ -110,7 +103,6 @@ int SettingsModel::rowCount(const QModelIndex &parent) const
         return 0;
     }
 
-//    LOG_TRACE("SettingsModel group", group->path(), group->items().count());
     return group->items().count();
 }
 
@@ -127,8 +119,6 @@ QVariant SettingsModel::data(const QModelIndex &index, int role) const
     {
         return QVariant();
     }
-
-//    LOG_TRACE("SettingsModel::data", index.row(), index.column(), role);
 
     if (role == Qt::DisplayRole)
     {

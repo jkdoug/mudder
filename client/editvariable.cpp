@@ -24,7 +24,6 @@
 #include <QMessageBox>
 #include "editvariable.h"
 #include "ui_editvariable.h"
-#include "logger.h"
 #include "variable.h"
 
 EditVariable::EditVariable(QWidget *parent) :
@@ -49,16 +48,13 @@ bool EditVariable::load(ProfileItem *item)
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to load a variable from a null address.");
         return false;
     }
 
-    LOG_TRACE("EditVariable::load", item->fullName());
-
     Variable *variable = qobject_cast<Variable *>(item);
+    Q_ASSERT(variable != 0);
     if (!variable)
     {
-        LOG_ERROR("Attempted to load a variable from a non-variable item.");
         return false;
     }
 
@@ -93,7 +89,6 @@ bool EditVariable::save(ProfileItem *item)
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to save a variable to a null address.");
         return false;
     }
 
@@ -101,11 +96,8 @@ bool EditVariable::save(ProfileItem *item)
     Q_ASSERT(variable != 0);
     if (!variable)
     {
-        LOG_ERROR("Attempted to save a variable to a non-variable item.");
         return false;
     }
-
-    LOG_TRACE("EditVariable::save", item->fullName());
 
     QString name(ui->name->text());
     if (!Variable::validateName(name))
@@ -142,7 +134,7 @@ void EditVariable::changed()
     }
 
     bool changed = m_name != ui->name->text() ||
-            m_contents.toString() != ui->contents->toPlainText();
+        m_contents.toString() != ui->contents->toPlainText();
 
     QString type(ui->type->itemText(ui->type->currentIndex()));
     QVariant::Type enumType = Variable::translateType(type);

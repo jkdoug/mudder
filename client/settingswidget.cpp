@@ -24,7 +24,7 @@
 #include <QLabel>
 #include "settingswidget.h"
 #include "ui_settingswidget.h"
-#include "logger.h"
+#include "logging.h"
 #include "settingsmodel.h"
 #include "profileitem.h"
 #include "profileitemfactory.h"
@@ -56,7 +56,7 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
         EditSetting *editor = ProfileItemFactory::editor(editorType);
         if (!editor)
         {
-            LOG_ERROR(tr("Invalid profile item editor requested: %1").arg(editorType));
+            qCWarning(MUDDER_PROFILE) << "Invalid profile item editor requested:" << editorType;
             continue;
         }
 
@@ -105,7 +105,7 @@ void SettingsWidget::addItem(ProfileItem *item)
 
 void SettingsWidget::updateCurrentItem(bool changed, bool valid)
 {
-    LOG_TRACE("SettingsWidget::updateCurrentItem", sender()->metaObject()->className(), changed, valid);
+    qCDebug(MUDDER_PROFILE) << "Update current item on settings widget:" << sender()->metaObject()->className() << changed << valid;
 
     emit settingModified(changed, valid);
 }
@@ -122,14 +122,14 @@ void SettingsWidget::saveCurrentItem()
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR(tr("Attempted to save an invalid profile item."));
+        qCWarning(MUDDER_PROFILE) << "Attempted to save an invalid profile item.";
         return;
     }
 
     Q_ASSERT(m_editors.contains(item->tagName()));
     if (!m_editors.contains(item->tagName()))
     {
-        LOG_WARNING(tr("No editor in place for %1 items.").arg(item->tagName()));
+        qCWarning(MUDDER_PROFILE) << "No editor found:" << item->tagName();
         return;
     }
 
@@ -139,7 +139,7 @@ void SettingsWidget::saveCurrentItem()
 
     if (!editor->save(item))
     {
-        LOG_WARNING(tr("Something got in the way of saving %1 called %2.").arg(item->tagName()).arg(item->fullName()));
+        qCWarning(MUDDER_PROFILE) << "Something prevented saving:" << item->tagName() << "->" << item->fullName();
     }
 }
 
@@ -155,14 +155,14 @@ void SettingsWidget::discardCurrentItem()
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR(tr("Attempted to discard an invalid profile item."));
+        qCWarning(MUDDER_PROFILE) << "Attempted to discard an invalid profile item";
         return;
     }
 
     Q_ASSERT(m_editors.contains(item->tagName()));
     if (!m_editors.contains(item->tagName()))
     {
-        LOG_WARNING(tr("No editor in place for %1 items.").arg(item->tagName()));
+        qCWarning(MUDDER_PROFILE) << "No editor found:" << item->tagName();
         return;
     }
 
@@ -172,7 +172,7 @@ void SettingsWidget::discardCurrentItem()
 
     if (!editor->load(item))
     {
-        LOG_WARNING(tr("Something got in the way of loading %1 called %2.").arg(item->tagName()).arg(item->fullName()));
+        qCWarning(MUDDER_PROFILE) << "Something prevented loading:" << item->tagName() << "->" << item->fullName();
     }
 }
 
@@ -180,7 +180,7 @@ void SettingsWidget::currentChanged(const QModelIndex &current, const QModelInde
 {
     Q_UNUSED(previous)
 
-    LOG_TRACE("SettingsWidget::currentChanged", current.data());
+    qCDebug(MUDDER_PROFILE) << "Current index changed:" << current.data();
 
     for (int page = 0; page < m_layoutEdit->count(); page++)
     {
@@ -209,7 +209,7 @@ void SettingsWidget::selectionChanged(const QItemSelection &selected, const QIte
 {
     Q_UNUSED(deselected)
 
-    LOG_TRACE("SettingsWidget::selectionChanged", selected.count());
+    qCDebug(MUDDER_PROFILE) << "Selection changed:" << selected.count();
 
     if (selected.isEmpty())
     {

@@ -25,7 +25,6 @@
 #include "settingswindow.h"
 #include "ui_settingswindow.h"
 #include "group.h"
-#include "logger.h"
 #include "profileitemfactory.h"
 
 SettingsWindow::SettingsWindow(QWidget *parent) :

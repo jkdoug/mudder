@@ -23,7 +23,6 @@
 
 #include "consoledocument.h"
 #include "consoledocumentlayout.h"
-#include "logger.h"
 #include <QTextBlock>
 #include <QTextDocumentFragment>
 
@@ -111,8 +110,6 @@ void ConsoleDocument::deleteBlock(int num)
 
 void ConsoleDocument::process(const QByteArray &data)
 {
-//    LOG_TRACE("ConsoleDocument::process", data);
-
     if (m_isPrompt)
     {
         newLine();
@@ -183,13 +180,13 @@ void ConsoleDocument::process(const QByteArray &data)
             m_text.clear();
 
 //            QTextBlock b(m_cursor->block());
-//            LOG_DEBUG("Text line number: " + QString::number(b.blockNumber()));
+//            qCDebug(MUDDER_CONSOLE) << "Text line number:" << b.blockNumber();
 //            for (QTextBlock::iterator it = b.begin(); !it.atEnd(); it++)
 //            {
 //                QTextFragment f(it.fragment());
 //                if (f.isValid())
 //                {
-//                    LOG_DEBUG(QString("Text fragment: %1 [%2, %3] - %4").arg(f.text()).arg(f.position()).arg(f.length()).arg(f.charFormat().foreground().color().name()));
+//                    qCDebug(MUDDER_CONSOLE) << "Text fragment:" << f.text() << f.position() << f.length() << f.charFormat().foreground().color().name();
 //                }
 //            }
 

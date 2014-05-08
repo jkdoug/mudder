@@ -26,6 +26,7 @@
 #include "coreapplication.h"
 #include "consoledocument.h"
 #include "engine.h"
+#include "logging.h"
 #include "profile.h"
 #include "xmlerror.h"
 #include "alias.h"
@@ -36,10 +37,6 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QPainter>
-
-Q_LOGGING_CATEGORY(MUDDER_CONSOLE, "mudder.console")
-Q_LOGGING_CATEGORY(MUDDER_NETWORK, "mudder.network")
-Q_LOGGING_CATEGORY(MUDDER_PROFILE, "mudder.profile")
 
 Console::Console(QWidget *parent) :
     QWidget(parent),
@@ -107,8 +104,6 @@ void Console::newFile()
     m_isUntitled = true;
 
     qCDebug(MUDDER_PROFILE) << "Created a new profile:" << m_fileName;
-
-    m_engine->handleGMCP("Room.Info", "{ \"num\": 931, \"name\": \"The Moonhart Mother Tree\", \"area\": \"the Serenwilde Forest\", \"environment\": \"forest\", \"coords\": \"188,0,0,0\", \"map\": \"www.lusternia.com/irex/maps/clientmap.php?map=188&building=0&level=0 22 10\", \"exits\": { \"n\": 5809, \"s\": 854, \"x\": 0 } }");
 }
 
 bool Console::save()

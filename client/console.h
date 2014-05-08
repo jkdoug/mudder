@@ -28,7 +28,6 @@
 #include "profile.h"
 #include <QCloseEvent>
 #include <QHostInfo>
-#include <QLoggingCategory>
 #include <QTextBlock>
 #include <QWidget>
 

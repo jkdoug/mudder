@@ -22,7 +22,6 @@
 
 
 #include "group.h"
-#include "logger.h"
 #include "xmlerror.h"
 #include "accelerator.h"
 #include "alias.h"
@@ -85,8 +84,6 @@ QList<Variable *> Group::sortedVariables(bool all) const
 
 void Group::addItem(ProfileItem *item)
 {
-    LOG_TRACE("Group::addItem", path(), item->name());
-
     item->setParent(this);
     m_items << item;
 
@@ -99,8 +96,6 @@ void Group::addItem(ProfileItem *item)
 
 bool Group::removeItem(ProfileItem *item)
 {
-    LOG_TRACE("Group::removeItem", path(), item->name());
-
     // TODO: remove groups, triggers, etc
 
     return m_items.removeOne(item);
@@ -109,8 +104,6 @@ bool Group::removeItem(ProfileItem *item)
 
 void Group::toXml(QXmlStreamWriter &xml)
 {
-    LOG_TRACE("Group::toXml", path());
-
     if (!name().isEmpty())
     {
         ProfileItem::toXml(xml);
@@ -146,8 +139,6 @@ void Group::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
     setName(name);
 
     enable(xml.attributes().value("enabled").compare("n", Qt::CaseInsensitive) != 0);
-
-    LOG_TRACE("Group::fromXml", path());
 }
 
 template<class C>

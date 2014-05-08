@@ -42,7 +42,8 @@ SOURCES += main.cpp\
     edittimer.cpp \
     editgroup.cpp \
     editevent.cpp \
-    edittrigger.cpp
+    edittrigger.cpp \
+    logging.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -77,7 +78,8 @@ HEADERS  += mainwindow.h \
     edittrigger.h \
     ../luabridge/LuaBridge.h \
     ../luabridge/RefCountedObject.h \
-    ../luabridge/RefCountedPtr.h
+    ../luabridge/RefCountedPtr.h \
+    logging.h
 
 FORMS    += mainwindow.ui \
     console.ui \

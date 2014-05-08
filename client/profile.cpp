@@ -22,7 +22,7 @@
 
 
 #include "profile.h"
-#include "logger.h"
+#include "logging.h"
 #include "coreapplication.h"
 #include "group.h"
 #include "profileitem.h"
@@ -39,9 +39,9 @@ Profile::Profile(QObject *parent) :
 
 void Profile::setActiveGroup(Group *group)
 {
-    LOG_TRACE("Profile::setActiveGroup", group ? group->fullName() : "<NULL>");
+    m_activeGroup = group?group:m_root;
 
-    m_activeGroup = group;
+    qCDebug(MUDDER_PROFILE) << "SetActiveGroup:" << m_activeGroup->fullName();
 }
 
 void Profile::setName(const QString &name)
@@ -91,7 +91,7 @@ void Profile::setAutoReconnect(bool flag)
 
 void Profile::toXml(QXmlStreamWriter &xml)
 {
-    LOG_TRACE("Profile::toXml", xml.device()->objectName());
+    qCDebug(MUDDER_PROFILE) << "toXml" << xml.device()->objectName();
 
     xml.writeStartDocument();
 
@@ -112,7 +112,7 @@ void Profile::toXml(QXmlStreamWriter &xml)
 
 void Profile::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
-    LOG_TRACE("Profile::fromXml", xml.device() ? xml.device()->objectName() : "no device");
+    qCDebug(MUDDER_PROFILE) << "fromXml" << (xml.device()?xml.device()->objectName():"no device");
 
     while (!xml.atEnd())
     {

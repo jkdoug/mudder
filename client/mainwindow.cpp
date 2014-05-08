@@ -24,7 +24,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "lua.h"
-#include "logger.h"
+#include "logging.h"
 #include "codeeditorwindow.h"
 #include "coreapplication.h"
 #include "console.h"
@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    LOG_DEBUG(tr("Setting up main window UI."));
+    qCDebug(MUDDER_APP) << "Setting up main window UI.";
 
     ui->setupUi(this);
 
@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     updateActions();
 
-    LOG_DEBUG("Main window initialized.");
+    qCDebug(MUDDER_APP) << "Main window initialized.";
 }
 
 MainWindow::~MainWindow()
@@ -87,20 +87,20 @@ void MainWindow::closeEvent(QCloseEvent *e)
     ui->mdiArea->closeAllSubWindows();
     if (!ui->mdiArea->subWindowList().isEmpty())
     {
-        LOG_DEBUG("Main window will not close yet; console windows still open.");
+        qCDebug(MUDDER_APP) << "Main window will not close yet; console windows still open.";
 
         e->ignore();
     }
     else if (!m_editor->close())
     {
-        LOG_DEBUG("Main window will not close yet; editor windows still open.");
+        qCDebug(MUDDER_APP) << "Main window will not close yet; editor windows still open.";
 
         e->ignore();
         return;
     }
     else
     {
-        LOG_DEBUG("Main window saving state and closing.");
+        qCDebug(MUDDER_APP) << "Main window saving state and closing.";
 
         SETTINGS->setValue("MainWindow/Geometry", saveGeometry());
         SETTINGS->setValue("MainWindow/State", saveState());
@@ -225,8 +225,6 @@ void MainWindow::on_actionPrevious_triggered()
 
 void MainWindow::on_actionExit_triggered()
 {
-    LOG_TRACE("MainWindow::on_actionExit_triggered");
-
     close();
 }
 

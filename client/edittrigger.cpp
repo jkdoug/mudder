@@ -24,7 +24,6 @@
 #include <QMessageBox>
 #include "edittrigger.h"
 #include "ui_edittrigger.h"
-#include "logger.h"
 #include "luahighlighter.h"
 #include "trigger.h"
 
@@ -55,16 +54,13 @@ bool EditTrigger::load(ProfileItem *item)
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to load a trigger from a null address.");
         return false;
     }
 
-    LOG_TRACE("EditTrigger::load", item->fullName());
-
     Trigger *trigger = qobject_cast<Trigger *>(item);
+    Q_ASSERT(trigger != 0);
     if (!trigger)
     {
-        LOG_ERROR("Attempted to load a trigger from a non-trigger item.");
         return false;
     }
 
@@ -118,7 +114,6 @@ bool EditTrigger::save(ProfileItem *item)
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to save a trigger to a null address.");
         return false;
     }
 
@@ -126,11 +121,8 @@ bool EditTrigger::save(ProfileItem *item)
     Q_ASSERT(trigger != 0);
     if (!trigger)
     {
-        LOG_ERROR("Attempted to save a trigger to a non-trigger item.");
         return false;
     }
-
-    LOG_TRACE("EditTrigger::save", item->fullName());
 
     QString name(ui->name->text());
     if (!ProfileItem::validateName(name))
@@ -172,17 +164,17 @@ void EditTrigger::changed()
     QString script(ui->script->toPlainText().trimmed());
 
     bool changed = m_name != ui->name->text() ||
-            m_pattern != ui->pattern->text() ||
-            m_sequence != ui->sequence->value() ||
-            m_enabled != ui->enabled->isChecked() ||
-            m_keepEvaluating != ui->keepEvaluating->isChecked() ||
-            m_caseSensitive != ui->caseSensitive->isChecked() ||
-            m_repeat != ui->repeat->isChecked() ||
-            m_omit != ui->omit->isChecked() ||
-            m_script != script;
+        m_pattern != ui->pattern->text() ||
+        m_sequence != ui->sequence->value() ||
+        m_enabled != ui->enabled->isChecked() ||
+        m_keepEvaluating != ui->keepEvaluating->isChecked() ||
+        m_caseSensitive != ui->caseSensitive->isChecked() ||
+        m_repeat != ui->repeat->isChecked() ||
+        m_omit != ui->omit->isChecked() ||
+        m_script != script;
 
     bool valid = !ui->name->text().isEmpty() &&
-            (!script.isEmpty() || ui->omit->isChecked());
+        (!script.isEmpty() || ui->omit->isChecked());
 
     emit itemModified(changed, valid);
 }

@@ -24,7 +24,7 @@
 #include <QMessageBox>
 #include "engine.h"
 #include "LuaBridge.h"
-#include "logger.h"
+#include "logging.h"
 #include "console.h"
 #include "profile.h"
 #include "profileitem.h"
@@ -301,7 +301,7 @@ void Engine::initialize(Console *c)
     m_global = luaL_newstate();
     if (!m_global)
     {
-        LOG_ERROR(tr("Failed to initialize Lua API."));
+        qCCritical(MUDDER_SCRIPT) << "Failed to initialize Lua API.";
 
         QMessageBox mb;
         mb.setIcon(QMessageBox::Critical);
@@ -372,7 +372,7 @@ C * Engine::registryObject(const QString &name, lua_State *L)
 int Engine::panic(lua_State *L)
 {
     QString msg(tr("Unprotected error in call to Lua API: %1.").arg(lua_tostring(L, -1)));
-    LOG_ERROR(msg);
+    qCCritical(MUDDER_SCRIPT) << msg;
 
     QMessageBox mb;
     mb.setIcon(QMessageBox::Critical);
@@ -388,7 +388,7 @@ void Engine::error(lua_State *L, const QString &event)
 
     if (!c)
     {
-        LOG_ERROR(tr("Engine::error - No active console."));
+        qCCritical(MUDDER_SCRIPT) << "No active console.";
         return;
     }
 
@@ -473,7 +473,7 @@ bool Engine::execute(const QString &code, const QObject * const item)
 
     if (!m_global)
     {
-        LOG_ERROR(tr("No Lua execution unit found."));
+        qCCritical(MUDDER_SCRIPT) << "No Lua execution unit found.";
         return false;
     }
 
@@ -554,8 +554,6 @@ int Engine::sendGmcp(lua_State *L)
 
 void Engine::enableGMCP(bool flag)
 {
-    LOG_TRACE("Engine::enableGMCP", flag);
-
     if (m_GMCP != flag)
     {
         m_GMCP = flag;
@@ -611,7 +609,9 @@ int Engine::loadResource(lua_State *L, const QString &resource)
     int ret = luaL_dostring(L, code.toLatin1().data());
     if (ret != LUA_OK)
     {
-        luaL_error(L, qPrintable(tr("failed to load resource '%1': %2").arg(resource).arg(lua_tostring(L, -1))));
+        QString err(tr("failed to load resource '%1': %2").arg(resource).arg(lua_tostring(L, -1)));
+        qCCritical(MUDDER_SCRIPT) << err;
+        luaL_error(L, qPrintable(err));
     }
 
     return ret;
@@ -633,7 +633,9 @@ QString Engine::concatArgs(lua_State *L, const QString &delimiter, const int fir
         const char *s = lua_tostring(L, -1);
         if (s == 0)
         {
-            luaL_error(L, qPrintable(tr("'%1' must return a string to be concatenated").arg("tostring")));
+            QString err(tr("'%1' must return a string to be concatenated").arg("tostring"));
+            qCCritical(MUDDER_SCRIPT) << err;
+            luaL_error(L, qPrintable(err));
         }
 
         if (i > first)

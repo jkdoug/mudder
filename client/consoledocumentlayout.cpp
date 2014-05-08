@@ -22,7 +22,6 @@
 
 
 #include "consoledocumentlayout.h"
-#include "logger.h"
 #include <QTextBlock>
 
 ConsoleDocumentLayout::ConsoleDocumentLayout(QTextDocument *doc) :
@@ -46,7 +45,6 @@ void ConsoleDocumentLayout::draw(QPainter *painter, const PaintContext &context)
         QTextLayout * textLayout = textBlock.layout();
         if (!textLayout)
         {
-            LOG_DEBUG("Text layout was null");
             textLayout = new QTextLayout(textBlock);
         }
 
@@ -123,8 +121,6 @@ void ConsoleDocumentLayout::documentChanged(int from, int charsRemoved, int char
     Q_UNUSED(from)
     Q_UNUSED(charsRemoved)
     Q_UNUSED(charsAdded)
-
-//    LOG_DEBUG("ConsoleDocumentLayout::documentChanged", from, charsRemoved, charsAdded);
 }
 
 QTextBlock ConsoleDocumentLayout::bottomBlock(int scroll) const

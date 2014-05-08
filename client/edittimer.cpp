@@ -23,7 +23,6 @@
 
 #include "edittimer.h"
 #include "ui_edittimer.h"
-#include "logger.h"
 #include "luahighlighter.h"
 #include "timer.h"
 
@@ -50,16 +49,13 @@ bool EditTimer::load(ProfileItem *item)
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to load a timer from a null address.");
         return false;
     }
 
-    LOG_TRACE("EditTimer::load", item->fullName());
-
     Timer *timer = qobject_cast<Timer *>(item);
+    Q_ASSERT(timer != 0);
     if (!timer)
     {
-        LOG_ERROR("Attempted to load a timer from a non-timer item.");
         return false;
     }
 
@@ -87,9 +83,9 @@ bool EditTimer::load(ProfileItem *item)
 
 bool EditTimer::save(ProfileItem *item)
 {
+    Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to save a timer to a null address.");
         return false;
     }
 
@@ -97,11 +93,8 @@ bool EditTimer::save(ProfileItem *item)
     Q_ASSERT(timer != 0);
     if (!timer)
     {
-        LOG_ERROR("Attempted to save a timer to a non-timer item.");
         return false;
     }
-
-    LOG_TRACE("EditTimer::save", item->fullName());
 
     timer->setName(ui->name->text());
 
@@ -130,14 +123,14 @@ void EditTimer::changed()
     QString script(ui->script->toPlainText().trimmed());
 
     bool changed = m_name != ui->name->text() ||
-            m_enabled != ui->enabled->isChecked() ||
-            m_interval != ui->interval->time() ||
-            m_once != ui->once->isChecked() ||
-            m_script != script;
+        m_enabled != ui->enabled->isChecked() ||
+        m_interval != ui->interval->time() ||
+        m_once != ui->once->isChecked() ||
+        m_script != script;
 
     bool valid = !ui->name->text().isEmpty() &&
-            ui->interval->time().isValid() &&
-            !script.isEmpty();
+        ui->interval->time().isValid() &&
+        !script.isEmpty();
 
     emit itemModified(changed, valid);
 }

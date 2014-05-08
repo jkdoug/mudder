@@ -27,7 +27,7 @@
 #include <QLoggingCategory>
 #include "coreapplication.h"
 #include "coresettings.h"
-#include "logger.h"
+//#include "logger.h"
 
 int main(int argc, char *argv[])
 {
@@ -40,22 +40,22 @@ int main(int argc, char *argv[])
 
     SETTINGS->setValue("LastRun", QDateTime::currentDateTime());
 
-    LOG_INITIALIZE();
+//    LOG_INITIALIZE();
 
-    LOG->setGlobalLogLevel(Logger::Warning);
+//    LOG->setGlobalLogLevel(Logger::Trace);
 
-    LOG->newFileEngine("Mudder XML", "mudder_log.xml");
-    LOG->newFileEngine("Mudder Text", "mudder_log.txt");
-    LOG->newFileEngine("Mudder HTML", "mudder_log.html");
+//    LOG->newFileEngine("Mudder XML", "mudder_log.xml");
+//    LOG->newFileEngine("Mudder Text", "mudder_log.txt");
+//    LOG->newFileEngine("Mudder HTML", "mudder_log.html");
 
-    LOG->toggleQtMsgEngine(true);
-    LOG->toggleConsoleEngine(true);
+//    LOG->toggleQtMsgEngine(true);
+//    LOG->toggleConsoleEngine(true);
 
     MainWindow w;
     w.show();
 
     int result = a.exec();
 
-    LOG_FINALIZE();
+//    LOG_FINALIZE();
     return result;
 }

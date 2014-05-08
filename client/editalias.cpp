@@ -26,7 +26,6 @@
 #include "ui_editalias.h"
 #include "codeeditor.h"
 #include "luahighlighter.h"
-#include "logger.h"
 #include "alias.h"
 
 EditAlias::EditAlias(QWidget *parent) :
@@ -54,16 +53,13 @@ bool EditAlias::load(ProfileItem *item)
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to load an alias from a null address.");
         return false;
     }
 
-    LOG_TRACE("EditAlias::load", item->fullName());
-
     Alias *alias = qobject_cast<Alias *>(item);
+    Q_ASSERT(alias != 0);
     if (!alias)
     {
-        LOG_ERROR("Attempted to load an alias from a non-alias item.");
         return false;
     }
 
@@ -111,7 +107,6 @@ bool EditAlias::save(ProfileItem *item)
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to save an alias to a null address.");
         return false;
     }
 
@@ -119,11 +114,8 @@ bool EditAlias::save(ProfileItem *item)
     Q_ASSERT(alias != 0);
     if (!alias)
     {
-        LOG_ERROR("Attempted to save an alias to a non-alias item.");
         return false;
     }
-
-    LOG_TRACE("EditAlias::save", item->fullName());
 
     QString name(ui->name->text());
     if (!ProfileItem::validateName(name))
@@ -163,15 +155,15 @@ void EditAlias::changed()
     QString script(ui->script->toPlainText().trimmed());
 
     bool changed = m_name != ui->name->text() ||
-            m_pattern != ui->pattern->text() ||
-            m_sequence != ui->sequence->value() ||
-            m_enabled != ui->enabled->isChecked() ||
-            m_keepEvaluating != ui->keepEvaluating->isChecked() ||
-            m_caseSensitive != ui->caseSensitive->isChecked() ||
-            m_script != script;
+        m_pattern != ui->pattern->text() ||
+        m_sequence != ui->sequence->value() ||
+        m_enabled != ui->enabled->isChecked() ||
+        m_keepEvaluating != ui->keepEvaluating->isChecked() ||
+        m_caseSensitive != ui->caseSensitive->isChecked() ||
+        m_script != script;
 
     bool valid = !ui->name->text().isEmpty() &&
-            !script.isEmpty();
+        !script.isEmpty();
 
     emit itemModified(changed, valid);
 }

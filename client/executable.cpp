@@ -23,7 +23,6 @@
 
 #include "executable.h"
 //#include "engine.h"
-#include "logger.h"
 #include <QElapsedTimer>
 #include <QStringList>
 
@@ -146,6 +145,4 @@ void Executable::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
             setContents(xml.readElementText().trimmed());
         }
     }
-
-    LOG_TRACE("Executable::fromXml", fullName());
 }

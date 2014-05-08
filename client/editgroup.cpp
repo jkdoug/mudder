@@ -23,7 +23,6 @@
 
 #include "editgroup.h"
 #include "ui_editgroup.h"
-#include "logger.h"
 #include "group.h"
 
 EditGroup::EditGroup(QWidget *parent) :
@@ -46,16 +45,13 @@ bool EditGroup::load(ProfileItem *item)
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to load a group from a null address.");
         return false;
     }
 
-    LOG_TRACE("EditGroup::load", item->fullName());
-
     Group *group = qobject_cast<Group *>(item);
+    Q_ASSERT(group != 0);
     if (!group)
     {
-        LOG_ERROR("Attempted to load a group from a non-group item.");
         return false;
     }
 
@@ -70,9 +66,9 @@ bool EditGroup::load(ProfileItem *item)
 
 bool EditGroup::save(ProfileItem *item)
 {
+    Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to save a group to a null address.");
         return false;
     }
 
@@ -80,11 +76,8 @@ bool EditGroup::save(ProfileItem *item)
     Q_ASSERT(group != 0);
     if (!group)
     {
-        LOG_ERROR("Attempted to save a group to a non-group item.");
         return false;
     }
-
-    LOG_TRACE("EditGroup::save", item->fullName());
 
     group->setName(ui->name->text());
     group->enable(ui->enabled->isChecked());
@@ -103,7 +96,7 @@ void EditGroup::changed()
     }
 
     bool changed = m_name != ui->name->text() ||
-            m_enabled != ui->enabled->isChecked();
+        m_enabled != ui->enabled->isChecked();
 
     bool valid = !ui->name->text().isEmpty();
 

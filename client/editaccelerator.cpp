@@ -24,7 +24,6 @@
 #include "editaccelerator.h"
 #include "ui_editaccelerator.h"
 #include "luahighlighter.h"
-#include "logger.h"
 #include "accelerator.h"
 
 EditAccelerator::EditAccelerator(QWidget *parent) :
@@ -49,16 +48,13 @@ bool EditAccelerator::load(ProfileItem *item)
     Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to load an accelerator from a null address.");
         return false;
     }
 
-    LOG_TRACE("EditAccelerator::load", item->fullName());
-
     Accelerator *accelerator = qobject_cast<Accelerator *>(item);
+    Q_ASSERT(accelerator != 0);
     if (!accelerator)
     {
-        LOG_ERROR("Attempted to load an accelerator from a non-accelerator item.");
         return false;
     }
 
@@ -83,18 +79,16 @@ bool EditAccelerator::load(ProfileItem *item)
 
 bool EditAccelerator::save(ProfileItem *item)
 {
+    Q_ASSERT(item != 0);
     if (!item)
     {
-        LOG_ERROR("Attempted to save an accelerator to a null address.");
         return false;
     }
 
-    LOG_TRACE("EditAccelerator::save", item->fullName());
-
     Accelerator *accelerator = qobject_cast<Accelerator *>(item);
+    Q_ASSERT(accelerator != 0);
     if (!accelerator)
     {
-        LOG_ERROR("Attempted to save an accelerator to a non-accelerator item.");
         return false;
     }
 
@@ -120,12 +114,12 @@ void EditAccelerator::changed()
     QString script(ui->script->toPlainText().trimmed());
 
     bool changed = m_name != ui->name->text() ||
-            m_key != ui->key->keySequence() ||
-            m_enabled != ui->enabled->isChecked() ||
-            m_contents != script;
+        m_key != ui->key->keySequence() ||
+        m_enabled != ui->enabled->isChecked() ||
+        m_contents != script;
 
     bool valid = !ui->name->text().isEmpty() &&
-            !ui->key->keySequence().isEmpty();
+        !ui->key->keySequence().isEmpty();
 
     emit itemModified(changed, valid);
 }

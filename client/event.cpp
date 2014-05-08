@@ -22,7 +22,6 @@
 
 
 #include "event.h"
-#include "logger.h"
 
 Event::Event(QObject *parent) :
     Executable(parent)
@@ -80,6 +79,4 @@ void Event::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
             break;
         }
     }
-
-    LOG_TRACE("Event::fromXml", fullName());
 }
