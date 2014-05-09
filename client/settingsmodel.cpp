@@ -170,24 +170,25 @@ QVariant SettingsModel::headerData(int section, Qt::Orientation orientation, int
     return QVariant();
 }
 
-bool SettingsModel::appendItem(ProfileItem *item, const QModelIndex &parent)
+QModelIndex SettingsModel::appendItem(ProfileItem *item, const QModelIndex &parent)
 {
     if (!m_rootGroup || !parent.isValid())
     {
-        return false;
+        return QModelIndex();
     }
 
     Group *group = qobject_cast<Group *>(itemFromIndex(parent));
+    Q_ASSERT(group != 0);
     if (!group)
     {
-        return false;
+        return QModelIndex();
     }
 
     beginInsertRows(parent, 0, 0);
     group->addItem(item);
     endInsertRows();
 
-    return true;
+    return index(group->items().count() - 1, 0, parent);
 }
 
 ProfileItem * SettingsModel::itemFromIndex(const QModelIndex &index) const

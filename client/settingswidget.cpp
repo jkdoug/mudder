@@ -38,16 +38,16 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    m_layoutEdit = new QStackedLayout;
-    ui->layoutWidget->addLayout(m_layoutEdit);
+    m_stackedEditors = new QStackedWidget(this);
+    ui->splitter->addWidget(m_stackedEditors);
 
-    QWidget *defaultForm = new QWidget(this);
+    QWidget *defaultForm = new QWidget(m_stackedEditors);
     QVBoxLayout *layout = new QVBoxLayout(defaultForm);
     QLabel *label = new QLabel(tr("Select an item in the tree."), defaultForm);
     layout->addWidget(label);
     layout->setAlignment(label, Qt::AlignCenter);
     defaultForm->setLayout(layout);
-    m_layoutEdit->addWidget(defaultForm);
+    m_stackedEditors->addWidget(defaultForm);
 
     QStringList editorTypes;
     editorTypes << "accelerator" << "alias" << "event" << "group" << "timer" << "trigger" << "variable";
@@ -60,7 +60,7 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
             continue;
         }
 
-        int index = m_layoutEdit->addWidget(editor);
+        int index = m_stackedEditors->addWidget(editor);
         m_editors.insert(editorType, index);
     }
 
@@ -100,7 +100,16 @@ void SettingsWidget::addItem(ProfileItem *item)
         }
     }
 
-    m_model->appendItem(item, current);
+    static quint32 counter = 0;
+    item->setName(QString("New Item %1").arg(++counter));
+
+    QModelIndex index(m_model->appendItem(item, current));
+    qCDebug(MUDDER_PROFILE) << "Appended new profile item" << item->name() << "@" << index;
+    if (index.isValid())
+    {
+        m_selection->clear();
+        m_selection->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
+    }
 }
 
 void SettingsWidget::updateCurrentItem(bool changed, bool valid)
@@ -134,7 +143,7 @@ void SettingsWidget::saveCurrentItem()
     }
 
     int index = m_editors[item->tagName()];
-    EditSetting *editor = qobject_cast<EditSetting *>(m_layoutEdit->widget(index));
+    EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
     Q_ASSERT(editor != 0);
 
     if (!editor->save(item))
@@ -167,7 +176,7 @@ void SettingsWidget::discardCurrentItem()
     }
 
     int index = m_editors[item->tagName()];
-    EditSetting *editor = qobject_cast<EditSetting *>(m_layoutEdit->widget(index));
+    EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
     Q_ASSERT(editor != 0);
 
     if (!editor->load(item))
@@ -180,13 +189,13 @@ void SettingsWidget::currentChanged(const QModelIndex &current, const QModelInde
 {
     Q_UNUSED(previous)
 
-    qCDebug(MUDDER_PROFILE) << "Current index changed:" << current.data();
+    qCDebug(MUDDER_PROFILE) << "Current settings index changed:" << current.data();
 
-    for (int page = 0; page < m_layoutEdit->count(); page++)
-    {
-        EditSetting *editor = qobject_cast<EditSetting *>(m_layoutEdit->widget(page));
-        editor->disconnect(SIGNAL(itemModified(bool, bool)));
-    }
+//    for (int page = 0; page < m_layoutEdit->count(); page++)
+//    {
+//        EditSetting *editor = qobject_cast<EditSetting *>(m_layoutEdit->widget(page));
+//        editor->disconnect(SIGNAL(itemModified(bool, bool)));
+//    }
 
     int index = 0;
     if (current.isValid())
@@ -196,23 +205,23 @@ void SettingsWidget::currentChanged(const QModelIndex &current, const QModelInde
 
         index = m_editors[item->tagName()];
 
-        EditSetting *editor = qobject_cast<EditSetting *>(m_layoutEdit->widget(index));
+        EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
         editor->load(item);
 
         connect(editor, SIGNAL(itemModified(bool, bool)), SLOT(updateCurrentItem(bool, bool)));
     }
 
-    m_layoutEdit->setCurrentIndex(index);
+    m_stackedEditors->setCurrentIndex(index);
 }
 
 void SettingsWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     Q_UNUSED(deselected)
 
-    qCDebug(MUDDER_PROFILE) << "Selection changed:" << selected.count();
+    qCDebug(MUDDER_PROFILE) << "Settings selection changed:" << selected.indexes() << deselected.indexes();
 
     if (selected.isEmpty())
     {
-        m_layoutEdit->setCurrentIndex(0);
+        m_stackedEditors->setCurrentIndex(0);
     }
 }

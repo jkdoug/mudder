@@ -26,7 +26,7 @@
 
 #include <QMap>
 #include <QItemSelectionModel>
-#include <QStackedLayout>
+#include <QStackedWidget>
 #include <QWidget>
 
 namespace Ui {
@@ -64,7 +64,7 @@ signals:
 private:
     Ui::SettingsWidget *ui;
 
-    QStackedLayout *m_layoutEdit;
+    QStackedWidget *m_stackedEditors;
     QMap<QString, int> m_editors;
 
     SettingsModel *m_model;
