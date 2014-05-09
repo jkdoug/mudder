@@ -165,7 +165,7 @@ Console * Console::openFile(const QString &fileName, QWidget *parent)
 
 void Console::connectToServer()
 {
-    m_connection->connectRemote("jkdoug.no-ip.biz", 23); // TODO
+    m_connection->connectRemote(m_profile->address(), m_profile->port());
 }
 
 void Console::disconnectFromServer()
@@ -230,6 +230,13 @@ bool Console::send(const QString &cmd, bool show)
     return result;
 }
 
+bool Console::sendAlias(const QString &cmd)
+{
+    commandEntered(cmd);
+
+    return true;
+}
+
 bool Console::sendGmcp(const QString &msg, const QString &data)
 {
     return m_connection->sendGmcp(msg, data);
@@ -247,6 +254,20 @@ void Console::closeEvent(QCloseEvent *e)
     }
 }
 
+void Console::wheelEvent(QWheelEvent *e)
+{
+    const int k = 3;
+    if (e->delta() < 0)
+    {
+        scrollDown(k);
+    }
+    else if (e->delta() > 0)
+    {
+        scrollUp(k);
+    }
+    e->accept();
+}
+
 void Console::contentsModified()
 {
     setWindowModified(true);
@@ -256,13 +277,21 @@ void Console::commandEntered(const QString &cmd)
 {
     qCDebug(MUDDER_CONSOLE) << "Command entered:" << cmd;
 
-    m_connection->send(cmd);
-
-    if (m_echoOn)
+    if (!processAliases(cmd))
     {
-        m_document->command(cmd);
-        scrollToBottom();
+        m_connection->send(cmd);
+
+        if (m_echoOn)
+        {
+            m_document->command(cmd);
+        }
+        else
+        {
+            ui->input->clear();
+        }
     }
+
+    scrollToBottom();
 }
 
 void Console::scriptEntered(const QString &code)
@@ -345,16 +374,112 @@ void Console::updateScroll()
     ui->scrollbar->setPageStep(10);
 }
 
-void Console::processTriggers(QTextBlock block, bool prompt)
+bool Console::processAliases(const QString &cmd)
 {
+    bool ret = false;
+    QList<Alias *> aliases(m_profile->rootGroup()->sortedAliases());
+    foreach (Alias *alias, aliases)
+    {
+        if (!alias->regex().isValid())
+        {
+            printError(tr("Alias %1: %2 (column %3)").arg(alias->name()).arg(alias->regex().errorString()).arg(alias->regex().patternErrorOffset()));
+            alias->setFailed(true);
+            continue;
+        }
+
+        if (alias->match(cmd))
+        {
+            Group *previousGroup = m_profile->activeGroup();
+            Q_ASSERT(previousGroup != 0);
+            m_profile->setActiveGroup(alias->group());
+
+            if (!alias->execute(m_engine))
+            {
+                m_profile->setActiveGroup(previousGroup);
+                alias->setFailed(true);
+
+                if (!alias->keepEvaluating())
+                {
+                    return true;
+                }
+
+                continue;
+            }
+
+            m_profile->setActiveGroup(previousGroup);
+
+            if (!alias->keepEvaluating())
+            {
+                return true;
+            }
+
+            ret = true;
+        }
+    }
+
+    return ret;
+}
+
+bool Console::processTriggers(QTextBlock block, bool prompt)
+{
+    Q_UNUSED(prompt)
+
+    bool omitted = false;
+    QString text(block.text());
     QList<Trigger *> triggers(m_profile->rootGroup()->sortedTriggers());
     foreach (Trigger *trigger, triggers)
     {
-        if (trigger->match(block.text()))
+        bool matched = false;
+        bool keepEvaluating = trigger->keepEvaluating();
+        int pos = 0;
+
+        while (pos < text.length())
         {
-            // TODO: execute trigger script
+            if (!trigger->regex().isValid())
+            {
+                printError(tr("Trigger %1: %2 (column %3)").arg(trigger->name()).arg(trigger->regex().errorString()).arg(trigger->regex().patternErrorOffset()));
+                trigger->setFailed(true);
+                break;
+            }
+
+            matched = trigger->match(text, pos);
+            if (matched)
+            {
+                Group *previousGroup = m_profile->activeGroup();
+                Q_ASSERT(previousGroup != 0);
+                m_profile->setActiveGroup(trigger->group());
+
+                if (!trigger->execute(m_engine))
+                {
+                    m_profile->setActiveGroup(previousGroup);
+                    trigger->setFailed(true);
+                    keepEvaluating = false;
+                    break;
+                }
+
+                m_profile->setActiveGroup(previousGroup);
+
+                if (!omitted && trigger->omit())
+                {
+                    omitted = true;
+                }
+            }
+
+            if (!trigger->repeat())
+            {
+                break;
+            }
+
+            pos = trigger->matchEnd();
+        }
+
+        if (matched && !keepEvaluating)
+        {
+            break;
         }
     }
+
+    return !omitted;
 }
 
 bool Console::okToContinue()

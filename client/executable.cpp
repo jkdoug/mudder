@@ -22,7 +22,7 @@
 
 
 #include "executable.h"
-//#include "engine.h"
+#include "engine.h"
 #include <QElapsedTimer>
 #include <QStringList>
 
@@ -98,24 +98,24 @@ bool Executable::enabled() const
     return !failed() && ProfileItem::enabled();
 }
 
-//bool Executable::execute(Engine *e)
-//{
-//    if (contents().isEmpty())
-//    {
-//        return true;
-//    }
+bool Executable::execute(Engine *e)
+{
+    if (contents().isEmpty())
+    {
+        return true;
+    }
 
-//    QElapsedTimer timer;
-//    timer.start();
+    QElapsedTimer timer;
+    timer.start();
 
-//    bool result = e->execute(contents(), this);
+    bool result = e->execute(contents(), this);
 
-//    m_executionCount++;
-//    m_totalTime = m_totalTime + timer.elapsed() / 1000.0;
-//    m_averageTime = m_totalTime / m_executionCount;
+    m_executionCount++;
+    m_totalTime = m_totalTime + timer.elapsed() / 1000.0;
+    m_averageTime = m_totalTime / m_executionCount;
 
-//    return result;
-//}
+    return result;
+}
 
 void Executable::toXml(QXmlStreamWriter &xml)
 {

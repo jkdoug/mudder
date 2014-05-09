@@ -76,13 +76,15 @@ public:
     void printError(const QString &msg);
 
     bool send(const QString &cmd, bool show = true);
+    bool sendAlias(const QString &cmd);
     bool sendGmcp(const QString &msg, const QString &data = QString());
 
 signals:
     void connectionStatusChanged(bool connected);
 
 protected:
-    void closeEvent(QCloseEvent *e);
+    virtual void closeEvent(QCloseEvent *e);
+    virtual void wheelEvent(QWheelEvent *e);
 
 private slots:
     void contentsModified();
@@ -95,7 +97,8 @@ private slots:
     void echoToggled(bool on);
     void scrollbarMoved(int pos);
     void updateScroll();
-    void processTriggers(QTextBlock block, bool prompt);
+    bool processAliases(const QString &cmd);
+    bool processTriggers(QTextBlock block, bool prompt);
 
 private:
     bool okToContinue();

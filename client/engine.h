@@ -52,6 +52,8 @@ public:
     bool execute(const QString &code, const QObject * const item = 0);
 
     static int print(lua_State *L);
+    static int send(lua_State *L);
+    static int sendAlias(lua_State *L);
     static int sendGmcp(lua_State *L);
 
 public slots:

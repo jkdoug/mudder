@@ -319,7 +319,10 @@ void Engine::initialize(Console *c)
         .beginNamespace("gmcp")
             .addVariable("enabled", &m_GMCP, false)
         .endNamespace()
-        .addCFunction("print", Engine::print);
+        .addCFunction("print", Engine::print)
+        .addCFunction("Send", Engine::send)
+        .addCFunction("SendAlias", Engine::sendAlias)
+        .addCFunction("SendGmcp", Engine::sendGmcp);
 
     lua_settop(m_global, 0);
 
@@ -532,6 +535,40 @@ int Engine::print(lua_State *L)
     return 0;
 }
 
+int Engine::send(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+
+    bool echo = true;
+    int n = lua_gettop(L);
+    if (lua_isboolean(L, n))
+    {
+        echo = LuaRef::fromStack(L, n);
+        lua_pop(L, 1);
+        n = n - 1;
+    }
+
+    for (int cmd = 1; cmd <= n; cmd++)
+    {
+        c->send(LuaRef::fromStack(L, cmd), echo);
+    }
+
+    return 0;
+}
+
+int Engine::sendAlias(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+
+    int n = lua_gettop(L);
+    for (int cmd = 1; cmd <= n; cmd++)
+    {
+        c->sendAlias(LuaRef::fromStack(L, cmd));
+    }
+
+    return 0;
+}
+
 int Engine::sendGmcp(lua_State *L)
 {
     Console *c = registryObject<Console>("CONSOLE", L);
@@ -548,7 +585,7 @@ int Engine::sendGmcp(lua_State *L)
         result = c->sendGmcp(msg);
     }
 
-    lua_pushboolean(L, result);
+    push(L, result);
     return 1;
 }
 
@@ -591,7 +628,7 @@ void Engine::handleGMCP(const QString &name, const QString &args)
     QJsonDocument doc(QJsonDocument::fromJson(args.toUtf8()));
     if (doc.isEmpty())
     {
-        data[qPrintable(modules.last())] = args;
+        data[qPrintable(modules.last())] = qPrintable(args);
     }
     else
     {

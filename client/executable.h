@@ -26,7 +26,7 @@
 
 #include "profileitem.h"
 
-//class Engine;
+class Engine;
 
 class Executable : public ProfileItem
 {
@@ -62,7 +62,7 @@ public:
 
     virtual bool enabled() const;
 
-//    bool execute(Engine *e);
+    bool execute(Engine *e);
 
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);

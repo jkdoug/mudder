@@ -40,8 +40,6 @@ Profile::Profile(QObject *parent) :
 void Profile::setActiveGroup(Group *group)
 {
     m_activeGroup = group?group:m_root;
-
-    qCDebug(MUDDER_PROFILE) << "SetActiveGroup:" << m_activeGroup->fullName();
 }
 
 void Profile::setName(const QString &name)
@@ -91,8 +89,6 @@ void Profile::setAutoReconnect(bool flag)
 
 void Profile::toXml(QXmlStreamWriter &xml)
 {
-    qCDebug(MUDDER_PROFILE) << "toXml" << xml.device()->objectName();
-
     xml.writeStartDocument();
 
     xml.writeStartElement("mudder");
@@ -101,7 +97,15 @@ void Profile::toXml(QXmlStreamWriter &xml)
 
     xml.writeStartElement("profile");
     xml.writeAttribute("name", name());
+
+    xml.writeStartElement("host");
+    xml.writeAttribute("connect", autoConnect()?"y":"n");
+    xml.writeAttribute("reconnect", autoReconnect()?"y":"n");
+    xml.writeAttribute("address", address());
+    xml.writeAttribute("port", QString::number(port()));
     xml.writeEndElement();
+
+    xml.writeEndElement(); // profile
 
     xml.writeStartElement("settings");
     m_root->toXml(xml);
@@ -112,8 +116,6 @@ void Profile::toXml(QXmlStreamWriter &xml)
 
 void Profile::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
-    qCDebug(MUDDER_PROFILE) << "fromXml" << (xml.device()?xml.device()->objectName():"no device");
-
     while (!xml.atEnd())
     {
         xml.readNext();

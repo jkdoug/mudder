@@ -47,12 +47,12 @@ public:
 
     QList<ProfileItem *> items() { return m_items; }
 
-    QList<Accelerator *> sortedAccelerators(bool all = true) const;
-    QList<Alias *> sortedAliases(bool all = true) const;
-    QList<Event *> sortedEvents(bool all = true) const;
-    QList<Group *> sortedGroups(bool all = true) const;
-    QList<Timer *> sortedTimers(bool all = true) const;
-    QList<Trigger *> sortedTriggers(bool all = true) const;
+    QList<Accelerator *> sortedAccelerators(bool enabled = true, bool all = true) const;
+    QList<Alias *> sortedAliases(bool enabled = true, bool all = true) const;
+    QList<Event *> sortedEvents(bool enabled = true, bool all = true) const;
+    QList<Group *> sortedGroups(bool enabled = true, bool all = true) const;
+    QList<Timer *> sortedTimers(bool enabled = true, bool all = true) const;
+    QList<Trigger *> sortedTriggers(bool enabled = true, bool all = true) const;
     QList<Variable *> sortedVariables(bool all = true) const;
 
     void addItem(ProfileItem *item);
@@ -66,7 +66,7 @@ public:
 
 private:
     template<class C>
-    QList<C *> sortedItems(bool all = true) const;
+    QList<C *> sortedItems(bool enabled, bool all) const;
 
     QList<ProfileItem *> m_items;
 

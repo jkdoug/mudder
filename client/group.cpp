@@ -47,39 +47,39 @@ QString Group::path() const
     return QString("%1/%2").arg(up->path()).arg(name());
 }
 
-QList<Accelerator *> Group::sortedAccelerators(bool all) const
+QList<Accelerator *> Group::sortedAccelerators(bool enabled, bool all) const
 {
-    return sortedItems<Accelerator>(all);
+    return sortedItems<Accelerator>(enabled, all);
 }
 
-QList<Alias *> Group::sortedAliases(bool all) const
+QList<Alias *> Group::sortedAliases(bool enabled, bool all) const
 {
-    return sortedItems<Alias>(all);
+    return sortedItems<Alias>(enabled, all);
 }
 
-QList<Event *> Group::sortedEvents(bool all) const
+QList<Event *> Group::sortedEvents(bool enabled, bool all) const
 {
-    return sortedItems<Event>(all);
+    return sortedItems<Event>(enabled, all);
 }
 
-QList<Group *> Group::sortedGroups(bool all) const
+QList<Group *> Group::sortedGroups(bool enabled, bool all) const
 {
-    return sortedItems<Group>(all);
+    return sortedItems<Group>(enabled, all);
 }
 
-QList<Timer *> Group::sortedTimers(bool all) const
+QList<Timer *> Group::sortedTimers(bool enabled, bool all) const
 {
-    return sortedItems<Timer>(all);
+    return sortedItems<Timer>(enabled, all);
 }
 
-QList<Trigger *> Group::sortedTriggers(bool all) const
+QList<Trigger *> Group::sortedTriggers(bool enabled, bool all) const
 {
-    return sortedItems<Trigger>(all);
+    return sortedItems<Trigger>(enabled, all);
 }
 
 QList<Variable *> Group::sortedVariables(bool all) const
 {
-    return sortedItems<Variable>(all);
+    return sortedItems<Variable>(false, all);
 }
 
 void Group::addItem(ProfileItem *item)
@@ -96,7 +96,11 @@ void Group::addItem(ProfileItem *item)
 
 bool Group::removeItem(ProfileItem *item)
 {
-    // TODO: remove groups, triggers, etc
+    Group *group = qobject_cast<Group *>(item);
+    if (group)
+    {
+        m_groups.removeOne(group);
+    }
 
     return m_items.removeOne(item);
 }
@@ -142,13 +146,13 @@ void Group::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 }
 
 template<class C>
-QList<C *> Group::sortedItems(bool all) const
+QList<C *> Group::sortedItems(bool enabled, bool all) const
 {
     QList<C *> list;
     foreach (ProfileItem *item, m_items)
     {
         C *sub = qobject_cast<C *>(item);
-        if (sub)
+        if (sub && (!enabled || sub->enabled()))
         {
             list << sub;
         }
@@ -158,7 +162,7 @@ QList<C *> Group::sortedItems(bool all) const
     {
         foreach (Group *group, m_groups)
         {
-            list << group->sortedItems<C>(all);
+            list << group->sortedItems<C>(enabled, all);
         }
     }
 
