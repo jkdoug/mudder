@@ -2,7 +2,7 @@
   Mudder, a cross-platform text gaming client
 
   Copyright (C) 2014 Jason Douglas
-  larkin.dischai@gmail.com
+  jkdoug@gmail.com
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -45,6 +45,15 @@ Profile::Profile(QObject *parent) :
 
     m_options.insert("scriptFileName", QString());
     m_options.insert("scriptPrefix", QString());
+
+    m_options.insert("commandSeparator", QString(";"));
+    m_options.insert("clearCommandLine", false);
+
+    QFont font("Courier New", 8);
+    font.setStyleHint(QFont::TypeWriter);
+    font.setStyleStrategy(QFont::PreferAntialias);
+    m_options.insert("inputFont", font);
+    m_options.insert("inputAntiAliased", true);
 }
 
 void Profile::setActiveGroup(Group *group)
@@ -78,7 +87,27 @@ void Profile::toXml(QXmlStreamWriter &xml)
     xml.writeAttribute("port", QString::number(port()));
     xml.writeEndElement();
 
-    xml.writeEndElement(); // profile
+    xml.writeStartElement("commandLine");
+    xml.writeAttribute("clear", clearCommandLine()?"y":"n");
+    xml.writeAttribute("separator", commandSeparator());
+    xml.writeEndElement();
+
+    xml.writeStartElement("scripting");
+    xml.writeAttribute("file", scriptFileName());
+    xml.writeAttribute("prefix", scriptPrefix());
+    xml.writeEndElement();
+
+    xml.writeStartElement("display");
+
+    xml.writeStartElement("inputFont");
+    xml.writeAttribute("family", inputFont().family());
+    xml.writeAttribute("size", QString::number(inputFont().pointSize()));
+    xml.writeAttribute("antialias", (inputFont().styleHint() == QFont::PreferAntialias)?"y":"n");
+    xml.writeEndElement();
+
+    xml.writeEndElement();  // display
+
+    xml.writeEndElement();  // profile
 
     xml.writeStartElement("settings");
     m_root->toXml(xml);
@@ -127,7 +156,7 @@ void Profile::changeOption(const QString &key, const QVariant &val)
     if (m_options.value(key) != val)
     {
         m_options.insert(key, val);
-        emit optionChanged(key);
+        emit optionChanged(key, val);
     }
 }
 
@@ -167,20 +196,20 @@ void Profile::readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 }
                 setPort(port);
             }
-//            else if (xml.name() == "commandLine")
-//            {
-//                QString sep(xml.attributes().value("separator").toString());
-//                if (!sep.isEmpty())
-//                {
-//                    if (sep.length() > 1)
-//                    {
-//                        warnings.append(tr("XML: Line %1; command separator should be a single character").arg(xml.lineNumber()));
-//                    }
-//                    setCommandSeparator(sep.at(0));
-//                }
+            else if (xml.name() == "commandLine")
+            {
+                QString sep(xml.attributes().value("separator").toString());
+                if (!sep.isEmpty())
+                {
+                    if (sep.length() > 1)
+                    {
+                        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("command separator should be a single character"));
+                    }
+                    setCommandSeparator(sep.at(0));
+                }
 
-//                setClearCommandAfterSend(xml.attributes().value("clear").compare("n", Qt::CaseInsensitive) != 0);
-//            }
+                setClearCommandLine(xml.attributes().value("clear").compare("n", Qt::CaseInsensitive) != 0);
+            }
 //            else if (xml.name() == "logging")
 //            {
 //                try
@@ -194,32 +223,24 @@ void Profile::readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors)
 //                    delete xe;
 //                }
 //            }
-//            else if (xml.name() == "scripting")
-//            {
-//                QString prefix(xml.attributes().value("prefix").toString());
-//                if (!prefix.isEmpty())
-//                {
-//                   setScriptPrefix(prefix);
-//                }
-//                QString script(xml.attributes().value("file").toString());
-//                if (!script.isEmpty())
-//                {
-//                    setScriptFilename(script);
-//                }
-//            }
-//            else if (xml.name() == "display")
-//            {
-//                try
-//                {
-//                    readDisplay(xml);
-//                }
-//                catch (XmlException *xe)
-//                {
-//                    warnings.append(xe->warnings());
+            else if (xml.name() == "scripting")
+            {
+                QString prefix(xml.attributes().value("prefix").toString());
+                if (!prefix.isEmpty())
+                {
+                    setScriptPrefix(prefix);
+                }
 
-//                    delete xe;
-//                }
-//            }
+                QString script(xml.attributes().value("file").toString());
+                if (!script.isEmpty())
+                {
+                    setScriptFileName(script);
+                }
+            }
+            else if (xml.name() == "display")
+            {
+                readDisplay(xml, errors);
+            }
 //            else if (xml.name() == "mapper")
 //            {
 //                QString colorString(xml.attributes().value("bg").toString());
@@ -239,6 +260,52 @@ void Profile::readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors)
 //                    setMapFilename(filename);
 //                }
 //            }
+        }
+    }
+}
+
+void Profile::readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors)
+{
+    while (!xml.atEnd())
+    {
+        xml.readNext();
+
+        if (xml.isEndElement() && xml.name() == "display")
+        {
+            break;
+        }
+
+        if (xml.isStartElement())
+        {
+            if (xml.name() == "inputFont")
+            {
+                QString family(xml.attributes().value("family").toString());
+                if (family.isEmpty())
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or invalid input font family name"));
+                    family = "Courier New";
+                }
+
+                bool valid = true;
+                int size = xml.attributes().value("size").toString().toInt(&valid);
+                if (!valid)
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or invalid input font point size"));
+                    size = 8;
+                }
+                size = qBound(6, size, 20);
+
+                bool antiAlias = true;
+                if (!xml.attributes().value("antialias").isEmpty())
+                {
+                    antiAlias = xml.attributes().value("antialias").compare("n", Qt::CaseInsensitive) != 0;
+                }
+
+                QFont font(family, size);
+                font.setStyleHint(QFont::TypeWriter);
+                font.setStyleStrategy(antiAlias?QFont::PreferAntialias:QFont::NoAntialias);
+                setInputFont(font);
+            }
         }
     }
 }

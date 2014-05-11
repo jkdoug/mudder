@@ -2,7 +2,7 @@
   Mudder, a cross-platform text gaming client
 
   Copyright (C) 2014 Jason Douglas
-  larkin.dischai@gmail.com
+  jkdoug@gmail.com
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "dialogprofile.h"
 #include "ui_dialogprofile.h"
 #include "configconnection.h"
+#include "configinput.h"
 #include "configscripting.h"
 #include "profile.h"
 #include <QPushButton>
@@ -37,6 +38,7 @@ DialogProfile::DialogProfile(QWidget *parent) :
     m_profile = new Profile(this);
 
     ui->config->addPage(new ConfigConnection(m_profile, ui->config));
+    ui->config->addPage(new ConfigInput(m_profile, ui->config));
     ui->config->addPage(new ConfigScripting(m_profile, ui->config));
 }
 

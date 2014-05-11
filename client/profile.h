@@ -2,7 +2,7 @@
   Mudder, a cross-platform text gaming client
 
   Copyright (C) 2014 Jason Douglas
-  larkin.dischai@gmail.com
+  jkdoug@gmail.com
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #ifndef PROFILE_H
 #define PROFILE_H
 
+#include <QFont>
 #include <QHash>
 #include <QList>
 #include <QObject>
@@ -66,6 +67,14 @@ public:
     QString scriptPrefix() const { return m_options.value("scriptPrefix").toString(); }
     void setScriptPrefix(const QString &prefix) { changeOption("scriptPrefix", prefix); }
 
+    QString commandSeparator() const { return m_options.value("commandSeparator").toString(); }
+    void setCommandSeparator(const QString &sep) { changeOption("commandSeparator", sep); }
+    bool clearCommandLine() const { return m_options.value("clearCommandLine").toBool(); }
+    void setClearCommandLine(bool flag = true) { changeOption("clearCommandLine", flag); }
+
+    QFont inputFont() const { return m_options.value("inputFont").value<QFont>(); }
+    void setInputFont(const QFont &font) { changeOption("inputFont", font); }
+
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
@@ -73,11 +82,12 @@ public slots:
     void changeOption(const QString &key, const QVariant &val);
 
 signals:
-    void optionChanged(const QString &key);
+    void optionChanged(const QString &key, const QVariant &val);
     void settingsChanged();
 
 protected:
     void readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors);
+    void readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 private:
     Group *m_root;

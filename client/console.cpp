@@ -2,7 +2,7 @@
   Mudder, a cross-platform text gaming client
 
   Copyright (C) 2014 Jason Douglas
-  larkin.dischai@gmail.com
+  jkdoug@gmail.com
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -57,10 +57,10 @@ Console::Console(QWidget *parent) :
     ui->output->setDocument(m_document);
 
     connect(ui->input, SIGNAL(command(QString)), SLOT(commandEntered(QString)));
-    connect(ui->input, SIGNAL(script(QString)), SLOT(scriptEntered(QString)));
 
     m_profile = new Profile(this);
-    connect(m_profile, SIGNAL(optionChanged(QString)), SLOT(contentsModified()));
+    connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), SLOT(contentsModified()));
+    connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
 
     m_echoOn = true;
@@ -278,28 +278,48 @@ void Console::commandEntered(const QString &cmd)
 {
     qCDebug(MUDDER_CONSOLE) << "Command entered:" << cmd;
 
-    if (!processAliases(cmd))
+    QString prefix(m_profile->scriptPrefix());
+    if (cmd.startsWith(prefix))
     {
-        m_connection->send(cmd);
+        m_engine->execute(cmd.mid(prefix.length()));
+    }
+    else if (cmd.isEmpty())
+    {
+        send("");
+    }
+    else
+    {
+        QString sep("\n"); //(SETTINGS->value("CommandLine/Separator").toString() + QString("\n"));
+        QRegularExpression regex("[" + QRegularExpression::escape(sep) + "]");
+        QStringList cmds(cmd.split(regex));
+        foreach (QString c, cmds)
+        {
+            if (!processAliases(c))
+            {
+                m_connection->send(c);
 
-        if (m_echoOn)
-        {
-            m_document->command(cmd);
-        }
-        else
-        {
-            ui->input->clear();
+                if (m_echoOn)
+                {
+                    m_document->command(c);
+                }
+                else
+                {
+                    ui->input->clear();
+                }
+            }
+
+            scrollToBottom();
         }
     }
 
-    scrollToBottom();
-}
-
-void Console::scriptEntered(const QString &code)
-{
-    qCDebug(MUDDER_CONSOLE) << "Script entered:" << code;
-
-    m_engine->execute(code);
+    if (m_profile->clearCommandLine())
+    {
+        ui->input->clear();
+    }
+    else
+    {
+        ui->input->selectAll();
+    }
 }
 
 void Console::connectionEstablished()
@@ -374,6 +394,14 @@ void Console::updateScroll()
         ui->scrollbar->setRange(1, 1);
     }
     ui->scrollbar->setPageStep(10);
+}
+
+void Console::optionChanged(const QString &key, const QVariant &val)
+{
+    if (key == "inputFont")
+    {
+        ui->input->setFont(val.value<QFont>());
+    }
 }
 
 bool Console::processAliases(const QString &cmd)

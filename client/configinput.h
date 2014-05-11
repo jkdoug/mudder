@@ -21,44 +21,34 @@
 */
 
 
-#ifndef SETTINGSWINDOW_H
-#define SETTINGSWINDOW_H
+#ifndef CONFIGINPUT_H
+#define CONFIGINPUT_H
 
-#include <QMainWindow>
-#include <QToolButton>
+#include "configpage.h"
 
 namespace Ui {
-class SettingsWindow;
+class ConfigInput;
 }
 
-class Group;
+class Profile;
 
-class SettingsWindow : public QMainWindow
+class ConfigInput : public ConfigPage
 {
     Q_OBJECT
 
 public:
-    explicit SettingsWindow(QWidget *parent = 0);
-    ~SettingsWindow();
-
-    void setRootGroup(Group *group);
-    Group * rootGroup() const;
+    explicit ConfigInput(Profile *profile, ConfigWidget *parent = 0);
+    ~ConfigInput();
 
 public slots:
-    void settingModified(bool changed, bool valid);
-
-    void addAccelerator();
-    void addAlias();
-    void addEvent();
-    void addGroup();
-    void addTimer();
-    void addTrigger();
-    void addVariable();
+    virtual void load();
+    virtual void save();
+    virtual bool validate();
 
 private:
-    Ui::SettingsWindow *ui;
+    Ui::ConfigInput *ui;
 
-    QToolButton *m_buttonNew;
+    Profile *m_profile;
 };
 
-#endif // SETTINGSWINDOW_H
+#endif // CONFIGINPUT_H

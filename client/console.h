@@ -2,7 +2,7 @@
   Mudder, a cross-platform text gaming client
 
   Copyright (C) 2014 Jason Douglas
-  larkin.dischai@gmail.com
+  jkdoug@gmail.com
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -90,7 +90,6 @@ protected:
 private slots:
     void contentsModified();
     void commandEntered(const QString &cmd);
-    void scriptEntered(const QString &code);
     void connectionEstablished();
     void connectionLost();
     void lookupComplete(const QHostInfo &hostInfo);
@@ -98,6 +97,7 @@ private slots:
     void echoToggled(bool on);
     void scrollbarMoved(int pos);
     void updateScroll();
+    void optionChanged(const QString &key, const QVariant &val);
     bool processAliases(const QString &cmd);
     bool processTriggers(QTextBlock block, bool prompt);
 

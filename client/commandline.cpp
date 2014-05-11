@@ -2,7 +2,7 @@
   Mudder, a cross-platform text gaming client
 
   Copyright (C) 2014 Jason Douglas
-  larkin.dischai@gmail.com
+  jkdoug@gmail.com
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -103,34 +103,5 @@ void CommandLine::adjustHeight()
 
 void CommandLine::send()
 {
-    QString txt(toPlainText());
-    QString prefix(SETTINGS->value("CommandLine/ScriptPrefix").toString());
-    if (txt.startsWith(prefix))
-    {
-        txt = txt.remove(0, prefix.length());
-        emit script(txt);
-    }
-    else if (txt.isEmpty())
-    {
-        emit command("");
-    }
-    else
-    {
-        QString sep(SETTINGS->value("CommandLine/Separator").toString() + QString("\n"));
-        QRegularExpression regex("[" + QRegularExpression::escape(sep) + "]");
-        QStringList cmds(txt.split(regex, QString::SkipEmptyParts));
-        foreach (const QString &cmd, cmds)
-        {
-            emit command(cmd);
-        }
-    }
-
-    if (SETTINGS->value("CommandLine/ClearAfterSend").toBool())
-    {
-        clear();
-    }
-    else
-    {
-        selectAll();
-    }
+    emit command(toPlainText());
 }
