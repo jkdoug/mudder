@@ -18,7 +18,9 @@ SOURCES += \
     command.cpp \
     shortcutcommand.cpp \
     proxyaction.cpp \
-    connection.cpp
+    connection.cpp \
+    configpage.cpp \
+    configwidget.cpp
 
 HEADERS +=\
         core_global.h \
@@ -28,7 +30,9 @@ HEADERS +=\
     command.h \
     shortcutcommand.h \
     proxyaction.h \
-    connection.h
+    connection.h \
+    configpage.h \
+    configwidget.h
 
 unix {
     target.path = /usr/lib
@@ -41,3 +45,6 @@ else:unix: LIBS += -L$$OUT_PWD/../logging/ -llogging
 
 INCLUDEPATH += $$PWD/../logging
 DEPENDPATH += $$PWD/../logging
+
+FORMS += \
+    configwidget.ui

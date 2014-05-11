@@ -19,6 +19,9 @@
         <file alias="timer">icons/item_timer.png</file>
         <file alias="trigger">icons/item_trigger.png</file>
         <file alias="variable">icons/item_variable.png</file>
+        <file alias="connection">icons/prefs_connection.png</file>
+        <file alias="scripting">icons/prefs_scripting.png</file>
+        <file alias="options">icons/game_options.png</file>
     </qresource>
     <qresource prefix="/lua">
         <file alias="io_exists">lua/io_exists.lua</file>

@@ -43,7 +43,10 @@ SOURCES += main.cpp\
     editgroup.cpp \
     editevent.cpp \
     edittrigger.cpp \
-    logging.cpp
+    logging.cpp \
+    configconnection.cpp \
+    configscripting.cpp \
+    dialogprofile.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -79,7 +82,10 @@ HEADERS  += mainwindow.h \
     ../luabridge/LuaBridge.h \
     ../luabridge/RefCountedObject.h \
     ../luabridge/RefCountedPtr.h \
-    logging.h
+    logging.h \
+    configconnection.h \
+    configscripting.h \
+    dialogprofile.h
 
 FORMS    += mainwindow.ui \
     console.ui \
@@ -91,7 +97,10 @@ FORMS    += mainwindow.ui \
     edittimer.ui \
     editgroup.ui \
     editevent.ui \
-    edittrigger.ui
+    edittrigger.ui \
+    configconnection.ui \
+    configscripting.ui \
+    dialogprofile.ui
 
 RESOURCES += \
     client.qrc

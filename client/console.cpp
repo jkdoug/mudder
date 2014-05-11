@@ -271,6 +271,7 @@ void Console::wheelEvent(QWheelEvent *e)
 void Console::contentsModified()
 {
     setWindowModified(true);
+    emit modified();
 }
 
 void Console::commandEntered(const QString &cmd)
@@ -305,7 +306,7 @@ void Console::connectionEstablished()
 {
     qCDebug(MUDDER_NETWORK) << "Connection established.";
 
-    printInfo(tr("Connected to server."));
+    printInfo(tr("Connected to %1:%2.").arg(m_profile->address()).arg(m_profile->port()));
 
     emit connectionStatusChanged(true);
 }
@@ -315,11 +316,12 @@ void Console::connectionLost()
     qCDebug(MUDDER_NETWORK) << "Connection lost.";
 
     quint64 duration = m_connection->connectDuration();
-    printInfo(tr("Disconnected from server. Total time connected: %1:%2:%3.%4")
-              .arg((duration / (60 * 60 * 1000)) % 60)
-              .arg((duration / (60 * 1000)) % 60, 2, 10, QLatin1Char('0'))
-              .arg((duration / 1000) % 60, 2, 10, QLatin1Char('0'))
-              .arg(duration % 1000, 3, 10, QLatin1Char('0')));
+    printInfo(tr("Disconnected from server."));
+    printInfo(tr("Total time connected: %1:%2:%3.%4")
+          .arg((duration / (60 * 60 * 1000)) % 60)
+          .arg((duration / (60 * 1000)) % 60, 2, 10, QLatin1Char('0'))
+          .arg((duration / 1000) % 60, 2, 10, QLatin1Char('0'))
+          .arg(duration % 1000, 3, 10, QLatin1Char('0')));
 
     emit connectionStatusChanged(false);
 }

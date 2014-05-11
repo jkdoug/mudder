@@ -81,6 +81,7 @@ public:
 
 signals:
     void connectionStatusChanged(bool connected);
+    void modified();
 
 protected:
     virtual void closeEvent(QCloseEvent *e);

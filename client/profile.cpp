@@ -35,6 +35,16 @@ Profile::Profile(QObject *parent) :
 {
     m_root = new Group(0);
     m_activeGroup = m_root;
+
+    m_options.insert("name", QString());
+
+    m_options.insert("address", QString("localhost"));
+    m_options.insert("port", 23);
+    m_options.insert("autoConnect", false);
+    m_options.insert("autoReconnect", false);
+
+    m_options.insert("scriptFileName", QString());
+    m_options.insert("scriptPrefix", QString());
 }
 
 void Profile::setActiveGroup(Group *group)
@@ -42,48 +52,11 @@ void Profile::setActiveGroup(Group *group)
     m_activeGroup = group?group:m_root;
 }
 
-void Profile::setName(const QString &name)
+void Profile::setOptions(const QVariantMap &options)
 {
-    if (name != m_name)
+    foreach (QString key, options.keys())
     {
-        m_name = name;
-        emit optionChanged("name");
-    }
-}
-
-void Profile::setAddress(const QString &address)
-{
-    if (address != m_address)
-    {
-        m_address = address;
-        emit optionChanged("address");
-    }
-}
-
-void Profile::setPort(int port)
-{
-    if (port != m_port)
-    {
-        m_port = port;
-        emit optionChanged("port");
-    }
-}
-
-void Profile::setAutoConnect(bool flag)
-{
-    if (flag != m_autoConnect)
-    {
-        m_autoConnect = flag;
-        emit optionChanged("autoConnect");
-    }
-}
-
-void Profile::setAutoReconnect(bool flag)
-{
-    if (flag != m_autoReconnect)
-    {
-        m_autoReconnect = flag;
-        emit optionChanged("autoReconnect");
+        changeOption(key, options.value(key));
     }
 }
 
@@ -146,6 +119,15 @@ void Profile::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 setActiveGroup(activeGroup()->group());
             }
         }
+    }
+}
+
+void Profile::changeOption(const QString &key, const QVariant &val)
+{
+    if (m_options.value(key) != val)
+    {
+        m_options.insert(key, val);
+        emit optionChanged(key);
     }
 }
 

@@ -29,6 +29,7 @@
 #include "coreapplication.h"
 #include "console.h"
 #include "contextmanager.h"
+#include "dialogprofile.h"
 #include "settingswindow.h"
 #include <QtDebug>
 #include <QFileDialog>
@@ -203,6 +204,24 @@ void MainWindow::on_actionConnect_triggered(bool checked)
     }
 }
 
+void MainWindow::on_actionOptions_triggered()
+{
+    Console *console = activeConsole();
+    if (!console)
+    {
+        return;
+    }
+
+    DialogProfile *dlg = new DialogProfile(this);
+    dlg->load(console->profile());
+    if (dlg->exec() == QDialog::Accepted &&
+        console->profile()->options() != dlg->profile()->options())
+    {
+        console->profile()->setOptions(dlg->profile()->options());
+        console->setWindowTitle(console->profile()->name() + "[*]");
+    }
+}
+
 void MainWindow::on_actionClose_triggered()
 {
     ui->mdiArea->closeActiveSubWindow();
@@ -259,6 +278,7 @@ void MainWindow::updateActions()
 
     ui->menuGame->menuAction()->setVisible(hasConsole);
     ui->actionConnect->setVisible(hasConsole);
+    ui->actionOptions->setVisible(hasConsole);
 
     if (hasConsole)
     {
@@ -356,6 +376,17 @@ void MainWindow::saveConsole()
 void MainWindow::addConsole(Console *console)
 {
     connect(console, SIGNAL(connectionStatusChanged(bool)), SLOT(updateActions()));
+    connect(console, SIGNAL(modified()), SLOT(updateActions()));
+
+    if (ui->mdiArea->subWindowList().isEmpty())
+    {
+        static bool separated = false;
+        if (!separated)
+        {
+            ui->menuWindow->addSeparator();
+            separated = true;
+        }
+    }
 
     QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(console);
     ui->menuWindow->addAction(console->windowAction());

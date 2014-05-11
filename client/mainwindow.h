@@ -58,6 +58,7 @@ private slots:
     void on_actionSave_triggered();
     void on_actionSaveAs_triggered();
     void on_actionConnect_triggered(bool checked);
+    void on_actionOptions_triggered();
     void on_actionClose_triggered();
     void on_actionCloseAll_triggered();
     void on_actionNext_triggered();
