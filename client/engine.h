@@ -29,6 +29,7 @@
 #include "lua.hpp"
 
 class Console;
+class Matchable;
 
 class Engine : public QObject
 {
@@ -49,7 +50,10 @@ public:
     void error(lua_State *L, const QString &event);
     void findTraceback(lua_State *L);
 
-    bool execute(const QString &code, const QObject * const item = 0);
+    bool execute(const QString &code, const QObject *item = 0);
+    bool execute(int id, const QObject *item = 0);
+
+    void saveCaptures(const Matchable *item);
 
     static int print(lua_State *L);
     static int send(lua_State *L);

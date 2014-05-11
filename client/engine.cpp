@@ -26,6 +26,7 @@
 #include "LuaBridge.h"
 #include "logging.h"
 #include "console.h"
+#include "matchable.h"
 #include "profile.h"
 #include "profileitem.h"
 
@@ -467,7 +468,7 @@ inline void Engine::findTraceback(lua_State *L)
     lua_pushnil(L);
 }
 
-bool Engine::execute(const QString &code, const QObject * const item)
+bool Engine::execute(const QString &code, const QObject *item)
 {
     if (code.isEmpty())
     {
@@ -479,6 +480,8 @@ bool Engine::execute(const QString &code, const QObject * const item)
         qCCritical(MUDDER_SCRIPT) << "No Lua execution unit found.";
         return false;
     }
+
+    saveCaptures(qobject_cast<const Matchable *>(item));
 
     // Start with an empty stack
     lua_settop(m_global, 0);
@@ -493,6 +496,9 @@ bool Engine::execute(const QString &code, const QObject * const item)
     int err = luaL_loadstring(m_global, qPrintable(code));
     if (err != 0)
     {
+        lua_pushnil(m_global);
+        lua_setglobal(m_global, "matches");
+
         error(m_global, tr("Compile error"));
         return false;
     }
@@ -518,13 +524,79 @@ bool Engine::execute(const QString &code, const QObject * const item)
     if (err != 0)
     {
         error(m_global, tr("Run-time error"));
-        return false;
     }
+
+    lua_pushnil(m_global);
+    lua_setglobal(m_global, "matches");
 
     lua_settop(m_global, 0);
     m_chunk.clear();
 
     return err == 0;
+}
+
+bool Engine::execute(int id, const QObject *item)
+{
+    if (id < 1)
+    {
+        return false;
+    }
+
+    if (!m_global)
+    {
+        qCCritical(MUDDER_SCRIPT) << "No Lua execution unit found.";
+        return false;
+    }
+
+    saveCaptures(qobject_cast<const Matchable *>(item));
+
+    // Start with an empty stack
+    lua_settop(m_global, 0);
+
+    // Give access to the caller object
+    setRegistryData("CALLER", (void *)item);
+
+    lua_rawgeti(m_global, LUA_REGISTRYINDEX, id);
+
+    int err = lua_pcall(m_global, 0, 0, 0);
+
+    // Something didn't work, print it out
+    if (err != 0)
+    {
+        error(m_global, tr("Run-time error"));
+    }
+
+    lua_settop(m_global, 0);
+
+    lua_pushnil(m_global);
+    lua_setglobal(m_global, "matches");
+
+    return err == 0;
+}
+
+void Engine::saveCaptures(const Matchable * const item)
+{
+    if (!item || !item->lastMatch())
+    {
+        return;
+    }
+
+    LuaRef m(newTable(m_global));
+
+    for (int capture = 0; capture <= item->lastMatch()->lastCapturedIndex(); capture++)
+    {
+        m[capture] = qPrintable(item->lastMatch()->captured(capture));
+    }
+
+    foreach (QString name, item->regex().namedCaptureGroups())
+    {
+        if (!name.isEmpty())
+        {
+            m[qPrintable(name)] = qPrintable(item->lastMatch()->captured(name));
+        }
+    }
+
+    setGlobal(m_global, m, "matches");
 }
 
 int Engine::print(lua_State *L)
