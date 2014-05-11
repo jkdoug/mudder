@@ -74,6 +74,24 @@ bool Executable::operator !=(const Executable &rhs)
     return !(*this == rhs);
 }
 
+void Executable::setContents(const QString &contents)
+{
+    if (contents != m_contents)
+    {
+        m_contents = contents;
+        m_failed = false;
+    }
+}
+
+void Executable::setReference(int reference)
+{
+    if (reference != m_reference)
+    {
+        m_reference = reference;
+        m_failed = false;
+    }
+}
+
 void Executable::clone(const Executable &rhs)
 {
     if (this == &rhs)

@@ -49,9 +49,9 @@ public:
     bool operator !=(const Executable &rhs);
 
     const QString & contents() const { return m_contents; }
-    void setContents(const QString &contents) { m_contents = contents; }
+    void setContents(const QString &contents);
     int reference() const { return m_reference; }
-    void setReference(int reference) { m_reference = reference; }
+    void setReference(int reference);
 
     bool failed() const { return m_failed; }
     void setFailed(bool flag = true) { m_failed = flag; }
