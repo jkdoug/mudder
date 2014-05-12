@@ -24,7 +24,6 @@
 #include "executable.h"
 #include "engine.h"
 #include <QElapsedTimer>
-#include <QStringList>
 
 extern "C"
 {
@@ -34,7 +33,6 @@ extern "C"
 Executable::Executable(QObject *parent) :
     ProfileItem(parent)
 {
-    m_reference = LUA_NOREF;
     m_executionCount = 0;
     m_totalTime = 0.0;
     m_averageTime = 0.0;
@@ -56,11 +54,6 @@ Executable & Executable::operator =(const Executable &rhs)
 
 bool Executable::operator ==(const Executable &rhs)
 {
-    if (m_reference != rhs.m_reference)
-    {
-        return false;
-    }
-
     if (m_contents != rhs.m_contents)
     {
         return false;
@@ -83,15 +76,6 @@ void Executable::setContents(const QString &contents)
     }
 }
 
-void Executable::setReference(int reference)
-{
-    if (reference != m_reference)
-    {
-        m_reference = reference;
-        m_failed = false;
-    }
-}
-
 void Executable::clone(const Executable &rhs)
 {
     if (this == &rhs)
@@ -102,7 +86,6 @@ void Executable::clone(const Executable &rhs)
     ProfileItem::clone(rhs);
 
     m_contents = rhs.m_contents;
-    m_reference = rhs.m_reference;
 
     m_failed = rhs.m_failed;
 
@@ -113,12 +96,12 @@ void Executable::clone(const Executable &rhs)
 
 bool Executable::enabled() const
 {
-    return !failed() && ProfileItem::enabled();
+    return !m_failed && ProfileItem::enabled();
 }
 
 bool Executable::execute(Engine *e)
 {
-    if (contents().isEmpty())
+    if (m_contents.isEmpty())
     {
         return true;
     }
@@ -141,7 +124,7 @@ void Executable::toXml(QXmlStreamWriter &xml)
 
     if (!contents().isEmpty())
     {
-        xml.writeTextElement("send", contents());
+        xml.writeTextElement("send", m_contents);
     }
 }
 

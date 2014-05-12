@@ -25,18 +25,23 @@
 #define EVENT_H
 
 #include "executable.h"
+#include <QDateTime>
 
 class Event : public Executable
 {
     Q_OBJECT
+
 public:
     explicit Event(QObject *parent = 0);
-    Event(const Event &rhs, QObject *parent = 0);
 
-    Event & operator =(const Event &rhs);
+    const QString & title() const { return m_title; }
+    void setTitle(const QString &title) { m_title = title; }
 
-    bool operator ==(const Event &rhs);
-    bool operator !=(const Event &rhs);
+    const QDateTime & lastMatched() const { return m_lastMatched; }
+    int matchCount() const { return m_matchCount; }
+    int evalCount() const { return m_evalCount; }
+
+    bool match(const QString &str);
 
     virtual QIcon icon() const { return QIcon(":/icons/event"); }
 
@@ -45,7 +50,11 @@ public:
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 private:
-    void clone(const Event &rhs);
+    QString m_title;
+
+    QDateTime m_lastMatched;
+    int m_matchCount;
+    int m_evalCount;
 };
 
 #endif // EVENT_H

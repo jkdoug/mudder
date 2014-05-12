@@ -43,16 +43,6 @@ class ProfileItem : public QObject
     Q_PROPERTY(int sequence READ sequence WRITE setSequence)
 
 public:
-    explicit ProfileItem(QObject *parent = 0);
-    ProfileItem(const ProfileItem &rhs, QObject *parent = 0);
-
-    ProfileItem & operator =(const ProfileItem &rhs);
-
-    bool operator ==(const ProfileItem &rhs);
-    bool operator !=(const ProfileItem &rhs);
-
-    bool operator <(const ProfileItem &rhs);
-
     virtual const QString & name() const { return m_name; }
     void setName(const QString &name) { m_name = name; }
     virtual QString fullName() const;
@@ -73,6 +63,16 @@ public:
     static bool validateName(const QString &name, bool allowEmpty = false);
 
 protected:
+    explicit ProfileItem(QObject *parent = 0);
+    ProfileItem(const ProfileItem &rhs, QObject *parent = 0);
+
+    ProfileItem & operator =(const ProfileItem &rhs);
+
+    bool operator ==(const ProfileItem &rhs);
+    bool operator !=(const ProfileItem &rhs);
+
+    bool operator <(const ProfileItem &rhs);
+
     void clone(const ProfileItem &rhs);
 
     QString unnamed();

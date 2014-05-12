@@ -790,6 +790,8 @@ void Engine::handleGMCP(const QString &name, const QString &args)
     {
         data[qPrintable(modules.last())] = QVariant(doc);
     }
+
+    // TODO: fire events hooked into GMCP
 }
 
 int Engine::loadResource(lua_State *L, const QString &resource)

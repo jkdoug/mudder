@@ -24,6 +24,7 @@
 #include <QMenu>
 #include "settingswindow.h"
 #include "ui_settingswindow.h"
+#include "logging.h"
 #include "group.h"
 #include "profileitemfactory.h"
 
@@ -109,6 +110,8 @@ Group * SettingsWindow::rootGroup() const
 
 void SettingsWindow::settingModified(bool changed, bool valid)
 {
+    qCDebug(MUDDER_PROFILE) << "Settings window modified:" << changed << valid;
+
     ui->actionSave->setEnabled(changed && valid);
     ui->actionDiscard->setEnabled(changed);
 }

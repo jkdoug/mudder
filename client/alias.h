@@ -26,8 +26,6 @@
 
 #include "matchable.h"
 
-class XmlError;
-
 class Alias : public Matchable
 {
     Q_OBJECT

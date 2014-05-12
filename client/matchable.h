@@ -26,12 +26,8 @@
 
 #include "executable.h"
 #include <QDateTime>
-#include <QList>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-#include <QStringList>
-
-class XmlError;
 
 class Matchable : public Executable
 {
@@ -48,14 +44,6 @@ class Matchable : public Executable
     Q_PROPERTY(bool caseSensitive READ caseSensitive WRITE setCaseSensitive)
 
 public:
-    explicit Matchable(QObject *parent = 0);
-    Matchable(const Matchable &rhs, QObject *parent = 0);
-
-    Matchable & operator =(const Matchable &rhs);
-
-    bool operator ==(const Matchable &rhs);
-    bool operator !=(const Matchable &rhs);
-
     const QString & lineMatched() const { return m_lineMatched; }
     const QRegularExpression & regex() const { return m_regex; }
     QString pattern() const { return m_regex.pattern(); }
@@ -80,6 +68,14 @@ public:
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 protected:
+    explicit Matchable(QObject *parent = 0);
+    Matchable(const Matchable &rhs, QObject *parent = 0);
+
+    Matchable & operator =(const Matchable &rhs);
+
+    bool operator ==(const Matchable &rhs);
+    bool operator !=(const Matchable &rhs);
+
     void clone(const Matchable &rhs);
 
 private:

@@ -22,61 +22,49 @@
 
 
 #include "event.h"
+#include "xmlerror.h"
 
 Event::Event(QObject *parent) :
     Executable(parent)
 {
+    m_evalCount = 0;
+    m_matchCount = 0;
 }
 
-Event::Event(const Event &rhs, QObject *parent) :
-    Executable(parent)
+bool Event::match(const QString &str)
 {
-    clone(rhs);
-}
+    m_evalCount++;
 
-Event & Event::operator =(const Event &rhs)
-{
-    clone(rhs);
-
-    return *this;
-}
-
-bool Event::operator ==(const Event &rhs)
-{
-    return Executable::operator ==(rhs);
-}
-
-bool Event::operator !=(const Event &rhs)
-{
-    return !(*this == rhs);
-}
-
-void Event::clone(const Event &rhs)
-{
-    if (this == &rhs)
+    if (m_title.compare(str) == 0)
     {
-        return;
+        m_lastMatched = QDateTime::currentDateTime();
+        m_matchCount++;
+        return true;
     }
 
-    Executable::clone(rhs);
+    return false;
 }
 
 void Event::toXml(QXmlStreamWriter &xml)
 {
+    xml.writeAttribute("title", m_title);
+
     Executable::toXml(xml);
 }
 
 void Event::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
+    QString title(xml.attributes().value("title").toString());
+    if (title.isEmpty())    // TODO: more validation
+    {
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or empty 'title' attribute in event"));
+    }
+    setTitle(title);
+
     Executable::fromXml(xml, errors);
 
-    while (!xml.atEnd())
+    if (contents().isEmpty())
     {
-        xml.readNext();
-
-        if (xml.isEndElement())
-        {
-            break;
-        }
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or empty 'send' element in event"));
     }
 }

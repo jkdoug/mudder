@@ -33,6 +33,8 @@ EditTrigger::EditTrigger(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->script->setSyntaxHighlighter(new LuaHighlighter());
+
     connect(ui->name, SIGNAL(textChanged(QString)), SLOT(changed()));
     connect(ui->pattern, SIGNAL(textChanged(QString)), SLOT(changed()));
     connect(ui->sequence, SIGNAL(valueChanged(int)), SLOT(changed()));
@@ -90,7 +92,6 @@ bool EditTrigger::load(ProfileItem *item)
 
     m_contents = trigger->contents();
     ui->script->setPlainText(m_contents);
-    ui->script->setSyntaxHighlighter(new LuaHighlighter());
 
     ui->timesEvaluated->setText(QLocale::system().toString(trigger->evalCount()));
     ui->timesFired->setText(QLocale::system().toString(trigger->matchCount()));
@@ -191,6 +192,7 @@ void EditTrigger::changed()
     }
 
     QString script(ui->script->toPlainText().trimmed());
+    QRegularExpression regex(ui->pattern->text());
 
     bool changed = m_name != ui->name->text() ||
         m_pattern != ui->pattern->text() ||
@@ -203,6 +205,7 @@ void EditTrigger::changed()
         m_contents != script;
 
     bool valid = !ui->name->text().isEmpty() &&
+        regex.isValid() &&
         (!script.isEmpty() || ui->omit->isChecked());
 
     emit itemModified(changed, valid);

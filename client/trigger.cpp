@@ -79,11 +79,11 @@ void Trigger::clone(const Trigger &rhs)
 
 void Trigger::toXml(QXmlStreamWriter &xml)
 {
-    if (repeat())
+    if (m_repeat)
     {
         xml.writeAttribute("repeat", "y");
     }
-    if (omit())
+    if (m_omit)
     {
         xml.writeAttribute("omit", "y");
     }
@@ -98,7 +98,7 @@ void Trigger::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 
     Matchable::fromXml(xml, errors);
 
-    if (!omit() && contents().isEmpty())
+    if (!m_omit && contents().isEmpty())
     {
         errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or empty 'send' element in trigger"));
     }

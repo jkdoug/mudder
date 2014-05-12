@@ -46,6 +46,9 @@ private slots:
 
 private:
     Ui::EditEvent *ui;
+
+    QString m_title;
+    QString m_contents;
 };
 
 #endif // EDITEVENT_H

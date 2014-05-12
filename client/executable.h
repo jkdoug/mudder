@@ -33,25 +33,14 @@ class Executable : public ProfileItem
     Q_OBJECT
 
     Q_PROPERTY(QString contents READ contents WRITE setContents)
-    Q_PROPERTY(int reference READ reference)
     Q_PROPERTY(bool failed READ failed WRITE setFailed)
     Q_PROPERTY(int executionCount READ executionCount)
     Q_PROPERTY(double totalTime READ totalTime)
     Q_PROPERTY(double averageTime READ averageTime)
 
 public:
-    explicit Executable(QObject *parent = 0);
-    Executable(const Executable &rhs, QObject *parent = 0);
-
-    Executable & operator =(const Executable &rhs);
-
-    bool operator ==(const Executable &rhs);
-    bool operator !=(const Executable &rhs);
-
     const QString & contents() const { return m_contents; }
     void setContents(const QString &contents);
-    int reference() const { return m_reference; }
-    void setReference(int reference);
 
     bool failed() const { return m_failed; }
     void setFailed(bool flag = true) { m_failed = flag; }
@@ -68,11 +57,18 @@ public:
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 protected:
+    explicit Executable(QObject *parent = 0);
+    Executable(const Executable &rhs, QObject *parent = 0);
+
+    Executable & operator =(const Executable &rhs);
+
+    bool operator ==(const Executable &rhs);
+    bool operator !=(const Executable &rhs);
+
     void clone(const Executable &rhs);
 
 private:
     QString m_contents;
-    int m_reference;
 
     bool m_failed;
 
