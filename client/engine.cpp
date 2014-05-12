@@ -62,6 +62,20 @@ inline bool lua_isarray(lua_State *L, int index)
 
 
 template <>
+struct Stack <QString>
+{
+    static void push(lua_State *L, QString value)
+    {
+        lua_pushstring(L, qPrintable(value));
+    }
+
+    static QString get(lua_State *L, int index)
+    {
+        return luaL_checkstring(L, index);
+    }
+};
+
+template <>
 struct Stack <QVariant>
 {
     static void push(lua_State *L, QVariant value)
@@ -323,7 +337,9 @@ void Engine::initialize(Console *c)
         .addCFunction("print", Engine::print)
         .addCFunction("Send", Engine::send)
         .addCFunction("SendAlias", Engine::sendAlias)
-        .addCFunction("SendGmcp", Engine::sendGmcp);
+        .addCFunction("SendGmcp", Engine::sendGmcp)
+        .addCFunction("JsonDecode", Engine::jsonDecode)
+        .addCFunction("JsonEncode", Engine::jsonEncode);
 
     lua_settop(m_global, 0);
 
@@ -658,6 +674,74 @@ int Engine::sendGmcp(lua_State *L)
     }
 
     push(L, result);
+    return 1;
+}
+
+int Engine::jsonDecode(lua_State *L)
+{
+    if (lua_isnoneornil(L, 1))
+    {
+        lua_pushnil(L);
+    }
+    else if (lua_isnumber(L, 1))
+    {
+        lua_pushnumber(L, luaL_checknumber(L, 1));
+    }
+    else if (lua_isboolean(L, 1))
+    {
+        lua_pushboolean(L, lua_toboolean(L, 1));
+    }
+    else
+    {
+        QString data(LuaRef::fromStack(L, 1));
+        QJsonDocument doc(QJsonDocument::fromJson(data.toUtf8()));
+
+        if (doc.isEmpty())
+        {
+            lua_pushstring(L, qPrintable(data));
+        }
+        else
+        {
+            push(L, QVariant(doc));
+        }
+    }
+
+    return 1;
+}
+
+int Engine::jsonEncode(lua_State *L)
+{
+    if (lua_isnoneornil(L, 1))
+    {
+        lua_pushnil(L);
+    }
+    else
+    {
+        QVariant var(LuaRef::fromStack(L, 1));
+        if (var.isNull())
+        {
+            lua_pushnil(L);
+        }
+        else
+        {
+            switch (var.type())
+            {
+            case QVariant::Map:
+            case QVariant::List:
+            case QVariant::StringList:
+            {
+                QJsonDocument json(QJsonDocument::fromVariant(var));
+                lua_pushstring(L, json.toJson(QJsonDocument::Compact));
+            }
+                break;
+
+            default:
+                push(L, var);
+                break;
+            }
+        }
+    }
+
     return 1;
 }
 

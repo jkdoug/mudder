@@ -59,6 +59,8 @@ public:
     static int send(lua_State *L);
     static int sendAlias(lua_State *L);
     static int sendGmcp(lua_State *L);
+    static int jsonDecode(lua_State *L);
+    static int jsonEncode(lua_State *L);
 
 public slots:
     void enableGMCP(bool flag);
