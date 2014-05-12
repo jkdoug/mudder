@@ -81,6 +81,11 @@ bool EditGroup::save(ProfileItem *item)
     }
 
     QString name(ui->name->text());
+    if (name.isEmpty())
+    {
+        QMessageBox::critical(this, tr("Invalid Group"), tr("Name may not be left empty."));
+        return false;
+    }
     if (!ProfileItem::validateName(name))
     {
         QMessageBox::critical(this, tr("Invalid Group"), tr("You may only use alphanumeric characters, underscores, and certain special characters in the name."));

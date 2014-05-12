@@ -102,7 +102,7 @@ bool EditVariable::save(ProfileItem *item)
     QString name(ui->name->text());
     if (name.isEmpty())
     {
-        QMessageBox::critical(this, tr("Invalid Variable"), tr("Name may not be empty."));
+        QMessageBox::critical(this, tr("Invalid Variable"), tr("Name may not be left empty."));
         return false;
     }
     if (!Variable::validateName(name))
