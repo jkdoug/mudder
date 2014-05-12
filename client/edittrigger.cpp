@@ -88,8 +88,8 @@ bool EditTrigger::load(ProfileItem *item)
     m_omit = trigger->omit();
     ui->omit->setChecked(m_omit);
 
-    m_script = trigger->contents();
-    ui->script->setPlainText(m_script);
+    m_contents = trigger->contents();
+    ui->script->setPlainText(m_contents);
     ui->script->setSyntaxHighlighter(new LuaHighlighter());
 
     ui->timesEvaluated->setText(QLocale::system().toString(trigger->evalCount()));
@@ -131,24 +131,48 @@ bool EditTrigger::save(ProfileItem *item)
         return false;
     }
 
-    trigger->setName(name);
+    QString contents(ui->script->toPlainText().trimmed());
+    bool omit = ui->omit->isChecked();
+    if (contents.isEmpty() && !omit)
+    {
+        QMessageBox::critical(this, tr("Invalid Trigger"), tr("Script may not be left empty."));
+        return false;
+    }
 
-    trigger->setPattern(ui->pattern->text());
+    QString pattern(ui->pattern->text());
+    QRegularExpression regex(pattern);
+    if (!regex.isValid())
+    {
+        QMessageBox::critical(this, tr("Invalid Trigger"), tr("Invalid regular expression: %1").arg(regex.errorString()));
+        return false;
+    }
 
-    trigger->setName(ui->name->text());
-    trigger->setSequence(ui->sequence->value());
+    m_name = name;
+    trigger->setName(m_name);
 
-    trigger->enable(ui->enabled->isChecked());
-    trigger->setKeepEvaluating(ui->keepEvaluating->isChecked());
-    trigger->setCaseSensitive(ui->caseSensitive->isChecked());
-    trigger->setRepeat(ui->repeat->isChecked());
-    trigger->setOmit(ui->omit->isChecked());
+    m_pattern = pattern;
+    trigger->setPattern(m_pattern);
 
-    trigger->setContents(ui->script->toPlainText().trimmed());
+    m_sequence = ui->sequence->value();
+    trigger->setSequence(m_sequence);
+
+    m_enabled = ui->enabled->isChecked();
+    trigger->enable(m_enabled);
+    m_keepEvaluating = ui->keepEvaluating->isChecked();
+    trigger->setKeepEvaluating(m_keepEvaluating);
+    m_caseSensitive = ui->caseSensitive->isChecked();
+    trigger->setCaseSensitive(m_caseSensitive);
+    m_repeat = ui->repeat->isChecked();
+    trigger->setRepeat(m_repeat);
+    m_omit = omit;
+    trigger->setOmit(m_omit);
+
+    m_contents = contents;
+    trigger->setContents(m_contents);
 
     trigger->setFailed(false);
 
-    changed();
+    emit itemModified(false, true);
 
     return true;
 }
@@ -171,7 +195,7 @@ void EditTrigger::changed()
         m_caseSensitive != ui->caseSensitive->isChecked() ||
         m_repeat != ui->repeat->isChecked() ||
         m_omit != ui->omit->isChecked() ||
-        m_script != script;
+        m_contents != script;
 
     bool valid = !ui->name->text().isEmpty() &&
         (!script.isEmpty() || ui->omit->isChecked());

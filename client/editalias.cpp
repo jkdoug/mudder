@@ -81,8 +81,8 @@ bool EditAlias::load(ProfileItem *item)
     m_keepEvaluating = alias->keepEvaluating();
     ui->keepEvaluating->setChecked(m_keepEvaluating);
 
-    m_script = alias->contents();
-    ui->script->setPlainText(m_script);
+    m_contents = alias->contents();
+    ui->script->setPlainText(m_contents);
     ui->script->setSyntaxHighlighter(new LuaHighlighter());
 
     ui->timesEvaluated->setText(QLocale::system().toString(alias->evalCount()));
@@ -124,22 +124,43 @@ bool EditAlias::save(ProfileItem *item)
         return false;
     }
 
-    alias->setName(name);
+    QString contents(ui->script->toPlainText().trimmed());
+    if (contents.isEmpty())
+    {
+        QMessageBox::critical(this, tr("Invalid Alias"), tr("Script may not be left empty."));
+        return false;
+    }
 
-    alias->setPattern(ui->pattern->text());
+    QString pattern(ui->pattern->text());
+    QRegularExpression regex(pattern);
+    if (!regex.isValid())
+    {
+        QMessageBox::critical(this, tr("Invalid Alias"), tr("Invalid regular expression: %1").arg(regex.errorString()));
+        return false;
+    }
 
-    alias->setName(ui->name->text());
-    alias->setSequence(ui->sequence->value());
+    m_name = name;
+    alias->setName(m_name);
 
-    alias->enable(ui->enabled->isChecked());
-    alias->setKeepEvaluating(ui->keepEvaluating->isChecked());
-    alias->setCaseSensitive(ui->caseSensitive->isChecked());
+    m_pattern = pattern;
+    alias->setPattern(m_pattern);
 
-    alias->setContents(ui->script->toPlainText().trimmed());
+    m_sequence = ui->sequence->value();
+    alias->setSequence(m_sequence);
+
+    m_enabled = ui->enabled->isChecked();
+    alias->enable(m_enabled);
+    m_keepEvaluating = ui->keepEvaluating->isChecked();
+    alias->setKeepEvaluating(m_keepEvaluating);
+    m_caseSensitive = ui->caseSensitive->isChecked();
+    alias->setCaseSensitive(m_caseSensitive);
+
+    m_contents = contents;
+    alias->setContents(m_contents);
 
     alias->setFailed(false);
 
-    changed();
+    emit itemModified(false, true);
 
     return true;
 }
@@ -160,7 +181,7 @@ void EditAlias::changed()
         m_enabled != ui->enabled->isChecked() ||
         m_keepEvaluating != ui->keepEvaluating->isChecked() ||
         m_caseSensitive != ui->caseSensitive->isChecked() ||
-        m_script != script;
+        m_contents != script;
 
     bool valid = !ui->name->text().isEmpty() &&
         !script.isEmpty();

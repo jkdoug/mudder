@@ -25,6 +25,7 @@
 #include "ui_edittimer.h"
 #include "luahighlighter.h"
 #include "timer.h"
+#include <QMessageBox>
 
 EditTimer::EditTimer(QWidget *parent) :
     EditSetting(parent),
@@ -71,8 +72,8 @@ bool EditTimer::load(ProfileItem *item)
     m_once = timer->once();
     ui->once->setChecked(m_once);
 
-    m_script = timer->contents();
-    ui->script->setPlainText(m_script);
+    m_contents = timer->contents();
+    ui->script->setPlainText(m_contents);
     ui->script->setSyntaxHighlighter(new LuaHighlighter());
 
     ui->timesFired->setText(QLocale::system().toString(timer->firedCount()));
@@ -96,18 +97,37 @@ bool EditTimer::save(ProfileItem *item)
         return false;
     }
 
-    timer->setName(ui->name->text());
+    QString name(ui->name->text());
+    if (!ProfileItem::validateName(name))
+    {
+        QMessageBox::critical(this, tr("Invalid Timer"), tr("You may only use alphanumeric characters, underscores, and certain special characters in the name."));
+        return false;
+    }
 
-    timer->setInterval(ui->interval->time());
+    QString contents(ui->script->toPlainText().trimmed());
+    if (contents.isEmpty())
+    {
+        QMessageBox::critical(this, tr("Invalid Timer"), tr("Script may not be left empty."));
+        return false;
+    }
 
-    timer->enable(ui->enabled->isChecked());
-    timer->setOnce(ui->enabled->isChecked());
+    m_name = name;
+    timer->setName(m_name);
 
-    timer->setContents(ui->script->toPlainText().trimmed());
+    m_interval = ui->interval->time();
+    timer->setInterval(m_interval);
+
+    m_enabled = ui->enabled->isChecked();
+    timer->enable(m_enabled);
+    m_once = ui->once->isChecked();
+    timer->setOnce(m_once);
+
+    m_contents = contents;
+    timer->setContents(m_contents);
 
     timer->setFailed(false);
 
-    changed();
+    emit itemModified(false, true);
 
     return true;
 }
@@ -126,7 +146,7 @@ void EditTimer::changed()
         m_enabled != ui->enabled->isChecked() ||
         m_interval != ui->interval->time() ||
         m_once != ui->once->isChecked() ||
-        m_script != script;
+        m_contents != script;
 
     bool valid = !ui->name->text().isEmpty() &&
         ui->interval->time().isValid() &&

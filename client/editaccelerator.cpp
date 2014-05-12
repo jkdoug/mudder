@@ -25,6 +25,7 @@
 #include "ui_editaccelerator.h"
 #include "luahighlighter.h"
 #include "accelerator.h"
+#include <QMessageBox>
 
 EditAccelerator::EditAccelerator(QWidget *parent) :
     EditSetting(parent),
@@ -92,13 +93,39 @@ bool EditAccelerator::save(ProfileItem *item)
         return false;
     }
 
-    accelerator->setKey(ui->key->keySequence());
-    accelerator->setName(ui->name->text());
-    accelerator->enable(ui->enabled->isChecked());
-    accelerator->setContents(ui->script->toPlainText().trimmed());
+    QString name(ui->name->text());
+    if (!ProfileItem::validateName(name))
+    {
+        QMessageBox::critical(this, tr("Invalid Accelerator"), tr("You may only use alphanumeric characters, underscores, and certain special characters in the name."));
+        return false;
+    }
+
+    QString contents(ui->script->toPlainText().trimmed());
+    if (contents.isEmpty())
+    {
+        QMessageBox::critical(this, tr("Invalid Accelerator"), tr("Script may not be left empty."));
+        return false;
+    }
+
+    QKeySequence key(ui->key->keySequence());
+    if (key.isEmpty() || key.count() > 1)
+    {
+        QMessageBox::critical(this, tr("Invalid Accelerator"), tr("You must specify exactly one key sequence to be matched."));
+        return false;
+    }
+
+    m_key = key;
+    accelerator->setKey(m_key);
+    m_name = name;
+    accelerator->setName(m_name);
+    m_enabled = ui->enabled->isChecked();
+    accelerator->enable(m_enabled);
+    m_contents = ui->script->toPlainText().trimmed();
+    accelerator->setContents(m_contents);
+
     accelerator->setFailed(false);
 
-    changed();
+    emit itemModified(false, true);
 
     return true;
 }

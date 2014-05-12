@@ -52,7 +52,7 @@ private:
 
     bool m_once;
 
-    QString m_script;
+    QString m_contents;
 };
 
 #endif // EDITTIMER_H

@@ -43,7 +43,7 @@ bool EditEvent::load(ProfileItem *item)
 
 bool EditEvent::save(ProfileItem *item)
 {
-    return false;
+    return load(item);
 }
 
 void EditEvent::changed()

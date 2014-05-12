@@ -79,6 +79,7 @@ SettingsWidget::~SettingsWidget()
 
 void SettingsWidget::setRootGroup(Group *group)
 {
+    m_selection->clear();
     m_model->setRootGroup(group);
 }
 
@@ -146,10 +147,13 @@ void SettingsWidget::saveCurrentItem()
     EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
     Q_ASSERT(editor != 0);
 
-    if (!editor->save(item))
+    bool saved = editor->save(item);
+    if (!saved)
     {
         qCWarning(MUDDER_PROFILE) << "Something prevented saving:" << item->tagName() << "->" << item->fullName();
     }
+
+    emit settingModified(false, saved);
 }
 
 void SettingsWidget::discardCurrentItem()
@@ -179,10 +183,13 @@ void SettingsWidget::discardCurrentItem()
     EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
     Q_ASSERT(editor != 0);
 
-    if (!editor->load(item))
+    bool loaded = editor->load(item);
+    if (!loaded)
     {
         qCWarning(MUDDER_PROFILE) << "Something prevented loading:" << item->tagName() << "->" << item->fullName();
     }
+
+    emit settingModified(false, loaded);
 }
 
 void SettingsWidget::currentChanged(const QModelIndex &current, const QModelIndex &previous)

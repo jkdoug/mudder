@@ -100,6 +100,11 @@ bool EditVariable::save(ProfileItem *item)
     }
 
     QString name(ui->name->text());
+    if (name.isEmpty())
+    {
+        QMessageBox::critical(this, tr("Invalid Variable"), tr("Name may not be empty."));
+        return false;
+    }
     if (!Variable::validateName(name))
     {
         QMessageBox::critical(this, tr("Invalid Variable"), tr("You may only use alphanumeric characters and underscores in variable names."));
@@ -116,11 +121,13 @@ bool EditVariable::save(ProfileItem *item)
         return false;
     }
 
+    m_name = name;
     variable->setName(name);
 
+    m_contents = val;
     variable->setContents(val);
 
-    changed();
+    emit itemModified(false, true);
 
     return true;
 }

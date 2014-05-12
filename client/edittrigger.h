@@ -48,7 +48,7 @@ private:
     Ui::EditTrigger *ui;
 
     QString m_pattern;
-    QString m_script;
+    QString m_contents;
 
     bool m_caseSensitive;
     bool m_keepEvaluating;
