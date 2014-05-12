@@ -47,6 +47,7 @@ public slots:
     void error(const QString &msg);
     void warning(const QString &msg);
     void info(const QString &msg);
+    void optionChanged(const QString &key, const QVariant &val);
 
 signals:
     void blockAdded(QTextBlock block, bool prompt);

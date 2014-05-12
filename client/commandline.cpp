@@ -23,14 +23,27 @@
 
 #include "commandline.h"
 #include "coresettings.h"
-#include <QRegularExpression>
+#include <QFont>
 
 CommandLine::CommandLine(QWidget *parent) :
     QPlainTextEdit(parent)
 {
-    SETTINGS->setDefault("CommandLine/ClearAfterSend", false);
-    SETTINGS->setDefault("CommandLine/ScriptPrefix", "/");
-    SETTINGS->setDefault("CommandLine/Separator", ";");
+    m_historyPosition = -1;
+    m_escapeClears = true;
+
+    connect(this, SIGNAL(command(QString)), SLOT(addToHistory(QString)));
+}
+
+void CommandLine::optionChanged(const QString &key, const QVariant &val)
+{
+    if (key == "inputFont")
+    {
+        setFont(val.value<QFont>());
+    }
+    else if (key == "escapeClearsCommand")
+    {
+        m_escapeClears = val.toBool();
+    }
 }
 
 void CommandLine::keyPressEvent(QKeyEvent *e)
@@ -46,7 +59,7 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
         }
         else
         {
-            send();
+            emit command(toPlainText());
         }
         e->accept();
         return;
@@ -58,7 +71,7 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
         }
         else
         {
-//            historyDown();
+            historyDown();
             adjustHeight();
         }
         e->accept();
@@ -71,11 +84,20 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
         }
         else
         {
-//            historyUp();
+            historyUp();
             adjustHeight();
         }
         e->accept();
         return;
+
+    case Qt::Key_Escape:
+        if (m_escapeClears && e->modifiers() == 0)
+        {
+            clear();
+            e->accept();
+            return;
+        }
+        break;
 
     default:
         // TODO: process accelerators, return if a match is found
@@ -85,6 +107,21 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
     QPlainTextEdit::keyPressEvent(e);
 
     adjustHeight();
+}
+
+void CommandLine::addToHistory(const QString &cmd)
+{
+    if (!cmd.isEmpty())
+    {
+        m_historyPosition = 0;
+
+        m_history.removeAll(cmd);
+        m_history.prepend(cmd);
+    }
+    else
+    {
+        m_historyPosition = -1;
+    }
 }
 
 void CommandLine::adjustHeight()
@@ -101,7 +138,41 @@ void CommandLine::adjustHeight()
     }
 }
 
-void CommandLine::send()
+void CommandLine::historyUp()
 {
-    emit command(toPlainText());
+    if (m_history.isEmpty())
+    {
+        return;
+    }
+
+    QString txt(toPlainText());
+    if (textCursor().selectedText().size() == txt.size() || txt.isEmpty())
+    {
+        if (!txt.isEmpty())
+        {
+            m_historyPosition++;
+        }
+
+        m_historyPosition = qBound(0, m_historyPosition, m_history.length() - 1);
+
+        setPlainText(m_history.at(m_historyPosition));
+        selectAll();
+    }
+}
+
+void CommandLine::historyDown()
+{
+    if (m_history.isEmpty())
+    {
+        return;
+    }
+
+    QString txt(toPlainText());
+    if (textCursor().selectedText().size() == txt.size() || txt.isEmpty())
+    {
+        m_historyPosition = qBound(0, --m_historyPosition, m_history.length() - 1);
+
+        setPlainText(m_history.at(m_historyPosition));
+        selectAll();
+    }
 }

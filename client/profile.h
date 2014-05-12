@@ -71,9 +71,14 @@ public:
     void setCommandSeparator(const QString &sep) { changeOption("commandSeparator", sep); }
     bool clearCommandLine() const { return m_options.value("clearCommandLine").toBool(); }
     void setClearCommandLine(bool flag = true) { changeOption("clearCommandLine", flag); }
+    bool escapeClearsCommand() const { return m_options.value("escapeClearsCommand").toBool(); }
+    void setEscapeClearsCommand(bool flag = true) { changeOption("escapeClearsCommand", flag); }
 
     QFont inputFont() const { return m_options.value("inputFont").value<QFont>(); }
     void setInputFont(const QFont &font) { changeOption("inputFont", font); }
+
+    QFont outputFont() const { return m_options.value("outputFont").value<QFont>(); }
+    void setOutputFont(const QFont &font) { changeOption("outputFont", font); }
 
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);

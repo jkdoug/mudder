@@ -48,12 +48,17 @@ Profile::Profile(QObject *parent) :
 
     m_options.insert("commandSeparator", QString(";"));
     m_options.insert("clearCommandLine", false);
+    m_options.insert("escapeClearsCommand", true);
 
-    QFont font("Courier New", 8);
-    font.setStyleHint(QFont::TypeWriter);
-    font.setStyleStrategy(QFont::PreferAntialias);
-    m_options.insert("inputFont", font);
-    m_options.insert("inputAntiAliased", true);
+    QFont inputFont("Courier New", 8);
+    inputFont.setStyleHint(QFont::TypeWriter);
+    inputFont.setStyleStrategy(QFont::PreferAntialias);
+    m_options.insert("inputFont", inputFont);
+
+    QFont outputFont("Consolas", 10);
+    outputFont.setStyleHint(QFont::TypeWriter);
+    outputFont.setStyleStrategy(QFont::PreferAntialias);
+    m_options.insert("outputFont", outputFont);
 }
 
 void Profile::setActiveGroup(Group *group)
@@ -89,6 +94,7 @@ void Profile::toXml(QXmlStreamWriter &xml)
 
     xml.writeStartElement("commandLine");
     xml.writeAttribute("clear", clearCommandLine()?"y":"n");
+    xml.writeAttribute("escape", escapeClearsCommand()?"y":"n");
     xml.writeAttribute("separator", commandSeparator());
     xml.writeEndElement();
 
@@ -102,7 +108,13 @@ void Profile::toXml(QXmlStreamWriter &xml)
     xml.writeStartElement("inputFont");
     xml.writeAttribute("family", inputFont().family());
     xml.writeAttribute("size", QString::number(inputFont().pointSize()));
-    xml.writeAttribute("antialias", (inputFont().styleHint() == QFont::PreferAntialias)?"y":"n");
+    xml.writeAttribute("antialias", (inputFont().styleStrategy() == QFont::PreferAntialias)?"y":"n");
+    xml.writeEndElement();
+
+    xml.writeStartElement("outputFont");
+    xml.writeAttribute("family", outputFont().family());
+    xml.writeAttribute("size", QString::number(outputFont().pointSize()));
+    xml.writeAttribute("antialias", (outputFont().styleStrategy() == QFont::PreferAntialias)?"y":"n");
     xml.writeEndElement();
 
     xml.writeEndElement();  // display
@@ -209,6 +221,7 @@ void Profile::readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 }
 
                 setClearCommandLine(xml.attributes().value("clear").compare("n", Qt::CaseInsensitive) != 0);
+                setEscapeClearsCommand(xml.attributes().value("escape").compare("n", Qt::CaseInsensitive) != 0);
             }
 //            else if (xml.name() == "logging")
 //            {
@@ -305,6 +318,35 @@ void Profile::readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 font.setStyleHint(QFont::TypeWriter);
                 font.setStyleStrategy(antiAlias?QFont::PreferAntialias:QFont::NoAntialias);
                 setInputFont(font);
+            }
+            else if (xml.name() == "outputFont")
+            {
+                QString family(xml.attributes().value("family").toString());
+                if (family.isEmpty())
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or invalid output font family name"));
+                    family = "Consolas";
+                }
+
+                bool valid = true;
+                int size = xml.attributes().value("size").toString().toInt(&valid);
+                if (!valid)
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or invalid output font point size"));
+                    size = 10;
+                }
+                size = qBound(6, size, 20);
+
+                bool antiAlias = true;
+                if (!xml.attributes().value("antialias").isEmpty())
+                {
+                    antiAlias = xml.attributes().value("antialias").compare("n", Qt::CaseInsensitive) != 0;
+                }
+
+                QFont font(family, size);
+                font.setStyleHint(QFont::TypeWriter);
+                font.setStyleStrategy(antiAlias?QFont::PreferAntialias:QFont::NoAntialias);
+                setOutputFont(font);
             }
         }
     }

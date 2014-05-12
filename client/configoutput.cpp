@@ -21,13 +21,13 @@
 */
 
 
-#include "configinput.h"
-#include "ui_configinput.h"
+#include "configoutput.h"
+#include "ui_configoutput.h"
 #include "profile.h"
 
-ConfigInput::ConfigInput(Profile *profile, ConfigWidget *parent) :
+ConfigOutput::ConfigOutput(Profile *profile, ConfigWidget *parent) :
     ConfigPage(parent),
-    ui(new Ui::ConfigInput),
+    ui(new Ui::ConfigOutput),
     m_profile(profile)
 {
     ui->setupUi(this);
@@ -40,30 +40,24 @@ ConfigInput::ConfigInput(Profile *profile, ConfigWidget *parent) :
     ui->comboFontSize->addItems(fontSizes);
 }
 
-ConfigInput::~ConfigInput()
+ConfigOutput::~ConfigOutput()
 {
     delete ui;
 }
 
-void ConfigInput::load()
+void ConfigOutput::load()
 {
-    QFont font(m_profile->inputFont());
+    QFont font(m_profile->outputFont());
     ui->comboFont->setCurrentFont(font);
     ui->comboFontSize->setCurrentIndex(font.pointSize() - 6);
     ui->checkAntiAliased->setChecked(font.styleStrategy() == QFont::PreferAntialias);
-
-    ui->checkClear->setChecked(m_profile->clearCommandLine());
-    ui->checkEscape->setChecked(m_profile->escapeClearsCommand());
 }
 
-void ConfigInput::save()
+void ConfigOutput::save()
 {
     QFont font(ui->comboFont->currentFont());
     font.setPointSize(ui->comboFontSize->currentText().toInt());
     font.setStyleHint(QFont::TypeWriter);
     font.setStyleStrategy(ui->checkAntiAliased->isChecked()?QFont::PreferAntialias:QFont::NoAntialias);
-    m_profile->setInputFont(font);
-
-    m_profile->setClearCommandLine(ui->checkClear->isChecked());
-    m_profile->setEscapeClearsCommand(ui->checkEscape->isChecked());
+    m_profile->setOutputFont(font);
 }

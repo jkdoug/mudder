@@ -24,6 +24,7 @@
 #include "ui_dialogprofile.h"
 #include "configconnection.h"
 #include "configinput.h"
+#include "configoutput.h"
 #include "configscripting.h"
 #include "profile.h"
 #include <QPushButton>
@@ -37,9 +38,10 @@ DialogProfile::DialogProfile(QWidget *parent) :
 
     m_profile = new Profile(this);
 
-    ui->config->addPage(new ConfigConnection(m_profile, ui->config));
-    ui->config->addPage(new ConfigInput(m_profile, ui->config));
-    ui->config->addPage(new ConfigScripting(m_profile, ui->config));
+    ui->config->addPage(new ConfigConnection(m_profile));
+    ui->config->addPage(new ConfigInput(m_profile));
+    ui->config->addPage(new ConfigOutput(m_profile));
+    ui->config->addPage(new ConfigScripting(m_profile));
 }
 
 DialogProfile::~DialogProfile()

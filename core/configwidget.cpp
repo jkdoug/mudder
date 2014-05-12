@@ -114,6 +114,8 @@ void ConfigWidget::addPage(ConfigPage *page, const QIcon &icon, const QString &n
 
 void ConfigWidget::insertPage(int index, ConfigPage *page, const QIcon &icon, const QString &name)
 {
+    page->setParent(this);
+
     ui->stack->insertWidget(index, page);
     QListWidgetItem *item = new QListWidgetItem;
 

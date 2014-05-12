@@ -23,6 +23,7 @@
         <file alias="scripting">icons/prefs_scripting.png</file>
         <file alias="options">icons/game_options.png</file>
         <file alias="input">icons/prefs_input.png</file>
+        <file alias="output">icons/prefs_output.png</file>
     </qresource>
     <qresource prefix="/lua">
         <file alias="io_exists">lua/io_exists.lua</file>

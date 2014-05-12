@@ -239,6 +239,18 @@ void ConsoleDocument::info(const QString &msg)
     appendText(m_formatInfo, msg);
 }
 
+void ConsoleDocument::optionChanged(const QString &key, const QVariant &val)
+{
+    if (key == "outputFont")
+    {
+        m_formatDefault.setFont(val.value<QFont>());
+
+        QTextCharFormat fmt;
+        fmt.setFont(m_formatDefault.font());
+        m_cursor->mergeCharFormat(fmt);
+    }
+}
+
 void ConsoleDocument::newLine()
 {
     m_cursor->insertBlock();

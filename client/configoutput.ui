@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ConfigInput</class>
- <widget class="QWidget" name="ConfigInput">
+ <class>ConfigOutput</class>
+ <widget class="QWidget" name="ConfigOutput">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>183</height>
+    <height>104</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Input</string>
+   <string>Output</string>
   </property>
   <property name="windowIcon">
    <iconset resource="client.qrc">
-    <normaloff>:/icons/input</normaloff>:/icons/input</iconset>
+    <normaloff>:/icons/output</normaloff>:/icons/output</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -27,13 +27,16 @@
       </size>
      </property>
      <property name="title">
-      <string>Input Font</string>
+      <string>Output Font</string>
      </property>
      <layout class="QGridLayout" name="layoutFont" columnstretch="0,1,0,0" columnminimumwidth="60,0,23,60">
       <item row="0" column="1">
        <widget class="QFontComboBox" name="comboFont">
         <property name="editable">
          <bool>false</bool>
+        </property>
+        <property name="currentText">
+         <string>Consolas</string>
         </property>
         <property name="writingSystem">
          <enum>QFontDatabase::Latin</enum>
@@ -43,7 +46,7 @@
         </property>
         <property name="currentFont">
          <font>
-          <family>Courier New</family>
+          <family>Consolas</family>
           <pointsize>8</pointsize>
          </font>
         </property>
@@ -97,35 +100,6 @@
       </item>
       <item row="0" column="3">
        <widget class="QComboBox" name="comboFontSize"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupOptions">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="title">
-      <string>Options</string>
-     </property>
-     <layout class="QVBoxLayout" name="layoutOptions">
-      <item>
-       <widget class="QCheckBox" name="checkClear">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>Clear command line after sending</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="checkEscape">
-        <property name="text">
-         <string>Escape clears the command line</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>

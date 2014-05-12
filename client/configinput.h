@@ -43,7 +43,6 @@ public:
 public slots:
     virtual void load();
     virtual void save();
-    virtual bool validate();
 
 private:
     Ui::ConfigInput *ui;

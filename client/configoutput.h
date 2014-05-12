@@ -21,40 +21,33 @@
 */
 
 
-#ifndef COMMANDLINE_H
-#define COMMANDLINE_H
+#ifndef CONFIGOUTPUT_H
+#define CONFIGOUTPUT_H
 
-#include <QPlainTextEdit>
-#include <QStringList>
-#include <QVariant>
+#include "configpage.h"
 
-class CommandLine : public QPlainTextEdit
+namespace Ui {
+class ConfigOutput;
+}
+
+class Profile;
+
+class ConfigOutput : public ConfigPage
 {
     Q_OBJECT
+
 public:
-    explicit CommandLine(QWidget *parent = 0);
+    explicit ConfigOutput(Profile *profile, ConfigWidget *parent = 0);
+    ~ConfigOutput();
 
 public slots:
-    void optionChanged(const QString &key, const QVariant &val);
-
-signals:
-    void command(const QString &cmd);
-
-protected:
-    virtual void keyPressEvent(QKeyEvent *e);
-
-private slots:
-    void addToHistory(const QString &cmd);
+    virtual void load();
+    virtual void save();
 
 private:
-    void adjustHeight();
-    void historyUp();
-    void historyDown();
+    Ui::ConfigOutput *ui;
 
-    QStringList m_history;
-    int m_historyPosition;
-
-    bool m_escapeClears;
+    Profile *m_profile;
 };
 
-#endif // COMMANDLINE_H
+#endif // CONFIGOUTPUT_H

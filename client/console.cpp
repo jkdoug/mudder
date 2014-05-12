@@ -61,6 +61,8 @@ Console::Console(QWidget *parent) :
     m_profile = new Profile(this);
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), SLOT(contentsModified()));
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), SLOT(optionChanged(QString, QVariant)));
+    connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), ui->input, SLOT(optionChanged(QString, QVariant)));
+    connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), m_document, SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
 
     m_echoOn = true;
@@ -279,7 +281,7 @@ void Console::commandEntered(const QString &cmd)
     qCDebug(MUDDER_CONSOLE) << "Command entered:" << cmd;
 
     QString prefix(m_profile->scriptPrefix());
-    if (cmd.startsWith(prefix))
+    if (!prefix.isEmpty() && cmd.startsWith(prefix))
     {
         m_engine->execute(cmd.mid(prefix.length()));
     }
@@ -289,7 +291,7 @@ void Console::commandEntered(const QString &cmd)
     }
     else
     {
-        QString sep("\n"); //(SETTINGS->value("CommandLine/Separator").toString() + QString("\n"));
+        QString sep(m_profile->commandSeparator() + "\n");
         QRegularExpression regex("[" + QRegularExpression::escape(sep) + "]");
         QStringList cmds(cmd.split(regex));
         foreach (QString c, cmds)
@@ -398,10 +400,8 @@ void Console::updateScroll()
 
 void Console::optionChanged(const QString &key, const QVariant &val)
 {
-    if (key == "inputFont")
-    {
-        ui->input->setFont(val.value<QFont>());
-    }
+    Q_UNUSED(key)
+    Q_UNUSED(val)
 }
 
 bool Console::processAliases(const QString &cmd)

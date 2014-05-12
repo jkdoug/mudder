@@ -47,7 +47,8 @@ SOURCES += main.cpp\
     configconnection.cpp \
     configscripting.cpp \
     dialogprofile.cpp \
-    configinput.cpp
+    configinput.cpp \
+    configoutput.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -87,7 +88,8 @@ HEADERS  += mainwindow.h \
     configconnection.h \
     configscripting.h \
     dialogprofile.h \
-    configinput.h
+    configinput.h \
+    configoutput.h
 
 FORMS    += mainwindow.ui \
     console.ui \
@@ -103,7 +105,8 @@ FORMS    += mainwindow.ui \
     configconnection.ui \
     configscripting.ui \
     dialogprofile.ui \
-    configinput.ui
+    configinput.ui \
+    configoutput.ui
 
 RESOURCES += \
     client.qrc
