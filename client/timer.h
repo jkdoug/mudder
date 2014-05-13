@@ -28,9 +28,6 @@
 #include <QTime>
 #include <QTimer>
 
-class XmlError;
-class Profile;
-
 class Timer : public Executable
 {
     Q_OBJECT
@@ -44,15 +41,9 @@ public:
     Timer(const Timer &rhs, QObject *parent = 0);
     ~Timer();
 
-    Timer operator =(const Timer &rhs);
-
     bool operator ==(const Timer &rhs);
-    bool operator !=(const Timer &rhs);
 
     bool operator <(const Timer &rhs);
-    static bool lessInterval(const Timer *lhs, const Timer *rhs);
-
-    void setProfile(Profile *profile);
 
     virtual void enable(bool flag = true);
     const QTime & interval() const { return m_interval; }
@@ -75,10 +66,11 @@ public slots:
     void stop();
     void fire();
 
+signals:
+    void fired(Timer *timer);
+
 private:
     void clone(const Timer &rhs);
-
-    Profile *m_profile;
 
     QTime m_interval;
     QTimer *m_timer;

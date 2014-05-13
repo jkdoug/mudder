@@ -34,6 +34,7 @@
 
 class Group;
 class ProfileItem;
+class Timer;
 class XmlError;
 
 class Profile : public QObject
@@ -85,10 +86,12 @@ public:
 
 public slots:
     void changeOption(const QString &key, const QVariant &val);
+    void handleTimer(Timer *timer);
 
 signals:
     void optionChanged(const QString &key, const QVariant &val);
     void settingsChanged();
+    void timerFired(Timer *timer);
 
 protected:
     void readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors);

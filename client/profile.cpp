@@ -25,6 +25,7 @@
 #include "logging.h"
 #include "coreapplication.h"
 #include "group.h"
+#include "timer.h"
 #include "profileitem.h"
 #include "profileitemfactory.h"
 #include "xmlerror.h"
@@ -148,6 +149,14 @@ void Profile::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
             {
                 setActiveGroup(qobject_cast<Group *>(item));
             }
+            else if (name == "timer")
+            {
+                Timer *timer = qobject_cast<Timer *>(item);
+                if (timer)
+                {
+                    connect(timer, SIGNAL(fired(Timer*)), SLOT(handleTimer(Timer*)));
+                }
+            }
             else if (name == "profile")
             {
                 readProfile(xml, errors);
@@ -170,6 +179,17 @@ void Profile::changeOption(const QString &key, const QVariant &val)
         m_options.insert(key, val);
         emit optionChanged(key, val);
     }
+}
+
+void Profile::handleTimer(Timer *timer)
+{
+    if (!timer)
+    {
+        qCDebug(MUDDER_PROFILE) << "Invalid timer object just fired.";
+        return;
+    }
+
+    emit timerFired(timer);
 }
 
 void Profile::readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors)
@@ -223,19 +243,6 @@ void Profile::readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 setClearCommandLine(xml.attributes().value("clear").compare("n", Qt::CaseInsensitive) != 0);
                 setEscapeClearsCommand(xml.attributes().value("escape").compare("n", Qt::CaseInsensitive) != 0);
             }
-//            else if (xml.name() == "logging")
-//            {
-//                try
-//                {
-//                    readLogging(xml);
-//                }
-//                catch (XmlException *xe)
-//                {
-//                    warnings.append(xe->warnings());
-
-//                    delete xe;
-//                }
-//            }
             else if (xml.name() == "scripting")
             {
                 QString prefix(xml.attributes().value("prefix").toString());
@@ -254,25 +261,6 @@ void Profile::readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors)
             {
                 readDisplay(xml, errors);
             }
-//            else if (xml.name() == "mapper")
-//            {
-//                QString colorString(xml.attributes().value("bg").toString());
-//                QColor bg(colorString);
-//                if (bg.isValid())
-//                {
-//                    setMapBackground(bg);
-//                }
-//                else if (!colorString.isEmpty())
-//                {
-//                    warnings.append(tr("XML: Line %1; invalid mapper background color (%2)").arg(xml.lineNumber()).arg(colorString));
-//                }
-
-//                QString filename(xml.attributes().value("file").toString());
-//                if (!filename.isEmpty())
-//                {
-//                    setMapFilename(filename);
-//                }
-//            }
         }
     }
 }

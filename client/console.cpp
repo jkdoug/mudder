@@ -31,6 +31,7 @@
 #include "xmlerror.h"
 #include "alias.h"
 #include "group.h"
+#include "timer.h"
 #include "trigger.h"
 #include <QAbstractTextDocumentLayout>
 #include <QFileDialog>
@@ -64,6 +65,7 @@ Console::Console(QWidget *parent) :
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), ui->input, SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), m_document, SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
+    connect(m_profile, SIGNAL(timerFired(Timer*)), SLOT(processTimer(Timer*)));
 
     m_echoOn = true;
 
@@ -510,6 +512,26 @@ bool Console::processTriggers(QTextBlock block, bool prompt)
     }
 
     return !omitted;
+}
+
+void Console::processTimer(Timer *timer)
+{
+    if (!timer)
+    {
+        return;
+    }
+
+    qCDebug(MUDDER_SCRIPT) << tr("Timer fired:") << timer->fullName();
+
+    if (!timer->execute(m_engine))
+    {
+        timer->enable(false);
+    }
+
+    if (timer->once())
+    {
+        // TODO: delete timer
+    }
 }
 
 bool Console::okToContinue()

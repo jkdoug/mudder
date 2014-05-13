@@ -100,6 +100,7 @@ private slots:
     void optionChanged(const QString &key, const QVariant &val);
     bool processAliases(const QString &cmd);
     bool processTriggers(QTextBlock block, bool prompt);
+    void processTimer(Timer *timer);
 
 private:
     bool okToContinue();

@@ -23,14 +23,11 @@
 
 #include "timer.h"
 #include "xmlerror.h"
-#include "logger.h"
-#include "profile.h"
+#include "logging.h"
 
 Timer::Timer(QObject *parent) :
     Executable(parent)
 {
-    m_profile = 0;
-
     m_interval.setHMS(0, 0, 0);
     m_once = false;
     m_timer = new QTimer(this);
@@ -47,7 +44,7 @@ Timer::Timer(const Timer &rhs, QObject *parent) :
 
     clone(rhs);
 
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(fire()));
+    connect(m_timer, SIGNAL(timeout()), SLOT(fire()));
 }
 
 Timer::~Timer()
@@ -70,18 +67,6 @@ bool Timer::operator ==(const Timer &rhs)
     return Executable::operator ==(rhs);
 }
 
-bool Timer::operator !=(const Timer &rhs)
-{
-    return !(*this == rhs);
-}
-
-Timer Timer::operator =(const Timer &rhs)
-{
-    clone(rhs);
-
-    return *this;
-}
-
 void Timer::clone(const Timer &rhs)
 {
     if (this == &rhs)
@@ -90,8 +75,6 @@ void Timer::clone(const Timer &rhs)
     }
 
     Executable::clone(rhs);
-
-    m_profile = rhs.m_profile;
 
     m_once = rhs.m_once;
 
@@ -103,20 +86,6 @@ void Timer::clone(const Timer &rhs)
 bool Timer::operator <(const Timer &rhs)
 {
     return interval() < rhs.interval();
-}
-
-void Timer::setProfile(Profile *profile)
-{
-    m_profile = profile;
-
-    if (m_profile && enabled())
-    {
-        start();
-    }
-    else
-    {
-        stop();
-    }
 }
 
 void Timer::enable(bool flag)
@@ -158,14 +127,9 @@ void Timer::start()
 {
     Q_ASSERT(m_timer != 0);
 
-    if (!m_profile)
-    {
-        return;
-    }
-
     if (milliseconds() < 1)
     {
-        LOG_WARNING("Attempted to start a timer with no valid interval.", fullName());
+        qCDebug(MUDDER_SCRIPT) << tr("Attempted to start timer with no valid interval:") << fullName();
         return;
     }
 
@@ -180,28 +144,9 @@ void Timer::stop()
 
 void Timer::fire()
 {
-//    if (!m_profile)// || !m_profile->engine())
-//    {
-//        return;
-//    }
+    m_firedCount++;
 
-//    m_firedCount++;
-
-//    Group *previousGroup = m_profile->activeGroup();
-//    Q_ASSERT(previousGroup != 0);
-//    m_profile->setActiveGroup(group());
-
-//    if (!execute(m_profile->engine()))
-//    {
-//        enable(false);
-//    }
-
-//    m_profile->setActiveGroup(previousGroup);
-
-//    if (once())
-//    {
-//        m_profile->deleteTimer(this);
-//    }
+    emit fired(this);
 }
 
 void Timer::toXml(QXmlStreamWriter &xml)
