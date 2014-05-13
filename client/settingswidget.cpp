@@ -65,7 +65,9 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
     }
 
     m_model = new SettingsModel(this);
-    ui->treeView->setModel(m_model);
+    m_proxyModel = new QSortFilterProxyModel(this);
+    m_proxyModel->setSourceModel(m_model);
+    ui->treeView->setModel(m_proxyModel);
 
     m_selection = ui->treeView->selectionModel();
     connect(m_selection, SIGNAL(currentChanged(QModelIndex, QModelIndex)), SLOT(currentChanged(QModelIndex, QModelIndex)));
@@ -234,4 +236,9 @@ void SettingsWidget::selectionChanged(const QItemSelection &selected, const QIte
     {
         m_stackedEditors->setCurrentIndex(0);
     }
+}
+
+void SettingsWidget::on_filter_textChanged(const QString &text)
+{
+    m_proxyModel->setFilterWildcard(text);
 }

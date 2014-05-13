@@ -26,6 +26,7 @@
 
 #include <QMap>
 #include <QItemSelectionModel>
+#include <QSortFilterProxyModel>
 #include <QStackedWidget>
 #include <QWidget>
 
@@ -57,6 +58,7 @@ public slots:
 private slots:
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    void on_filter_textChanged(const QString &text);
 
 signals:
     void settingModified(bool changed, bool valid);
@@ -70,6 +72,7 @@ private:
     QMap<QString, int> m_editors;
 
     SettingsModel *m_model;
+    QSortFilterProxyModel *m_proxyModel;
     QItemSelectionModel *m_selection;
 };
 
