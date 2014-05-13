@@ -271,7 +271,7 @@ void MainWindow::updateActions()
     bool hasConsole = activeConsole() != 0;
     bool modified = hasConsole && activeConsole()->isWindowModified();
 
-    qCDebug(MUDDER_APP) << tr("Updating actions:") << hasConsole << modified;
+    qCDebug(MUDDER_APP) << "Updating actions:" << hasConsole << modified;
 
     ui->actionSave->setEnabled(hasConsole && modified);
     ui->actionSaveAs->setEnabled(hasConsole);

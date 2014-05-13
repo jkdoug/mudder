@@ -105,9 +105,10 @@ void SettingsWidget::addItem(ProfileItem *item)
     item->setName(QString("New Item %1").arg(++counter));
 
     QModelIndex index(m_model->appendItem(item, current));
-    qCDebug(MUDDER_PROFILE) << "Appended new profile item" << item->name() << "@" << index;
     if (index.isValid())
     {
+        qCDebug(MUDDER_PROFILE) << "Appended new profile item" << item->name() << "@" << index;
+
         m_selection->clear();
         m_selection->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
     }
@@ -205,12 +206,6 @@ void SettingsWidget::currentChanged(const QModelIndex &current, const QModelInde
     Q_UNUSED(previous)
 
     qCDebug(MUDDER_PROFILE) << "Current settings index changed:" << current.data();
-
-//    for (int page = 0; page < m_layoutEdit->count(); page++)
-//    {
-//        EditSetting *editor = qobject_cast<EditSetting *>(m_layoutEdit->widget(page));
-//        editor->disconnect(SIGNAL(itemModified(bool, bool)));
-//    }
 
     int index = 0;
     if (current.isValid())

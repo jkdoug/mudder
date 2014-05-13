@@ -518,7 +518,7 @@ void Console::processTimer(Timer *timer)
         return;
     }
 
-    qCDebug(MUDDER_SCRIPT) << tr("Timer fired:") << timer->fullName();
+    qCDebug(MUDDER_SCRIPT) << "Timer fired:" << timer->fullName();
 
     if (!timer->execute(m_engine))
     {
