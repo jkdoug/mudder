@@ -230,6 +230,7 @@ bool Console::send(const QString &cmd, bool show)
     if (show)
     {
         m_document->command(cmd);
+        scrollToBottom();
     }
     return result;
 }
@@ -306,17 +307,13 @@ void Console::commandEntered(const QString &cmd)
                 {
                     m_document->command(c);
                 }
-                else
-                {
-                    ui->input->clear();
-                }
             }
-
-            scrollToBottom();
         }
+
+        scrollToBottom();
     }
 
-    if (m_profile->clearCommandLine())
+    if (m_profile->clearCommandLine() || !m_echoOn)
     {
         ui->input->clear();
     }
