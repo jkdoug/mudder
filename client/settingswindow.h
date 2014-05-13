@@ -32,6 +32,7 @@ class SettingsWindow;
 }
 
 class Group;
+class Profile;
 
 class SettingsWindow : public QMainWindow
 {
@@ -41,11 +42,12 @@ public:
     explicit SettingsWindow(QWidget *parent = 0);
     ~SettingsWindow();
 
-    void setRootGroup(Group *group);
     Group * rootGroup() const;
+    void setProfile(Profile *profile);
 
 public slots:
     void settingModified(bool changed, bool valid);
+    void settingSaved();
 
     void addAccelerator();
     void addAlias();
@@ -59,6 +61,8 @@ private:
     Ui::SettingsWindow *ui;
 
     QToolButton *m_buttonNew;
+
+    Profile *m_profile;
 };
 
 #endif // SETTINGSWINDOW_H

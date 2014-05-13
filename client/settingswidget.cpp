@@ -77,15 +77,15 @@ SettingsWidget::~SettingsWidget()
     delete ui;
 }
 
+Group * SettingsWidget::rootGroup() const
+{
+    return m_model->rootGroup();
+}
+
 void SettingsWidget::setRootGroup(Group *group)
 {
     m_selection->clear();
     m_model->setRootGroup(group);
-}
-
-Group * SettingsWidget::rootGroup() const
-{
-    return m_model->rootGroup();
 }
 
 void SettingsWidget::addItem(ProfileItem *item)
@@ -152,6 +152,10 @@ void SettingsWidget::saveCurrentItem()
     {
         qCWarning(MUDDER_PROFILE) << "Something prevented saving:" << item->tagName() << "->" << item->fullName();
     }
+    else
+    {
+        emit settingSaved();
+    }
 
     emit settingModified(false, saved);
 }
@@ -187,6 +191,10 @@ void SettingsWidget::discardCurrentItem()
     if (!loaded)
     {
         qCWarning(MUDDER_PROFILE) << "Something prevented loading:" << item->tagName() << "->" << item->fullName();
+    }
+    else
+    {
+        emit settingDiscarded();
     }
 
     emit settingModified(false, loaded);

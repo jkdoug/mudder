@@ -23,7 +23,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "lua.h"
+#include "lua.hpp"
 #include "logging.h"
 #include "codeeditorwindow.h"
 #include "coreapplication.h"
@@ -271,6 +271,8 @@ void MainWindow::updateActions()
     bool hasConsole = activeConsole() != 0;
     bool modified = hasConsole && activeConsole()->isWindowModified();
 
+    qCDebug(MUDDER_APP) << tr("Updating actions:") << hasConsole << modified;
+
     ui->actionSave->setEnabled(hasConsole && modified);
     ui->actionSaveAs->setEnabled(hasConsole);
     ui->actionClose->setEnabled(hasConsole);
@@ -307,11 +309,11 @@ void MainWindow::updateActions()
             ui->actionConnect->setIcon(QIcon(":/icons/disconnected"));
         }
 
-        m_settings->setRootGroup(console->profile()->rootGroup());
+        m_settings->setProfile(console->profile());
     }
     else
     {
-        m_settings->setRootGroup(0);
+        m_settings->setProfile(0);
     }
 }
 
@@ -360,8 +362,6 @@ void MainWindow::openConsole(const QString &fileName)
         SETTINGS->addRecentFile(console->fileName());
 
         addConsole(console);
-
-        m_settings->setRootGroup(console->profile()->rootGroup());
     }
 }
 
@@ -369,12 +369,17 @@ void MainWindow::saveConsole()
 {
     if (activeConsole())
     {
-        activeConsole()->save();
+        if (activeConsole()->save())
+        {
+            updateActions();
+        }
     }
 }
 
 void MainWindow::addConsole(Console *console)
 {
+    m_settings->setProfile(console->profile());
+
     connect(console, SIGNAL(connectionStatusChanged(bool)), SLOT(updateActions()));
     connect(console, SIGNAL(modified()), SLOT(updateActions()));
 

@@ -45,8 +45,8 @@ public:
     explicit SettingsWidget(QWidget *parent = 0);
     ~SettingsWidget();
 
-    void setRootGroup(Group *group);
     Group * rootGroup() const;
+    void setRootGroup(Group *group);
     void addItem(ProfileItem *item);
 
 public slots:
@@ -60,6 +60,8 @@ private slots:
 
 signals:
     void settingModified(bool changed, bool valid);
+    void settingSaved();
+    void settingDiscarded();
 
 private:
     Ui::SettingsWidget *ui;

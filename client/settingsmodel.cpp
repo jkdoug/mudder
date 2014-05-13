@@ -24,7 +24,6 @@
 #include <QIcon>
 #include "settingsmodel.h"
 #include "group.h"
-#include "alias.h"
 
 SettingsModel::SettingsModel(QObject *parent) :
     QAbstractItemModel(parent),
@@ -44,7 +43,7 @@ void SettingsModel::setRootGroup(Group *group)
 
 QModelIndex SettingsModel::index(int row, int column, const QModelIndex &parent) const
 {
-    if (!m_rootGroup || row < 0 || column < 0)
+    if (!rootGroup() || row < 0 || column < 0)
     {
         return QModelIndex();
     }
@@ -91,7 +90,7 @@ QModelIndex SettingsModel::parent(const QModelIndex &child) const
 
 int SettingsModel::rowCount(const QModelIndex &parent) const
 {
-    if (!m_rootGroup || parent.column() > 0)
+    if (!rootGroup() || parent.column() > 0)
     {
         return 0;
     }
@@ -172,7 +171,7 @@ QVariant SettingsModel::headerData(int section, Qt::Orientation orientation, int
 
 QModelIndex SettingsModel::appendItem(ProfileItem *item, const QModelIndex &parent)
 {
-    if (!m_rootGroup || !parent.isValid())
+    if (!rootGroup() || !parent.isValid())
     {
         return QModelIndex();
     }
@@ -198,5 +197,5 @@ ProfileItem * SettingsModel::itemFromIndex(const QModelIndex &index) const
         return static_cast<ProfileItem *>(index.internalPointer());
     }
 
-    return m_rootGroup;
+    return rootGroup();
 }
