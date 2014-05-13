@@ -171,7 +171,7 @@ QVariant SettingsModel::headerData(int section, Qt::Orientation orientation, int
 
 QModelIndex SettingsModel::appendItem(ProfileItem *item, const QModelIndex &parent)
 {
-    if (!rootGroup() || !parent.isValid())
+    if (!rootGroup())
     {
         return QModelIndex();
     }
