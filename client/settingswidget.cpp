@@ -95,7 +95,7 @@ void SettingsWidget::addItem(ProfileItem *item)
     QModelIndex current(m_selection->currentIndex());
     if (current.isValid())
     {
-        ProfileItem *parentItem = static_cast<ProfileItem *>(current.internalPointer());
+        ProfileItem *parentItem = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
         Group *parentGroup = qobject_cast<Group *>(parentItem);
         if (!parentGroup)
         {
@@ -106,32 +106,30 @@ void SettingsWidget::addItem(ProfileItem *item)
     static quint32 counter = 0;
     item->setName(QString("New Item %1").arg(++counter));
 
-    QModelIndex index(m_model->appendItem(item, current));
+    QModelIndex index(m_model->appendItem(item, sourceIndex(current)));
     if (index.isValid())
     {
         qCDebug(MUDDER_PROFILE) << "Appended new profile item" << item->name() << "@" << index;
 
         m_selection->clear();
-        m_selection->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
+        m_selection->setCurrentIndex(proxyIndex(index), QItemSelectionModel::SelectCurrent);
     }
 }
 
 void SettingsWidget::updateCurrentItem(bool changed, bool valid)
 {
-    qCDebug(MUDDER_PROFILE) << "Update current item on settings widget:" << sender()->metaObject()->className() << changed << valid;
-
     emit settingModified(changed, valid);
 }
 
 void SettingsWidget::saveCurrentItem()
 {
-    QModelIndex current(m_selection->currentIndex());
+    QModelIndex current(sourceIndex(m_selection->currentIndex()));
     if (!current.isValid())
     {
         return;
     }
 
-    ProfileItem *item = static_cast<ProfileItem *>(current.internalPointer());
+    ProfileItem *item = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
     Q_ASSERT(item != 0);
     if (!item)
     {
@@ -171,7 +169,7 @@ void SettingsWidget::discardCurrentItem()
         return;
     }
 
-    ProfileItem *item = static_cast<ProfileItem *>(current.internalPointer());
+    ProfileItem *item = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
     Q_ASSERT(item != 0);
     if (!item)
     {
@@ -207,12 +205,12 @@ void SettingsWidget::currentChanged(const QModelIndex &current, const QModelInde
 {
     Q_UNUSED(previous)
 
-    qCDebug(MUDDER_PROFILE) << "Current settings index changed:" << current.data();
+    qCDebug(MUDDER_PROFILE) << "Current settings index changed:" << current;
 
     int index = 0;
     if (current.isValid())
     {
-        ProfileItem *item = static_cast<ProfileItem *>(current.internalPointer());
+        ProfileItem *item = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
         Q_ASSERT(m_editors.contains(item->tagName()));
 
         index = m_editors[item->tagName()];
@@ -230,8 +228,6 @@ void SettingsWidget::selectionChanged(const QItemSelection &selected, const QIte
 {
     Q_UNUSED(deselected)
 
-    qCDebug(MUDDER_PROFILE) << "Settings selection changed:" << selected.indexes() << deselected.indexes();
-
     if (selected.isEmpty())
     {
         m_stackedEditors->setCurrentIndex(0);
@@ -241,4 +237,24 @@ void SettingsWidget::selectionChanged(const QItemSelection &selected, const QIte
 void SettingsWidget::on_filter_textChanged(const QString &text)
 {
     m_proxyModel->setFilterWildcard(text);
+}
+
+QModelIndex SettingsWidget::proxyIndex(const QModelIndex &modelIndex)
+{
+    if (modelIndex.model() == m_model)
+    {
+        return m_proxyModel->mapFromSource(modelIndex);
+    }
+
+    return modelIndex;
+}
+
+QModelIndex SettingsWidget::sourceIndex(const QModelIndex &modelIndex)
+{
+    if (modelIndex.model() == m_proxyModel)
+    {
+        return m_proxyModel->mapToSource(modelIndex);
+    }
+
+    return modelIndex;
 }

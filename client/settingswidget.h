@@ -26,6 +26,7 @@
 
 #include <QMap>
 #include <QItemSelectionModel>
+#include <QModelIndex>
 #include <QSortFilterProxyModel>
 #include <QStackedWidget>
 #include <QWidget>
@@ -64,6 +65,10 @@ signals:
     void settingModified(bool changed, bool valid);
     void settingSaved();
     void settingDiscarded();
+
+protected:
+    QModelIndex proxyIndex(const QModelIndex &modelIndex);
+    QModelIndex sourceIndex(const QModelIndex &modelIndex);
 
 private:
     Ui::SettingsWidget *ui;
