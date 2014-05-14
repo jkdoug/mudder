@@ -44,6 +44,7 @@ public:
     explicit Profile(QObject *parent = 0);
 
     Group * rootGroup() const { return m_root; }
+    Group * findGroup(const QString &path);
     Group * activeGroup() const { return m_activeGroup?m_activeGroup:m_root; }
     void setActiveGroup(Group *group);
 
@@ -98,6 +99,8 @@ protected:
     void readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 private:
+    Group * findGroup(const QStringList &path, Group *parent);
+
     Group *m_root;
     Group *m_activeGroup;
 

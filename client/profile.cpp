@@ -30,6 +30,7 @@
 #include "profileitemfactory.h"
 #include "xmlerror.h"
 #include <QDateTime>
+#include <QDir>
 
 Profile::Profile(QObject *parent) :
     QObject(parent)
@@ -60,6 +61,42 @@ Profile::Profile(QObject *parent) :
     outputFont.setStyleHint(QFont::TypeWriter);
     outputFont.setStyleStrategy(QFont::PreferAntialias);
     m_options.insert("outputFont", outputFont);
+}
+
+Group * Profile::findGroup(const QString &path)
+{
+    if (path.isEmpty())
+    {
+        return activeGroup();
+    }
+
+    QString cleanPath(QDir::cleanPath(path));
+    if (cleanPath.at(0) == '/')
+    {
+        return findGroup(cleanPath.mid(1).split('/', QString::SkipEmptyParts), rootGroup());
+    }
+
+    return findGroup(cleanPath.split('/', QString::SkipEmptyParts), activeGroup());
+}
+
+Group * Profile::findGroup(const QStringList &path, Group *parent)
+{
+    if (path.isEmpty())
+    {
+        return parent;
+    }
+
+    QString name(path.first());
+    QList<Group *> groups = parent->sortedGroups(false);
+    foreach (Group *group, groups)
+    {
+        if (group->name().compare(name, Qt::CaseInsensitive) == 0)
+        {
+            return findGroup(path.mid(1), group);
+        }
+    }
+
+    return 0;
 }
 
 void Profile::setActiveGroup(Group *group)
