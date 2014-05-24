@@ -6,8 +6,6 @@
 
 QT -= core gui
 
-CONFIG += staticlib
-
 TARGET = lua52
 TEMPLATE = lib
 

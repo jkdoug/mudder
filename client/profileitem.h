@@ -44,13 +44,13 @@ class ProfileItem : public QObject
 
 public:
     virtual const QString & name() const { return m_name; }
-    void setName(const QString &name) { m_name = name; }
+    void setName(const QString &name);
     virtual QString fullName() const;
     virtual bool enabled() const;
     bool enabledFlag() const { return m_enabled; }
-    virtual void enable(bool flag = true) { m_enabled = flag; }
+    virtual void enable(bool flag = true);
     virtual int sequence() const { return m_sequence; }
-    void setSequence(int sequence) { m_sequence = sequence; }
+    void setSequence(int sequence);
     Group * group() const;
 
     virtual QIcon icon() const { return QIcon(); }
@@ -61,6 +61,9 @@ public:
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
     static bool validateName(const QString &name, bool allowEmpty = false);
+
+signals:
+    void modified(ProfileItem *item);
 
 protected:
     explicit ProfileItem(QObject *parent = 0);
@@ -77,7 +80,7 @@ protected:
 
     QString unnamed();
 
-private:
+protected:
     QString m_name;
 
     bool m_enabled;

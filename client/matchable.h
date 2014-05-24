@@ -47,7 +47,7 @@ public:
     const QString & lineMatched() const { return m_lineMatched; }
     const QRegularExpression & regex() const { return m_regex; }
     QString pattern() const { return m_regex.pattern(); }
-    void setPattern(const QString &pattern) { m_regex.setPattern(pattern); }
+    void setPattern(const QString &pattern);
     QRegularExpressionMatch * lastMatch() const { return m_match; }
     int matchStart() const;
     int matchEnd() const;
@@ -55,7 +55,7 @@ public:
     int matchCount() const { return m_matchCount; }
     int evalCount() const { return m_evalCount; }
     bool keepEvaluating() const { return m_keepEvaluating; }
-    void setKeepEvaluating(bool flag) { m_keepEvaluating = flag; }
+    void setKeepEvaluating(bool flag);
     bool caseSensitive() const { return !m_regex.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption); }
     void setCaseSensitive(bool flag);
 

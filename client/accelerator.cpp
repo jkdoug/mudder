@@ -79,6 +79,15 @@ bool Accelerator::lessSequence(const Accelerator *lhs, const Accelerator *rhs)
     return lhs->value().compare(rhs->value()) < 0;
 }
 
+void Accelerator::setKey(const QKeySequence &key)
+{
+    if (key != m_key)
+    {
+        m_key = key;
+        emit modified(this);
+    }
+}
+
 void Accelerator::toXml(QXmlStreamWriter &xml)
 {
     xml.writeAttribute("key", key().toString());

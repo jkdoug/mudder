@@ -111,6 +111,8 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     client.qrc
 
+win32-g++: QMAKE_CXXFLAGS += -Wno-ignored-qualifiers -Wno-switch
+
 INCLUDEPATH += $$PWD/../luabridge
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../lua52/release/ -llua52
@@ -119,10 +121,6 @@ else:unix: LIBS += -L$$OUT_PWD/../lua52/ -llua52
 
 INCLUDEPATH += $$PWD/../lua52/src
 DEPENDPATH += $$PWD/../lua52/src
-
-win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../lua52/release/lua52.lib
-else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../lua52/debug/lua52.lib
-else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../lua52/liblua52.a
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../core/release/ -lcore
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../core/debug/ -lcore

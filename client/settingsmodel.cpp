@@ -24,6 +24,7 @@
 #include <QIcon>
 #include "settingsmodel.h"
 #include "group.h"
+#include "logging.h"
 
 SettingsModel::SettingsModel(QObject *parent) :
     QAbstractItemModel(parent),
@@ -38,6 +39,13 @@ void SettingsModel::setRootGroup(Group *group)
         beginResetModel();
         m_rootGroup = group;
         endResetModel();
+
+        if (m_rootGroup)
+        {
+            connect(m_rootGroup, SIGNAL(modified(ProfileItem*)), SLOT(updateSetting(ProfileItem*)));
+            connect(m_rootGroup, SIGNAL(settingAdded(ProfileItem*)), SLOT(addSetting(ProfileItem*)));
+            connect(m_rootGroup, SIGNAL(settingRemoved(ProfileItem*)), SLOT(removeSetting(ProfileItem*)));
+        }
     }
 }
 
@@ -190,6 +198,29 @@ QModelIndex SettingsModel::appendItem(ProfileItem *item, const QModelIndex &pare
     return index(group->items().count() - 1, 0, parent);
 }
 
+void SettingsModel::updateSetting(ProfileItem *item)
+{
+    // TODO: refresh model because something changed (use real index values)
+
+    qCDebug(MUDDER_PROFILE) << "Settings model notified of updated setting:" << item->fullName();
+
+    emit dataChanged(QModelIndex(), QModelIndex());
+}
+
+void SettingsModel::addSetting(ProfileItem *item)
+{
+    // TODO: add the new item to its parent group's branch
+
+    qCDebug(MUDDER_PROFILE) << "Settings model notified of added setting:" << item->fullName();
+}
+
+void SettingsModel::removeSetting(ProfileItem *item)
+{
+    // TODO: remove the item from its parent group's branch
+
+    qCDebug(MUDDER_PROFILE) << "Settings model notified of removed setting:" << item->fullName();
+}
+
 ProfileItem * SettingsModel::itemFromIndex(const QModelIndex &index) const
 {
     if (index.isValid())
@@ -198,4 +229,16 @@ ProfileItem * SettingsModel::itemFromIndex(const QModelIndex &index) const
     }
 
     return rootGroup();
+}
+
+QModelIndex SettingsModel::indexFromItem(ProfileItem *item) const
+{
+    // TODO: find the item and return its model index
+
+    if (item == rootGroup())
+    {
+        return QModelIndex();
+    }
+
+    return QModelIndex();
 }

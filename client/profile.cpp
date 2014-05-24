@@ -26,8 +26,10 @@
 #include "coreapplication.h"
 #include "group.h"
 #include "timer.h"
+#include "variable.h"
 #include "profileitem.h"
 #include "profileitemfactory.h"
+#include "settingsmodel.h"
 #include "xmlerror.h"
 #include <QDateTime>
 #include <QDir>
@@ -37,6 +39,9 @@ Profile::Profile(QObject *parent) :
 {
     m_root = new Group(0);
     m_activeGroup = m_root;
+    connect(m_root, SIGNAL(modified(ProfileItem*)), SLOT(updateSetting()));
+    connect(m_root, SIGNAL(settingAdded(ProfileItem*)), SLOT(addSetting(ProfileItem*)));
+    connect(m_root, SIGNAL(settingRemoved(ProfileItem*)), SLOT(removeSetting(ProfileItem*)));
 
     m_options.insert("name", QString());
 
@@ -63,14 +68,44 @@ Profile::Profile(QObject *parent) :
     m_options.insert("outputFont", outputFont);
 }
 
-Group * Profile::findGroup(const QString &path)
+template <class C>
+C * Profile::findItem(const QString &name) const
 {
-    if (path.isEmpty())
+    QString itemName(name.section('/', -1));
+    qCDebug(MUDDER_PROFILE) << "itemName:" << itemName;
+    if (itemName.isEmpty())
+    {
+        return 0;
+    }
+
+    QString groupName(name.left(name.length() - itemName.length() - 1));
+    qCDebug(MUDDER_PROFILE) << "groupName:" << groupName;
+    Group *group = findGroup(groupName);
+    if (!group)
+    {
+        return 0;
+    }
+
+    foreach (ProfileItem *item, group->items())
+    {
+        C *sub = qobject_cast<C *>(item);
+        if (sub && item->name().compare(itemName, Qt::CaseInsensitive) == 0)
+        {
+            return sub;
+        }
+    }
+
+    return 0;
+}
+
+Group * Profile::findGroup(const QString &path) const
+{
+    QString cleanPath(QDir::cleanPath(path));
+    if (cleanPath.isEmpty())
     {
         return activeGroup();
     }
 
-    QString cleanPath(QDir::cleanPath(path));
     if (cleanPath.at(0) == '/')
     {
         return findGroup(cleanPath.mid(1).split('/', QString::SkipEmptyParts), rootGroup());
@@ -79,7 +114,7 @@ Group * Profile::findGroup(const QString &path)
     return findGroup(cleanPath.split('/', QString::SkipEmptyParts), activeGroup());
 }
 
-Group * Profile::findGroup(const QStringList &path, Group *parent)
+Group * Profile::findGroup(const QStringList &path, Group *parent) const
 {
     if (path.isEmpty())
     {
@@ -87,7 +122,7 @@ Group * Profile::findGroup(const QStringList &path, Group *parent)
     }
 
     QString name(path.first());
-    QList<Group *> groups = parent->sortedGroups(false);
+    QList<Group *> groups = parent->sortedGroups(false, false);
     foreach (Group *group, groups)
     {
         if (group->name().compare(name, Qt::CaseInsensitive) == 0)
@@ -99,9 +134,158 @@ Group * Profile::findGroup(const QStringList &path, Group *parent)
     return 0;
 }
 
+Group * Profile::createGroup(const QString &path)
+{
+    QString cleanPath(QDir::cleanPath(path));
+    if (cleanPath.isEmpty())
+    {
+        return activeGroup();
+    }
+
+    if (cleanPath.at(0) == '/')
+    {
+        return createGroup(cleanPath.mid(1).split('/', QString::SkipEmptyParts), rootGroup());
+    }
+
+    return createGroup(cleanPath.split('/', QString::SkipEmptyParts), activeGroup());
+}
+
+Group * Profile::createGroup(const QStringList &path, Group *parent)
+{
+    if (path.isEmpty())
+    {
+        return parent;
+    }
+
+    QString name(path.first());
+    QList<Group *> groups = parent->sortedGroups(false, false);
+    foreach (Group *group, groups)
+    {
+        if (group->name().compare(name, Qt::CaseInsensitive) == 0)
+        {
+            return createGroup(path.mid(1), group);
+        }
+    }
+
+    if (!Group::validateName(name))
+    {
+        return 0;
+    }
+
+    Group *created = new Group;
+    created->setName(name);
+    parent->addItem(created);
+
+    return createGroup(path.mid(1), created);
+}
+
 void Profile::setActiveGroup(Group *group)
 {
     m_activeGroup = group?group:m_root;
+}
+
+QVariant Profile::getVariable(const QString &name)
+{
+    QString varName(name.section('/', -1));
+    qCDebug(MUDDER_PROFILE) << "GetVariable varName:" << varName;
+    if (varName.isEmpty())
+    {
+        return QVariant();
+    }
+
+    QString groupName(name.left(qMax(name.length() - varName.length(), 0)));
+    qCDebug(MUDDER_PROFILE) << "GetVariable groupName:" << groupName;
+    Group *group = findGroup(groupName);
+    if (!group)
+    {
+        return QVariant();
+    }
+
+    foreach (Variable *var, group->sortedVariables(groupName.isEmpty()))
+    {
+        if (var->name().compare(varName, Qt::CaseInsensitive) == 0)
+        {
+            qCDebug(MUDDER_PROFILE) << "GetVariable found:" << var->fullName();
+            return var->contents();
+        }
+    }
+
+    return QVariant();
+}
+
+bool Profile::setVariable(const QString &name, const QVariant &val)
+{
+    if (!val.isValid())
+    {
+        return deleteVariable(name);
+    }
+
+    QString varName(name.section('/', -1));
+    qCDebug(MUDDER_PROFILE) << "SetVariable varName:" << varName;
+    if (varName.isEmpty())
+    {
+        return false;
+    }
+
+    QString groupName(name.left(qMax(name.length() - varName.length(), 0)));
+    qCDebug(MUDDER_PROFILE) << "SetVariable groupName:" << groupName;
+    Group *group = createGroup(groupName);
+    if (!group)
+    {
+        return false;
+    }
+
+    foreach (Variable *var, group->sortedVariables(groupName.isEmpty()))
+    {
+        if (var->name().compare(varName, Qt::CaseInsensitive) == 0)
+        {
+            qCDebug(MUDDER_PROFILE) << "SetVariable found:" << var->fullName();
+            var->setContents(val);
+            return true;
+        }
+    }
+
+    if (!Variable::validateName(varName))
+    {
+        return false;
+    }
+
+    Variable *created = new Variable;
+    created->setName(varName);
+    created->setContents(val);
+    group->addItem(created);
+
+    qCDebug(MUDDER_PROFILE) << "SetVariable created:" << created->fullName();
+
+    return true;
+}
+
+bool Profile::deleteVariable(const QString &name)
+{
+    QString varName(name.section('/', -1));
+    qCDebug(MUDDER_PROFILE) << "DeleteVariable varName:" << varName;
+    if (varName.isEmpty())
+    {
+        return false;
+    }
+
+    QString groupName(name.left(qMax(name.length() - varName.length(), 0)));
+    qCDebug(MUDDER_PROFILE) << "DeleteVariable groupName:" << groupName;
+    Group *group = findGroup(groupName);
+    if (!group)
+    {
+        return false;
+    }
+
+    foreach (Variable *var, group->sortedVariables(groupName.isEmpty()))
+    {
+        if (var->name().compare(varName, Qt::CaseInsensitive) == 0)
+        {
+            return group->removeItem(var);
+        }
+    }
+
+    return false;
 }
 
 void Profile::setOptions(const QVariantMap &options)
@@ -216,6 +400,21 @@ void Profile::changeOption(const QString &key, const QVariant &val)
         m_options.insert(key, val);
         emit optionChanged(key, val);
     }
+}
+
+void Profile::updateSetting()
+{
+    emit settingsChanged();
+}
+
+void Profile::addSetting(ProfileItem *item)
+{
+    emit settingAdded(item);
+}
+
+void Profile::removeSetting(ProfileItem *item)
+{
+    emit settingRemoved(item);
 }
 
 void Profile::handleTimer(Timer *timer)

@@ -99,6 +99,15 @@ void Matchable::clone(const Matchable &rhs)
     m_keepEvaluating = rhs.m_keepEvaluating;
 }
 
+void Matchable::setPattern(const QString &pattern)
+{
+    if (pattern != m_regex.pattern())
+    {
+        m_regex.setPattern(pattern);
+        emit modified(this);
+    }
+}
+
 int Matchable::matchStart() const
 {
     if (!m_match)
@@ -119,9 +128,22 @@ int Matchable::matchEnd() const
     return m_match->capturedEnd();
 }
 
+void Matchable::setKeepEvaluating(bool flag)
+{
+    if (flag != m_keepEvaluating)
+    {
+        m_keepEvaluating = flag;
+        emit modified(this);
+    }
+}
+
 void Matchable::setCaseSensitive(bool flag)
 {
-    // Alter only the case sensitivity flag, leaving other options intact
+    if (flag == caseSensitive())
+    {
+        return;
+    }
+
     QRegularExpression::PatternOptions opts = m_regex.patternOptions();
     if (flag)
     {
@@ -132,6 +154,8 @@ void Matchable::setCaseSensitive(bool flag)
         opts |= QRegularExpression::CaseInsensitiveOption;
     }
     m_regex.setPatternOptions(opts);
+
+    emit modified(this);
 }
 
 bool Matchable::match(const QString &str, int offset)

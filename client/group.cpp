@@ -29,7 +29,6 @@
 #include "timer.h"
 #include "trigger.h"
 #include "variable.h"
-#include <QRegularExpression>
 
 Group::Group(QObject *parent) :
     ProfileItem(parent)
@@ -87,11 +86,15 @@ void Group::addItem(ProfileItem *item)
     item->setParent(this);
     m_items << item;
 
+    connect(item, SIGNAL(modified(ProfileItem *)), SLOT(childModified(ProfileItem *)));
+
     Group *group = qobject_cast<Group *>(item);
     if (group)
     {
         m_groups << group;
     }
+
+    emit settingAdded(item);
 }
 
 bool Group::removeItem(ProfileItem *item)
@@ -102,7 +105,11 @@ bool Group::removeItem(ProfileItem *item)
         m_groups.removeOne(group);
     }
 
-    return m_items.removeOne(item);
+    bool result = m_items.removeOne(item);
+
+    emit settingRemoved(item);
+
+    return result;
 }
 
 
@@ -137,12 +144,16 @@ void Group::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
         }
         errors << err;
 
-        static int unnamed = 0;
-        name = QString("!unnamed%1").arg(++unnamed);
+        name = unnamed();
     }
     setName(name);
 
     enable(xml.attributes().value("enabled").compare("n", Qt::CaseInsensitive) != 0);
+}
+
+void Group::childModified(ProfileItem *item)
+{
+    emit modified(item);
 }
 
 template<class C>

@@ -64,14 +64,9 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
         m_editors.insert(editorType, index);
     }
 
-    m_model = new SettingsModel(this);
-    m_proxyModel = new QSortFilterProxyModel(this);
-    m_proxyModel->setSourceModel(m_model);
-    ui->treeView->setModel(m_proxyModel);
-
-    m_selection = ui->treeView->selectionModel();
-    connect(m_selection, SIGNAL(currentChanged(QModelIndex, QModelIndex)), SLOT(currentChanged(QModelIndex, QModelIndex)));
-    connect(m_selection, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), SLOT(selectionChanged(QItemSelection, QItemSelection)));
+//    m_selection = ui->treeView->selectionModel();
+//    connect(m_selection, SIGNAL(currentChanged(QModelIndex, QModelIndex)), SLOT(currentChanged(QModelIndex, QModelIndex)));
+//    connect(m_selection, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), SLOT(selectionChanged(QItemSelection, QItemSelection)));
 }
 
 SettingsWidget::~SettingsWidget()
@@ -79,41 +74,41 @@ SettingsWidget::~SettingsWidget()
     delete ui;
 }
 
-Group * SettingsWidget::rootGroup() const
+void SettingsWidget::setModel(SettingsModel *model)
 {
-    return m_model->rootGroup();
+    ui->treeView->setModel(model);
 }
 
-void SettingsWidget::setRootGroup(Group *group)
+SettingsModel * SettingsWidget::model() const
 {
-    m_selection->clear();
-    m_model->setRootGroup(group);
+    return qobject_cast<SettingsModel*>(ui->treeView->model());
 }
 
 void SettingsWidget::addItem(ProfileItem *item)
 {
-    QModelIndex current(m_selection->currentIndex());
-    if (current.isValid())
-    {
-        ProfileItem *parentItem = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
-        Group *parentGroup = qobject_cast<Group *>(parentItem);
-        if (!parentGroup)
-        {
-            current = current.parent();
-        }
-    }
+//    QModelIndex current(m_selection->currentIndex());
+//    if (current.isValid())
+//    {
+//        ProfileItem *parentItem = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
+//        Group *parentGroup = qobject_cast<Group *>(parentItem);
+//        if (!parentGroup)
+//        {
+//            current = current.parent();
+//        }
+//    }
 
-    static quint32 counter = 0;
-    item->setName(QString("New Item %1").arg(++counter));
+//    // TODO: smarter naming scheme to try and avoid duplicates
+//    static quint32 counter = 0;
+//    item->setName(QString("New Item %1").arg(++counter));
 
-    QModelIndex index(m_model->appendItem(item, sourceIndex(current)));
-    if (index.isValid())
-    {
-        qCDebug(MUDDER_PROFILE) << "Appended new profile item" << item->name() << "@" << index;
+//    QModelIndex index(m_model->appendItem(item, sourceIndex(current)));
+//    if (index.isValid())
+//    {
+//        qCDebug(MUDDER_PROFILE) << "Appended new profile item" << item->name() << "@" << index;
 
-        m_selection->clear();
-        m_selection->setCurrentIndex(proxyIndex(index), QItemSelectionModel::SelectCurrent);
-    }
+//        m_selection->clear();
+//        m_selection->setCurrentIndex(proxyIndex(index), QItemSelectionModel::SelectCurrent);
+//    }
 }
 
 void SettingsWidget::updateCurrentItem(bool changed, bool valid)
@@ -123,82 +118,82 @@ void SettingsWidget::updateCurrentItem(bool changed, bool valid)
 
 void SettingsWidget::saveCurrentItem()
 {
-    QModelIndex current(sourceIndex(m_selection->currentIndex()));
-    if (!current.isValid())
-    {
-        return;
-    }
+//    QModelIndex current(sourceIndex(m_selection->currentIndex()));
+//    if (!current.isValid())
+//    {
+//        return;
+//    }
 
-    ProfileItem *item = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
-    Q_ASSERT(item != 0);
-    if (!item)
-    {
-        qCWarning(MUDDER_PROFILE) << "Attempted to save an invalid profile item.";
-        return;
-    }
+//    ProfileItem *item = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
+//    Q_ASSERT(item != 0);
+//    if (!item)
+//    {
+//        qCWarning(MUDDER_PROFILE) << "Attempted to save an invalid profile item.";
+//        return;
+//    }
 
-    Q_ASSERT(m_editors.contains(item->tagName()));
-    if (!m_editors.contains(item->tagName()))
-    {
-        qCWarning(MUDDER_PROFILE) << "No editor found:" << item->tagName();
-        return;
-    }
+//    Q_ASSERT(m_editors.contains(item->tagName()));
+//    if (!m_editors.contains(item->tagName()))
+//    {
+//        qCWarning(MUDDER_PROFILE) << "No editor found:" << item->tagName();
+//        return;
+//    }
 
-    int index = m_editors[item->tagName()];
-    EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
-    Q_ASSERT(editor != 0);
+//    int index = m_editors[item->tagName()];
+//    EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
+//    Q_ASSERT(editor != 0);
 
-    bool saved = editor->save(item);
-    if (!saved)
-    {
-        qCWarning(MUDDER_PROFILE) << "Something prevented saving:" << item->tagName() << "->" << item->fullName();
-    }
-    else
-    {
-        emit settingSaved();
-    }
+//    bool saved = editor->save(item);
+//    if (!saved)
+//    {
+//        qCWarning(MUDDER_PROFILE) << "Something prevented saving:" << item->tagName() << "->" << item->fullName();
+//    }
+//    else
+//    {
+//        emit settingSaved();
+//    }
 
-    emit settingModified(false, saved);
+//    emit settingModified(false, saved);
 }
 
 void SettingsWidget::discardCurrentItem()
 {
-    QModelIndex current(m_selection->currentIndex());
-    if (!current.isValid())
-    {
-        return;
-    }
+//    QModelIndex current(m_selection->currentIndex());
+//    if (!current.isValid())
+//    {
+//        return;
+//    }
 
-    ProfileItem *item = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
-    Q_ASSERT(item != 0);
-    if (!item)
-    {
-        qCWarning(MUDDER_PROFILE) << "Attempted to discard an invalid profile item";
-        return;
-    }
+//    ProfileItem *item = static_cast<ProfileItem *>(sourceIndex(current).internalPointer());
+//    Q_ASSERT(item != 0);
+//    if (!item)
+//    {
+//        qCWarning(MUDDER_PROFILE) << "Attempted to discard an invalid profile item";
+//        return;
+//    }
 
-    Q_ASSERT(m_editors.contains(item->tagName()));
-    if (!m_editors.contains(item->tagName()))
-    {
-        qCWarning(MUDDER_PROFILE) << "No editor found:" << item->tagName();
-        return;
-    }
+//    Q_ASSERT(m_editors.contains(item->tagName()));
+//    if (!m_editors.contains(item->tagName()))
+//    {
+//        qCWarning(MUDDER_PROFILE) << "No editor found:" << item->tagName();
+//        return;
+//    }
 
-    int index = m_editors[item->tagName()];
-    EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
-    Q_ASSERT(editor != 0);
+//    int index = m_editors[item->tagName()];
+//    EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
+//    Q_ASSERT(editor != 0);
 
-    bool loaded = editor->load(item);
-    if (!loaded)
-    {
-        qCWarning(MUDDER_PROFILE) << "Something prevented loading:" << item->tagName() << "->" << item->fullName();
-    }
-    else
-    {
-        emit settingDiscarded();
-    }
+//    bool loaded = editor->load(item);
+//    if (!loaded)
+//    {
+//        qCWarning(MUDDER_PROFILE) << "Something prevented loading:" << item->tagName() << "->" << item->fullName();
+//    }
+//    else
+//    {
+//        emit settingDiscarded();
+//    }
 
-    emit settingModified(false, loaded);
+//    emit settingModified(false, loaded);
 }
 
 void SettingsWidget::currentChanged(const QModelIndex &current, const QModelIndex &previous)
@@ -236,25 +231,25 @@ void SettingsWidget::selectionChanged(const QItemSelection &selected, const QIte
 
 void SettingsWidget::on_filter_textChanged(const QString &text)
 {
-    m_proxyModel->setFilterWildcard(text);
+//    m_proxyModel->setFilterWildcard(text);
 }
 
 QModelIndex SettingsWidget::proxyIndex(const QModelIndex &modelIndex)
 {
-    if (modelIndex.model() == m_model)
-    {
-        return m_proxyModel->mapFromSource(modelIndex);
-    }
+//    if (modelIndex.model() == m_model)
+//    {
+//        return m_proxyModel->mapFromSource(modelIndex);
+//    }
 
     return modelIndex;
 }
 
 QModelIndex SettingsWidget::sourceIndex(const QModelIndex &modelIndex)
 {
-    if (modelIndex.model() == m_proxyModel)
-    {
-        return m_proxyModel->mapToSource(modelIndex);
-    }
+//    if (modelIndex.model() == m_proxyModel)
+//    {
+//        return m_proxyModel->mapToSource(modelIndex);
+//    }
 
     return modelIndex;
 }

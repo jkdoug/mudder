@@ -35,7 +35,7 @@ public:
     explicit Event(QObject *parent = 0);
 
     const QString & title() const { return m_title; }
-    void setTitle(const QString &title) { m_title = title; }
+    void setTitle(const QString &title);
 
     const QDateTime & lastMatched() const { return m_lastMatched; }
     int matchCount() const { return m_matchCount; }

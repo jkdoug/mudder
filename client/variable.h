@@ -48,7 +48,7 @@ public:
     bool operator <(const Variable &rhs);
 
     const QVariant & contents() const { return m_contents; }
-    void setContents(const QVariant &contents) { m_contents = contents; }
+    void setContents(const QVariant &contents);
     QString typeName();
 
     virtual QIcon icon() const { return QIcon(":/icons/variable"); }

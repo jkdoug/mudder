@@ -47,7 +47,6 @@ public:
 
 public slots:
     void settingModified(bool changed, bool valid);
-    void settingSaved();
 
     void addAccelerator();
     void addAlias();

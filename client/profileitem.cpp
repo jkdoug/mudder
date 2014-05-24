@@ -39,6 +39,33 @@ ProfileItem::ProfileItem(const ProfileItem &rhs, QObject *parent) :
     clone(rhs);
 }
 
+void ProfileItem::setName(const QString &name)
+{
+    if (name != m_name)
+    {
+        m_name = name;
+        emit modified(this);
+    }
+}
+
+void ProfileItem::setSequence(int sequence)
+{
+    if (sequence != m_sequence)
+    {
+        m_sequence = sequence;
+        emit modified(this);
+    }
+}
+
+void ProfileItem::enable(bool flag)
+{
+    if (flag != m_enabled)
+    {
+        m_enabled = flag;
+        emit modified(this);
+    }
+}
+
 ProfileItem & ProfileItem::operator =(const ProfileItem &rhs)
 {
     clone(rhs);

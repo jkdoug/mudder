@@ -64,6 +64,24 @@ bool Trigger::operator !=(const Trigger &rhs)
     return !(*this == rhs);
 }
 
+void Trigger::setOmit(bool flag)
+{
+    if (flag != m_omit)
+    {
+        m_omit = flag;
+        emit modified(this);
+    }
+}
+
+void Trigger::setRepeat(bool flag)
+{
+    if (flag != m_repeat)
+    {
+        m_repeat = flag;
+        emit modified(this);
+    }
+}
+
 void Trigger::clone(const Trigger &rhs)
 {
     if (this == &rhs)

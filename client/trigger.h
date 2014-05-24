@@ -45,9 +45,9 @@ public:
     bool operator !=(const Trigger &rhs);
 
     bool omit() const { return m_omit; }
-    void setOmit(bool flag = true) { m_omit = flag; }
+    void setOmit(bool flag = true);
     bool repeat() const { return m_repeat; }
-    void setRepeat(bool flag = true) { m_repeat = flag; }
+    void setRepeat(bool flag = true);
 
     virtual QIcon icon() const { return QIcon(":/icons/trigger"); }
 

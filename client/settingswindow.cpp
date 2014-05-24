@@ -89,7 +89,6 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     ui->toolBar->insertSeparator(ui->actionSave);
 
     connect(ui->editor, SIGNAL(settingModified(bool, bool)), SLOT(settingModified(bool, bool)));
-    connect(ui->editor, SIGNAL(settingSaved()), SLOT(settingSaved()));
     connect(ui->actionSave, SIGNAL(triggered()), ui->editor, SLOT(saveCurrentItem()));
     connect(ui->actionDiscard, SIGNAL(triggered()), ui->editor, SLOT(discardCurrentItem()));
 }
@@ -99,21 +98,16 @@ SettingsWindow::~SettingsWindow()
     delete ui;
 }
 
-Group * SettingsWindow::rootGroup() const
-{
-    return ui->editor->rootGroup();
-}
-
 void SettingsWindow::setProfile(Profile *profile)
 {
     if (profile != m_profile)
     {
         m_profile = profile;
 
-        ui->editor->setRootGroup(profile?profile->rootGroup():0);
+        ui->editor->setModel(profile?profile->model():0);
     }
 
-    m_buttonNew->setEnabled(rootGroup() != 0);
+    m_buttonNew->setEnabled(profile != 0);
 }
 
 void SettingsWindow::settingModified(bool changed, bool valid)
@@ -122,14 +116,6 @@ void SettingsWindow::settingModified(bool changed, bool valid)
 
     ui->actionSave->setEnabled(changed && valid);
     ui->actionDiscard->setEnabled(changed);
-}
-
-void SettingsWindow::settingSaved()
-{
-    if (m_profile)
-    {
-        emit m_profile->settingsChanged();
-    }
 }
 
 void SettingsWindow::addAccelerator()

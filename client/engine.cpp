@@ -60,6 +60,8 @@ inline bool lua_isarray(lua_State *L, int index)
     return true;
 }
 
+namespace luabridge
+{
 
 template <>
 struct Stack <QString>
@@ -80,6 +82,12 @@ struct Stack <QVariant>
 {
     static void push(lua_State *L, QVariant value)
     {
+        if (!value.isValid())
+        {
+            lua_pushnil(L);
+            return;
+        }
+
         switch (value.type())
         {
         case QMetaType::Bool:
@@ -285,7 +293,7 @@ struct Stack <QVariant>
 
             v = map;
         }
-        else
+        else if (!lua_isnil(L, index))
         {
             v = QVariant(luaL_checkstring(L, index));
         }
@@ -293,6 +301,8 @@ struct Stack <QVariant>
         return v;
     }
 };
+
+}
 
 
 Engine::Engine(QObject *parent) :
@@ -339,7 +349,10 @@ void Engine::initialize(Console *c)
         .addCFunction("SendAlias", Engine::sendAlias)
         .addCFunction("SendGmcp", Engine::sendGmcp)
         .addCFunction("JsonDecode", Engine::jsonDecode)
-        .addCFunction("JsonEncode", Engine::jsonEncode);
+        .addCFunction("JsonEncode", Engine::jsonEncode)
+        .addCFunction("GetVariable", Engine::getVariable)
+        .addCFunction("SetVariable", Engine::setVariable)
+        .addCFunction("DeleteVariable", Engine::deleteVariable);
 
     lua_settop(m_global, 0);
 
@@ -638,7 +651,7 @@ int Engine::send(lua_State *L)
 
     for (int cmd = 1; cmd <= n; cmd++)
     {
-        c->send(LuaRef::fromStack(L, cmd), echo);
+        c->send(luaL_checkstring(L, cmd), echo);
     }
 
     return 0;
@@ -651,7 +664,7 @@ int Engine::sendAlias(lua_State *L)
     int n = lua_gettop(L);
     for (int cmd = 1; cmd <= n; cmd++)
     {
-        c->sendAlias(LuaRef::fromStack(L, cmd));
+        c->sendAlias(luaL_checkstring(L, cmd));
     }
 
     return 0;
@@ -661,7 +674,7 @@ int Engine::sendGmcp(lua_State *L)
 {
     Console *c = registryObject<Console>("CONSOLE", L);
 
-    QString msg(LuaRef::fromStack(L, 1));
+    QString msg(luaL_checkstring(L, 1));
 
     bool result = false;
     if (!lua_isnone(L, 2))
@@ -693,7 +706,7 @@ int Engine::jsonDecode(lua_State *L)
     }
     else
     {
-        QString data(LuaRef::fromStack(L, 1));
+        QString data(luaL_checkstring(L, 1));
         QJsonDocument doc(QJsonDocument::fromJson(data.toUtf8()));
 
         if (doc.isEmpty())
@@ -717,7 +730,7 @@ int Engine::jsonEncode(lua_State *L)
     }
     else
     {
-        QVariant var(LuaRef::fromStack(L, 1));
+        QVariant var(luaL_checkstring(L, 1));
         if (var.isNull())
         {
             lua_pushnil(L);
@@ -741,6 +754,65 @@ int Engine::jsonEncode(lua_State *L)
             }
         }
     }
+
+    return 1;
+}
+
+int Engine::getVariable(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+    Profile *p = c->profile();
+
+    push(L, p->getVariable(luaL_checkstring(L, 1)));
+
+    return 1;
+}
+
+int Engine::setVariable(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+    Profile *p = c->profile();
+
+    if (lua_isnoneornil(L, 2))
+    {
+        push(L, p->deleteVariable(luaL_checkstring(L, 1)));
+
+        return 1;
+    }
+
+    QVariant val;
+    if (lua_isnumber(L, 2))
+    {
+        val = QVariant(lua_tonumber(L, 2));
+        if (!val.isValid())
+        {
+            return luaL_argerror(L, 2, lua_pushfstring(L, qPrintable(tr("conversion to double failed"))));
+        }
+    }
+    else if (lua_isboolean(L, 2))
+    {
+        val = QVariant(lua_toboolean(L, 2) != 0);
+        if (!val.isValid())
+        {
+            return luaL_argerror(L, 2, lua_pushfstring(L, qPrintable(tr("conversion to boolean failed"))));
+        }
+    }
+    else
+    {
+        val = QVariant(luaL_checkstring(L, 2));
+    }
+
+    push(L, p->setVariable(luaL_checkstring(L, 1), val));
+
+    return 1;
+}
+
+int Engine::deleteVariable(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+    Profile *p = c->profile();
+
+    push(L, p->deleteVariable(luaL_checkstring(L, 1)));
 
     return 1;
 }

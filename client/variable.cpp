@@ -69,13 +69,22 @@ void Variable::clone(const Variable &rhs)
 
     ProfileItem::clone(rhs);
 
-    enable(true);  // unused
+    m_enabled = true;  // unused
     m_contents = rhs.m_contents;
 }
 
 bool Variable::operator <(const Variable &rhs)
 {
     return name().compare(rhs.name()) < 0;
+}
+
+void Variable::setContents(const QVariant &contents)
+{
+    if (contents != m_contents)
+    {
+        m_contents = contents;
+        emit modified(this);
+    }
 }
 
 QString Variable::typeName()

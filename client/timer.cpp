@@ -105,11 +105,15 @@ void Timer::enable(bool flag)
     {
         stop();
     }
+
+    emit modified(this);
 }
 
 void Timer::setInterval(const QTime &interval)
 {
     Q_ASSERT(m_timer != 0);
+
+    bool mod = interval != m_interval;
 
     m_interval = interval;
     m_timer->setInterval(milliseconds());
@@ -120,6 +124,20 @@ void Timer::setInterval(const QTime &interval)
     else
     {
         stop();
+    }
+
+    if (mod)
+    {
+        emit modified(this);
+    }
+}
+
+void Timer::setOnce(bool flag)
+{
+    if (flag != m_once)
+    {
+        m_once = flag;
+        emit modified(this);
     }
 }
 

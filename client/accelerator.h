@@ -48,7 +48,7 @@ public:
     static bool lessSequence(const Accelerator *lhs, const Accelerator *rhs);
 
     QKeySequence key() const { return m_key; }
-    void setKey(const QKeySequence &key) { m_key = key; }
+    void setKey(const QKeySequence &key);
 
     virtual QIcon icon() const { return QIcon(":/icons/accelerator"); }
     virtual QString value() const { return key().toString(); }

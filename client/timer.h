@@ -50,7 +50,7 @@ public:
     int milliseconds() const { return m_interval.msec() + 1000 * m_interval.second() + 1000 * 60 * m_interval.minute() + 1000 * 60 * 60 * m_interval.hour(); }
     void setInterval(const QTime &interval);
     bool once() const { return m_once; }
-    void setOnce(bool flag = true) { m_once = flag; }
+    void setOnce(bool flag = true);
     int firedCount() const { return m_firedCount; }
 
     virtual QIcon icon() const { return QIcon(":/icons/timer"); }

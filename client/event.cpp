@@ -31,6 +31,15 @@ Event::Event(QObject *parent) :
     m_matchCount = 0;
 }
 
+void Event::setTitle(const QString &title)
+{
+    if (title != m_title)
+    {
+        m_title = title;
+        emit modified(this);
+    }
+}
+
 bool Event::match(const QString &str)
 {
     m_evalCount++;

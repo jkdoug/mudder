@@ -170,7 +170,8 @@ void CommandLine::historyDown()
     QString txt(toPlainText());
     if (textCursor().selectedText().size() == txt.size() || txt.isEmpty())
     {
-        m_historyPosition = qBound(0, --m_historyPosition, m_history.length() - 1);
+        m_historyPosition--;
+        m_historyPosition = qBound(0, m_historyPosition, m_history.length() - 1);
 
         setPlainText(m_history.at(m_historyPosition));
         selectAll();

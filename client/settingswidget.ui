@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Settings</string>
   </property>
-  <layout class="QVBoxLayout" name="layoutWidget">
+  <layout class="QVBoxLayout" name="layoutSettings">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -43,7 +43,11 @@
         <number>2</number>
        </property>
        <item>
-        <widget class="QTreeView" name="treeView"/>
+        <widget class="QTreeView" name="treeView">
+         <property name="uniformRowHeights">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLineEdit" name="filter">

@@ -73,6 +73,7 @@ void Executable::setContents(const QString &contents)
     {
         m_contents = contents;
         m_failed = false;
+        emit modified(this);
     }
 }
 

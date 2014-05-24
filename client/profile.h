@@ -34,6 +34,7 @@
 
 class Group;
 class ProfileItem;
+class SettingsModel;
 class Timer;
 class XmlError;
 
@@ -43,10 +44,16 @@ class Profile : public QObject
 public:
     explicit Profile(QObject *parent = 0);
 
+    SettingsModel * model() { return m_model; }
+
     Group * rootGroup() const { return m_root; }
-    Group * findGroup(const QString &path);
+    Group * findGroup(const QString &path) const;
     Group * activeGroup() const { return m_activeGroup?m_activeGroup:m_root; }
     void setActiveGroup(Group *group);
+
+    QVariant getVariable(const QString &name);
+    bool setVariable(const QString &name, const QVariant &val);
+    bool deleteVariable(const QString &name);
 
     const QVariantMap & options() const { return m_options; }
     QVariant getOption(const QString &key) const { return m_options.value(key); }
@@ -87,11 +94,16 @@ public:
 
 public slots:
     void changeOption(const QString &key, const QVariant &val);
+    void updateSetting();
+    void addSetting(ProfileItem *item);
+    void removeSetting(ProfileItem *item);
     void handleTimer(Timer *timer);
 
 signals:
     void optionChanged(const QString &key, const QVariant &val);
     void settingsChanged();
+    void settingAdded(ProfileItem *item);
+    void settingRemoved(ProfileItem *item);
     void timerFired(Timer *timer);
 
 protected:
@@ -99,12 +111,20 @@ protected:
     void readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 private:
-    Group * findGroup(const QStringList &path, Group *parent);
+    template<class C>
+    C * findItem(const QString &name) const;
+
+    Group * findGroup(const QStringList &path, Group *parent) const;
+
+    Group * createGroup(const QString &path);
+    Group * createGroup(const QStringList &path, Group *parent);
 
     Group *m_root;
     Group *m_activeGroup;
 
     QVariantMap m_options;
+
+    SettingsModel *m_model;
 };
 
 #endif // PROFILE_H

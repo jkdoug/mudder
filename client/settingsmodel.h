@@ -49,8 +49,14 @@ public:
 
     QModelIndex appendItem(ProfileItem *item, const QModelIndex &parent);
 
+private slots:
+    void updateSetting(ProfileItem *item);
+    void addSetting(ProfileItem *item);
+    void removeSetting(ProfileItem *item);
+
 private:
     ProfileItem * itemFromIndex(const QModelIndex &index) const;
+    QModelIndex indexFromItem(ProfileItem *item) const;
 
     Group *m_rootGroup;
 };

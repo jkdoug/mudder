@@ -47,8 +47,9 @@ public:
     explicit SettingsWidget(QWidget *parent = 0);
     ~SettingsWidget();
 
-    Group * rootGroup() const;
-    void setRootGroup(Group *group);
+    void setModel(SettingsModel *model);
+    SettingsModel * model() const;
+
     void addItem(ProfileItem *item);
 
 public slots:
@@ -75,10 +76,6 @@ private:
 
     QStackedWidget *m_stackedEditors;
     QMap<QString, int> m_editors;
-
-    SettingsModel *m_model;
-    QSortFilterProxyModel *m_proxyModel;
-    QItemSelectionModel *m_selection;
 };
 
 #endif // SETTINGSWIDGET_H
