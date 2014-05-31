@@ -37,7 +37,7 @@ Group::Group(QObject *parent) :
 
 QString Group::path() const
 {
-    Group * up = qobject_cast<Group *>(parent());
+    Group * up = group();
     if (up == 0)
     {
         return "";

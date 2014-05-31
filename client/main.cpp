@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     a.setApplicationVersion("0.3");
     a.setOrganizationName("Iasmos");
 
-    QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
+    QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true\nqt.*=false"));
 
     SETTINGS->setValue("LastRun", QDateTime::currentDateTime());
 

@@ -37,7 +37,7 @@
 Profile::Profile(QObject *parent) :
     QObject(parent)
 {
-    m_root = new Group(0);
+    m_root = new Group(this);
     m_activeGroup = m_root;
     connect(m_root, SIGNAL(modified(ProfileItem*)), SLOT(updateSetting()));
     connect(m_root, SIGNAL(settingAdded(ProfileItem*)), SLOT(addSetting(ProfileItem*)));

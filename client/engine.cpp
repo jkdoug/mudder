@@ -88,7 +88,7 @@ struct Stack <QVariant>
             return;
         }
 
-        switch (value.type())
+        switch (value.userType())
         {
         case QMetaType::Bool:
             lua_pushboolean(L, value.toBool());
