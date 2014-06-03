@@ -537,6 +537,51 @@ ProfileItem * Profile::itemForIndex(const QModelIndex &index) const
     return m_root;
 }
 
+QStringList Profile::pathForIndex(const QModelIndex &index) const
+{
+    QStringList path;
+    QModelIndex thisIndex(index);
+    while (thisIndex.isValid())
+    {
+        path.prepend(data(thisIndex).toString());
+        thisIndex = thisIndex.parent();
+    }
+    return path;
+}
+
+QModelIndex Profile::indexForPath(const QStringList &path) const
+{
+    return indexForPath(QModelIndex(), path);
+}
+
+QModelIndex Profile::indexForPath(const QModelIndex &parent, const QStringList &path) const
+{
+    if (path.isEmpty())
+    {
+        return QModelIndex();
+    }
+
+    for (int row = 0; row < rowCount(parent); row++)
+    {
+        QModelIndex thisIndex(index(row, 0, parent));
+        if (data(thisIndex).toString() == path.first())
+        {
+            if (path.count() == 1)
+            {
+                return thisIndex;
+            }
+
+            thisIndex = indexForPath(thisIndex, path.mid(1));
+            if (thisIndex.isValid())
+            {
+                return thisIndex;
+            }
+        }
+    }
+
+    return QModelIndex();
+}
+
 void Profile::changeOption(const QString &key, const QVariant &val)
 {
     if (m_options.value(key) != val)

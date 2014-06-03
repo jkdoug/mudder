@@ -98,6 +98,8 @@ public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &index) const;
     ProfileItem * itemForIndex(const QModelIndex &index) const;
+    QStringList pathForIndex(const QModelIndex &index) const;
+    QModelIndex indexForPath(const QStringList &path) const;
 
 public slots:
     void changeOption(const QString &key, const QVariant &val);
@@ -118,6 +120,8 @@ protected:
     void readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 private:
+    QModelIndex indexForPath(const QModelIndex &parent, const QStringList &path) const;
+
     template<class C>
     C * findItem(const QString &name) const;
 
