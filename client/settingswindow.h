@@ -24,7 +24,10 @@
 #ifndef SETTINGSWINDOW_H
 #define SETTINGSWINDOW_H
 
+#include <QItemSelection>
 #include <QMainWindow>
+#include <QMap>
+#include <QStackedWidget>
 #include <QToolButton>
 
 namespace Ui {
@@ -33,6 +36,7 @@ class SettingsWindow;
 
 class Group;
 class Profile;
+class SettingsModel;
 
 class SettingsWindow : public QMainWindow
 {
@@ -43,10 +47,14 @@ public:
     ~SettingsWindow();
 
     Group * rootGroup() const;
-    void setProfile(Profile *profile);
+    void setProfile(Profile *p);
+    Profile * profile() const;
 
-public slots:
+private slots:
     void settingModified(bool changed, bool valid);
+
+    void saveCurrentItem();
+    void discardCurrentItem();
 
     void addAccelerator();
     void addAlias();
@@ -56,12 +64,16 @@ public slots:
     void addTrigger();
     void addVariable();
 
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
 private:
     Ui::SettingsWindow *ui;
 
     QToolButton *m_buttonNew;
 
-    Profile *m_profile;
+    QStackedWidget *m_stackedEditors;
+    QMap<QString, int> m_editors;
 };
 
 #endif // SETTINGSWINDOW_H

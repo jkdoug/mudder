@@ -33,8 +33,6 @@ SOURCES += main.cpp\
     consoledisplay.cpp \
     engine.cpp \
     settingswindow.cpp \
-    settingswidget.cpp \
-    settingsmodel.cpp \
     editvariable.cpp \
     editsetting.cpp \
     editaccelerator.cpp \
@@ -71,8 +69,6 @@ HEADERS  += mainwindow.h \
     consoledisplay.h \
     engine.h \
     settingswindow.h \
-    settingswidget.h \
-    settingsmodel.h \
     editvariable.h \
     editsetting.h \
     editaccelerator.h \
@@ -94,7 +90,6 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     console.ui \
     settingswindow.ui \
-    settingswidget.ui \
     editvariable.ui \
     editaccelerator.ui \
     editalias.ui \
@@ -111,7 +106,7 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     client.qrc
 
-win32-g++: QMAKE_CXXFLAGS += -Wno-ignored-qualifiers -Wno-switch
+win32-g++: QMAKE_CXXFLAGS += -Wno-ignored-qualifiers
 
 INCLUDEPATH += $$PWD/../luabridge
 

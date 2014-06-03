@@ -29,13 +29,15 @@
 #include "variable.h"
 #include "profileitem.h"
 #include "profileitemfactory.h"
-#include "settingsmodel.h"
 #include "xmlerror.h"
 #include <QDateTime>
 #include <QDir>
 
+const int ColumnCount = 1;
+enum Column { Name };
+
 Profile::Profile(QObject *parent) :
-    QObject(parent)
+    QAbstractItemModel(parent)
 {
     m_root = new Group(this);
     m_activeGroup = m_root;
@@ -393,6 +395,148 @@ void Profile::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
     }
 }
 
+Qt::ItemFlags Profile::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags theFlags = QAbstractItemModel::flags(index);
+
+    if (index.isValid())
+    {
+        theFlags |= Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    }
+
+    return theFlags;
+}
+
+QVariant Profile::data(const QModelIndex &index, int role) const
+{
+    if (!m_root || !index.isValid() || index.column() < 0 || index.column() >= ColumnCount)
+    {
+        return QVariant();
+    }
+
+    ProfileItem * item = itemForIndex(index);
+    if (item)
+    {
+        if (role == Qt::DisplayRole || role == Qt::EditRole)
+        {
+            switch (index.column())
+            {
+            case Name:
+                return item->name();
+
+            default:
+                Q_ASSERT(false);
+            }
+        }
+
+        if (role == Qt::DecorationRole && index.column() == Name)
+        {
+            return item->icon();
+        }
+    }
+
+    return QVariant();
+}
+
+QVariant Profile::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+    {
+        switch (section)
+        {
+        case Name:
+            return tr("Name");
+
+        default:
+            Q_ASSERT(false);
+        }
+    }
+
+    return QVariant();
+}
+
+int Profile::rowCount(const QModelIndex &parent) const
+{
+    if (parent.isValid() && parent.column() != 0)
+    {
+        return 0;
+    }
+
+    Group * parentItem = qobject_cast<Group*>(itemForIndex(parent));
+    return parentItem ? parentItem->items().count() : 0;
+}
+
+int Profile::columnCount(const QModelIndex &parent) const
+{
+    return parent.isValid() && parent.column() != 0 ? 0 : ColumnCount;
+}
+
+
+QModelIndex Profile::index(int row, int column,
+                             const QModelIndex &parent) const
+{
+    if (!m_root || row < 0 || column < 0 || column >= ColumnCount ||
+        (parent.isValid() && parent.column() != 0))
+    {
+        return QModelIndex();
+    }
+
+    Group *parentItem = qobject_cast<Group*>(itemForIndex(parent));
+    Q_ASSERT(parentItem);
+
+    ProfileItem *item = parentItem->items().at(row);
+    if (!item)
+    {
+        return QModelIndex();
+    }
+
+    return createIndex(row, column, item);
+}
+
+QModelIndex Profile::parent(const QModelIndex &index) const
+{
+    if (!index.isValid())
+    {
+        return QModelIndex();
+    }
+
+    ProfileItem *item = itemForIndex(index);
+    if (item)
+    {
+        Group *parentItem = item->group();
+        if (parentItem)
+        {
+            if (parentItem == m_root)
+            {
+                return QModelIndex();
+            }
+
+            Group *grandparentItem = parentItem->group();
+            if (grandparentItem)
+            {
+                int row = grandparentItem->items().indexOf(parentItem);
+                return createIndex(row, 0, parentItem);
+            }
+        }
+    }
+
+    return QModelIndex();
+}
+
+ProfileItem * Profile::itemForIndex(const QModelIndex &index) const
+{
+    if (index.isValid())
+    {
+        ProfileItem * item = static_cast<ProfileItem*>(index.internalPointer());
+        if (item)
+        {
+            return item;
+        }
+    }
+
+    return m_root;
+}
+
 void Profile::changeOption(const QString &key, const QVariant &val)
 {
     if (m_options.value(key) != val)
@@ -516,11 +660,13 @@ void Profile::readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors)
         {
             if (xml.name() == "inputFont")
             {
+                QFont defaultFont(m_options.value("inputFont").value<QFont>());
+
                 QString family(xml.attributes().value("family").toString());
                 if (family.isEmpty())
                 {
                     errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or invalid input font family name"));
-                    family = "Courier New";
+                    family = defaultFont.family();
                 }
 
                 bool valid = true;
@@ -528,11 +674,11 @@ void Profile::readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 if (!valid)
                 {
                     errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or invalid input font point size"));
-                    size = 8;
+                    size = defaultFont.pointSize();
                 }
                 size = qBound(6, size, 20);
 
-                bool antiAlias = true;
+                bool antiAlias = defaultFont.styleStrategy() & QFont::PreferAntialias;
                 if (!xml.attributes().value("antialias").isEmpty())
                 {
                     antiAlias = xml.attributes().value("antialias").compare("n", Qt::CaseInsensitive) != 0;
@@ -545,11 +691,13 @@ void Profile::readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors)
             }
             else if (xml.name() == "outputFont")
             {
+                QFont defaultFont(m_options.value("outputFont").value<QFont>());
+
                 QString family(xml.attributes().value("family").toString());
                 if (family.isEmpty())
                 {
                     errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or invalid output font family name"));
-                    family = "Consolas";
+                    family = defaultFont.family();
                 }
 
                 bool valid = true;
@@ -557,11 +705,11 @@ void Profile::readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 if (!valid)
                 {
                     errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or invalid output font point size"));
-                    size = 10;
+                    size = defaultFont.pointSize();
                 }
                 size = qBound(6, size, 20);
 
-                bool antiAlias = true;
+                bool antiAlias = defaultFont.styleStrategy() & QFont::PreferAntialias;
                 if (!xml.attributes().value("antialias").isEmpty())
                 {
                     antiAlias = xml.attributes().value("antialias").compare("n", Qt::CaseInsensitive) != 0;

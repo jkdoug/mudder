@@ -24,6 +24,7 @@
 #ifndef PROFILE_H
 #define PROFILE_H
 
+#include <QAbstractItemModel>
 #include <QFont>
 #include <QHash>
 #include <QList>
@@ -34,17 +35,14 @@
 
 class Group;
 class ProfileItem;
-class SettingsModel;
 class Timer;
 class XmlError;
 
-class Profile : public QObject
+class Profile : public QAbstractItemModel
 {
     Q_OBJECT
 public:
     explicit Profile(QObject *parent = 0);
-
-    SettingsModel * model() { return m_model; }
 
     Group * rootGroup() const { return m_root; }
     Group * findGroup(const QString &path) const;
@@ -92,6 +90,15 @@ public:
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex parent(const QModelIndex &index) const;
+    ProfileItem * itemForIndex(const QModelIndex &index) const;
+
 public slots:
     void changeOption(const QString &key, const QVariant &val);
     void updateSetting();
@@ -123,8 +130,6 @@ private:
     Group *m_activeGroup;
 
     QVariantMap m_options;
-
-    SettingsModel *m_model;
 };
 
 #endif // PROFILE_H
