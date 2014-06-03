@@ -35,17 +35,6 @@ Group::Group(QObject *parent) :
 {
 }
 
-QString Group::path() const
-{
-    Group * up = group();
-    if (up == 0)
-    {
-        return "";
-    }
-
-    return QString("%1/%2").arg(up->path()).arg(name());
-}
-
 QList<Accelerator *> Group::sortedAccelerators(bool enabled, bool all) const
 {
     return sortedItems<Accelerator>(enabled, all);

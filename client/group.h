@@ -41,8 +41,6 @@ class Group : public ProfileItem
 public:
     explicit Group(QObject *parent = 0);
 
-    QString path() const;
-
     virtual int sequence() const { return 0; }
 
     QList<ProfileItem *> items() { return m_items; }

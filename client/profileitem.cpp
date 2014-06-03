@@ -119,17 +119,22 @@ void ProfileItem::clone(const ProfileItem &rhs)
 
 QString ProfileItem::fullName() const
 {
-    if (group() != 0)
-    {
-        return QString("%1/%2").arg(group()->path()).arg(name());
-    }
-
-    return name();
+    return path().join("/");
 }
 
 Group * ProfileItem::group() const
 {
     return qobject_cast<Group *>(parent());
+}
+
+QStringList ProfileItem::path() const
+{
+    if (group() != 0)
+    {
+        return QStringList() << group()->path() << name();
+    }
+
+    return QStringList() << name();
 }
 
 bool ProfileItem::enabled() const

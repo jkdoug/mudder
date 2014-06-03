@@ -27,6 +27,7 @@
 #include <QIcon>
 #include <QList>
 #include <QObject>
+#include <QStringList>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
@@ -52,6 +53,7 @@ public:
     virtual int sequence() const { return m_sequence; }
     void setSequence(int sequence);
     Group * group() const;
+    QStringList path() const;
 
     virtual QIcon icon() const { return QIcon(); }
     virtual QString value() const { return QString(); }
