@@ -160,10 +160,78 @@ void SettingsWindow::settingModified(bool changed, bool valid)
 
 void SettingsWindow::saveCurrentItem()
 {
+    QModelIndex current(ui->treeView->currentIndex());
+    if (!current.isValid())
+    {
+        return;
+    }
+
+    ProfileItem *item = profile()->itemForIndex(current);
+    Q_ASSERT(item);
+    if (!item)
+    {
+        qCWarning(MUDDER_PROFILE) << "Attempted to save an invalid profile item.";
+        return;
+    }
+
+    Q_ASSERT(m_editors.contains(item->tagName()));
+    if (!m_editors.contains(item->tagName()))
+    {
+        qCWarning(MUDDER_PROFILE) << "No editor found:" << item->tagName();
+        return;
+    }
+
+    int index = m_editors[item->tagName()];
+    EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
+    Q_ASSERT(editor != 0);
+
+    bool saved = editor->save(item);
+    if (!saved)
+    {
+        qCWarning(MUDDER_PROFILE) << "Something prevented saving:" << item->tagName() << "->" << item->fullName();
+    }
+    else
+    {
+        emit profile()->settingsChanged();
+    }
+
+    settingModified(false, saved);
 }
 
 void SettingsWindow::discardCurrentItem()
 {
+    QModelIndex current(ui->treeView->currentIndex());
+    if (!current.isValid())
+    {
+        return;
+    }
+
+    ProfileItem *item = profile()->itemForIndex(current);
+    Q_ASSERT(item);
+    if (!item)
+    {
+        qCWarning(MUDDER_PROFILE) << "Attempted to discard an invalid profile item";
+        return;
+    }
+
+    Q_ASSERT(m_editors.contains(item->tagName()));
+    if (!m_editors.contains(item->tagName()))
+    {
+        qCWarning(MUDDER_PROFILE) << "No editor found:" << item->tagName();
+        return;
+    }
+
+    int index = m_editors[item->tagName()];
+    EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
+    Q_ASSERT(editor != 0);
+
+    bool loaded = editor->load(item);
+    if (!loaded)
+    {
+        qCWarning(MUDDER_PROFILE) << "Something prevented loading:" << item->tagName() << "->" << item->fullName();
+    }
+
+    settingModified(false, loaded);
 }
 
 void SettingsWindow::addAccelerator()
