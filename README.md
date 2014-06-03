@@ -5,9 +5,9 @@ A powerful, cross-platform MUD client developed using the Qt SDK
 
 
 ##Compiling
-* Go to http://qt-project.org/downloads to get the Qt 5.2.1 SDK for your operating system and compiler version.
-* Install Qt 5.2.1 on your machine.
-* Open Mudder.pro in Qt Creator and configure the project with the appropriate Qt 5.2.1 kit.
+* Go to http://qt-project.org/downloads to get the Qt 5.3 SDK for your operating system and compiler version.
+* Install Qt on your machine.
+* Open Mudder.pro in Qt Creator and configure the project with the appropriate kit.
 * Build.
 * Run.
 
