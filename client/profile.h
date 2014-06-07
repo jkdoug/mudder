@@ -89,6 +89,8 @@ public:
 
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
+    static bool validateXml(const QString &text, QList<XmlError *> *errors = 0);
+
 
     Qt::ItemFlags flags(const QModelIndex &index) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
@@ -97,22 +99,24 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &index) const;
+
+    virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+
     ProfileItem * itemForIndex(const QModelIndex &index) const;
     QStringList pathForIndex(const QModelIndex &index) const;
     QModelIndex indexForPath(const QStringList &path) const;
+    QModelIndex cutItem(const QModelIndex &index);
+    void copyItem(const QModelIndex &index) const;
+    QModelIndex pasteItem(const QModelIndex &index);
+    QModelIndex newItem(ProfileItem *item, const QModelIndex &index = QModelIndex());
 
 public slots:
     void changeOption(const QString &key, const QVariant &val);
-    void updateSetting();
-    void addSetting(ProfileItem *item);
-    void removeSetting(ProfileItem *item);
     void handleTimer(Timer *timer);
 
 signals:
     void optionChanged(const QString &key, const QVariant &val);
     void settingsChanged();
-    void settingAdded(ProfileItem *item);
-    void settingRemoved(ProfileItem *item);
     void timerFired(Timer *timer);
 
 protected:

@@ -70,38 +70,6 @@ QList<Variable *> Group::sortedVariables(bool all) const
     return sortedItems<Variable>(false, all);
 }
 
-void Group::addItem(ProfileItem *item)
-{
-    item->setParent(this);
-    m_items << item;
-
-    connect(item, SIGNAL(modified(ProfileItem *)), SLOT(childModified(ProfileItem *)));
-
-    Group *group = qobject_cast<Group *>(item);
-    if (group)
-    {
-        m_groups << group;
-    }
-
-    emit settingAdded(item);
-}
-
-bool Group::removeItem(ProfileItem *item)
-{
-    Group *group = qobject_cast<Group *>(item);
-    if (group)
-    {
-        m_groups.removeOne(group);
-    }
-
-    bool result = m_items.removeOne(item);
-
-    emit settingRemoved(item);
-
-    return result;
-}
-
-
 void Group::toXml(QXmlStreamWriter &xml)
 {
     if (!name().isEmpty())
@@ -169,4 +137,71 @@ QList<C *> Group::sortedItems(bool enabled, bool all) const
     qSort(list.begin(), list.end());
 
     return list;
+}
+
+Group * Group::createGroup(const QString &name)
+{
+    Group *child = new Group(this);
+    child->setName(name);
+
+    m_items << child;
+    m_groups << child;
+
+    connect(child, SIGNAL(modified(ProfileItem*)), SIGNAL(modified(ProfileItem*)));
+
+    return child;
+}
+
+int Group::addItem(ProfileItem *item)
+{
+    int row = m_items.indexOf(item);
+    if (row >= 0)
+    {
+        Q_ASSERT(item->group() == this);
+        return row;
+    }
+
+    if (item->group())
+    {
+        item->disconnect(item->group());
+    }
+
+    item->setParent(this);
+    m_items << item;
+
+    connect(item, SIGNAL(modified(ProfileItem *)), SLOT(childModified(ProfileItem *)));
+
+    Group *group = qobject_cast<Group *>(item);
+    if (group)
+    {
+        m_groups << group;
+    }
+
+    return m_items.indexOf(item);
+}
+
+int Group::removeItem(ProfileItem *item)
+{
+    Group *group = qobject_cast<Group *>(item);
+    if (group)
+    {
+        m_groups.removeOne(group);
+    }
+
+    int row = m_items.indexOf(item);
+    m_items.removeOne(item);
+
+    item->disconnect(this);
+
+    return row;
+}
+
+int Group::removeItem(int index)
+{
+    if (index < 0 || index >= m_items.count())
+    {
+        return -1;
+    }
+
+    return removeItem(m_items.at(index));
 }

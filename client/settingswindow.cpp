@@ -30,6 +30,7 @@
 #include "profileitem.h"
 #include "profileitemfactory.h"
 #include "editsetting.h"
+#include <QClipboard>
 
 SettingsWindow::SettingsWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -90,6 +91,10 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     ui->toolBar->insertWidget(ui->actionSave, m_buttonNew);
     ui->toolBar->insertSeparator(ui->actionSave);
 
+    connect(ui->actionCut, SIGNAL(triggered()), SLOT(cut()));
+    connect(ui->actionCopy, SIGNAL(triggered()), SLOT(copy()));
+    connect(ui->actionPaste, SIGNAL(triggered()), SLOT(paste()));
+
     connect(ui->actionSave, SIGNAL(triggered()), SLOT(saveCurrentItem()));
     connect(ui->actionDiscard, SIGNAL(triggered()), SLOT(discardCurrentItem()));
 
@@ -120,6 +125,8 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
 
         connect(editor, SIGNAL(itemModified(bool, bool)), SLOT(settingModified(bool, bool)));
     }
+
+    connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(clipboardChanged()));
 }
 
 SettingsWindow::~SettingsWindow()
@@ -156,6 +163,26 @@ void SettingsWindow::settingModified(bool changed, bool valid)
 
     ui->actionSave->setEnabled(changed && valid);
     ui->actionDiscard->setEnabled(changed);
+}
+
+void SettingsWindow::cut()
+{
+    ui->treeView->setCurrentIndex(profile()->cutItem(ui->treeView->currentIndex()));
+}
+
+void SettingsWindow::copy()
+{
+    profile()->copyItem(ui->treeView->currentIndex());
+}
+
+void SettingsWindow::paste()
+{
+    ui->treeView->setCurrentIndex(profile()->pasteItem(ui->treeView->currentIndex()));
+}
+
+void SettingsWindow::clipboardChanged()
+{
+    ui->actionPaste->setEnabled(Profile::validateXml(QApplication::clipboard()->text()));
 }
 
 void SettingsWindow::saveCurrentItem()
@@ -236,37 +263,37 @@ void SettingsWindow::discardCurrentItem()
 
 void SettingsWindow::addAccelerator()
 {
-//    ui->editor->addItem(ProfileItemFactory::create("accelerator"));
+    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("accelerator"), ui->treeView->currentIndex()));
 }
 
 void SettingsWindow::addAlias()
 {
-//    ui->editor->addItem(ProfileItemFactory::create("alias"));
+    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("alias"), ui->treeView->currentIndex()));
 }
 
 void SettingsWindow::addEvent()
 {
-//    ui->editor->addItem(ProfileItemFactory::create("event"));
+    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("event"), ui->treeView->currentIndex()));
 }
 
 void SettingsWindow::addGroup()
 {
-//    ui->editor->addItem(ProfileItemFactory::create("group"));
+    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("group"), ui->treeView->currentIndex()));
 }
 
 void SettingsWindow::addTimer()
 {
-//    ui->editor->addItem(ProfileItemFactory::create("timer"));
+    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("timer"), ui->treeView->currentIndex()));
 }
 
 void SettingsWindow::addTrigger()
 {
-//    ui->editor->addItem(ProfileItemFactory::create("trigger"));
+    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("trigger"), ui->treeView->currentIndex()));
 }
 
 void SettingsWindow::addVariable()
 {
-//    ui->editor->addItem(ProfileItemFactory::create("variable"));
+    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("variable"), ui->treeView->currentIndex()));
 }
 
 
@@ -296,7 +323,11 @@ void SettingsWindow::selectionChanged(const QItemSelection &selected, const QIte
 
     qCDebug(MUDDER_PROFILE) << "selectionChanged";
 
-    if (selected.isEmpty())
+    bool selection = !selected.isEmpty();
+    ui->actionCopy->setEnabled(selection);
+    ui->actionCut->setEnabled(selection);
+
+    if (!selection)
     {
         m_stackedEditors->setCurrentIndex(0);
     }

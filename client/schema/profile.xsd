@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="boolString">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[yYnN]" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="profileItem" abstract="true">
+    <xs:attribute name="enabled" type="boolString" use="optional" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="sequence" use="optional">
+      <xs:simpleType>
+        <xs:restriction base="xs:integer">
+          <xs:minInclusive value="1"/>
+          <xs:maxInclusive value="100000"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="executableItem" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="profileItem">
+        <xs:sequence>
+          <!-- Make this optional only for triggers with 'omit' if possible -->
+          <xs:element name="send" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="matchableItem" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="executableItem">
+        <xs:attribute name="pattern" type="xs:string" use="required" />
+        <xs:attribute name="keep_evaluating" type="boolString" use="optional" />
+        <xs:attribute name="ignore_case" type="boolString" use="optional" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="acceleratorItem">
+    <xs:complexContent>
+      <xs:extension base="executableItem">
+        <xs:attribute name="key" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="aliasItem">
+    <xs:complexContent>
+      <xs:extension base="matchableItem" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eventItem">
+    <xs:complexContent>
+      <xs:extension base="executableItem">
+        <xs:attribute name="title" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="groupItem">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="accelerator" />
+      <xs:element ref="alias" />
+      <xs:element ref="event" />
+      <xs:element ref="group" />
+      <xs:element ref="timer" />
+      <xs:element ref="trigger" />
+      <xs:element ref="variable" />
+    </xs:choice>
+    <xs:attribute name="enabled" type="boolString" use="optional" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="settingsItem">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="accelerator" />
+      <xs:element ref="alias" />
+      <xs:element ref="event" />
+      <xs:element ref="group" />
+      <xs:element ref="timer" />
+      <xs:element ref="trigger" />
+      <xs:element ref="variable" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="timerItem">
+    <xs:complexContent>
+      <xs:extension base="executableItem">
+        <xs:attribute name="once" type="boolString" use="optional" />
+        <xs:attribute name="h" use="optional">
+          <xs:simpleType>
+            <xs:restriction base="xs:integer">
+              <xs:minInclusive value="1"/>
+              <xs:maxInclusive value="500"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="m" use="optional">
+          <xs:simpleType>
+            <xs:restriction base="xs:integer">
+              <xs:minInclusive value="1"/>
+              <xs:maxInclusive value="59"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="s" use="optional">
+          <xs:simpleType>
+            <xs:restriction base="xs:integer">
+              <xs:minInclusive value="1"/>
+              <xs:maxInclusive value="59"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="ms" use="optional">
+          <xs:simpleType>
+            <xs:restriction base="xs:integer">
+              <xs:minInclusive value="1"/>
+              <xs:maxInclusive value="999"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="triggerItem">
+    <xs:complexContent>
+      <xs:extension base="matchableItem">
+        <xs:attribute name="omit" type="boolString" use="optional" />
+        <xs:attribute name="repeat" type="boolString" use="optional" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="variableItem" mixed="true">
+    <xs:complexContent>
+      <xs:extension base="profileItem">
+        <xs:attribute name="type" use="optional">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="boolean" />
+              <xs:enumeration value="numeric" />
+              <xs:enumeration value="string" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="accelerator" type="acceleratorItem" />
+
+  <xs:element name="alias" type="matchableItem" />
+
+  <xs:element name="event" type="eventItem" />
+
+  <xs:element name="group" type="groupItem" />
+
+  <xs:element name="settings" type="settingsItem" />
+
+  <xs:element name="timer" type="timerItem" />
+
+  <xs:element name="trigger" type="triggerItem" />
+
+  <xs:element name="variable" type="variableItem" />
+</xs:schema>

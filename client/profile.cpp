@@ -30,8 +30,12 @@
 #include "profileitem.h"
 #include "profileitemfactory.h"
 #include "xmlerror.h"
+#include <QAbstractMessageHandler>
+#include <QClipboard>
 #include <QDateTime>
 #include <QDir>
+#include <QXmlSchema>
+#include <QXmlSchemaValidator>
 
 const int ColumnCount = 1;
 enum Column { Name };
@@ -41,9 +45,7 @@ Profile::Profile(QObject *parent) :
 {
     m_root = new Group(this);
     m_activeGroup = m_root;
-    connect(m_root, SIGNAL(modified(ProfileItem*)), SLOT(updateSetting()));
-    connect(m_root, SIGNAL(settingAdded(ProfileItem*)), SLOT(addSetting(ProfileItem*)));
-    connect(m_root, SIGNAL(settingRemoved(ProfileItem*)), SLOT(removeSetting(ProfileItem*)));
+    connect(m_root, SIGNAL(modified(ProfileItem*)), SIGNAL(settingsChanged()));
 
     m_options.insert("name", QString());
 
@@ -73,31 +75,40 @@ Profile::Profile(QObject *parent) :
 template <class C>
 C * Profile::findItem(const QString &name) const
 {
-    QString itemName(name.section('/', -1));
-    qCDebug(MUDDER_PROFILE) << "itemName:" << itemName;
-    if (itemName.isEmpty())
+    QModelIndex itemIndex(indexForPath(name.split('/')));
+    if (!itemIndex.isValid())
     {
+        qCDebug(MUDDER_PROFILE) << "Item not found:" << name;
         return 0;
     }
 
-    QString groupName(name.left(name.length() - itemName.length() - 1));
-    qCDebug(MUDDER_PROFILE) << "groupName:" << groupName;
-    Group *group = findGroup(groupName);
-    if (!group)
-    {
-        return 0;
-    }
+    return qobject_cast<C*>(itemForIndex(itemIndex));
 
-    foreach (ProfileItem *item, group->items())
-    {
-        C *sub = qobject_cast<C *>(item);
-        if (sub && item->name().compare(itemName, Qt::CaseInsensitive) == 0)
-        {
-            return sub;
-        }
-    }
+//    QString itemName(name.section('/', -1));
+//    qCDebug(MUDDER_PROFILE) << "itemName:" << itemName;
+//    if (itemName.isEmpty())
+//    {
+//        return 0;
+//    }
 
-    return 0;
+//    QString groupName(name.left(name.length() - itemName.length() - 1));
+//    qCDebug(MUDDER_PROFILE) << "groupName:" << groupName;
+//    Group *group = findGroup(groupName);
+//    if (!group)
+//    {
+//        return 0;
+//    }
+
+//    foreach (ProfileItem *item, group->items())
+//    {
+//        C *sub = qobject_cast<C *>(item);
+//        if (sub && item->name().compare(itemName, Qt::CaseInsensitive) == 0)
+//        {
+//            return sub;
+//        }
+//    }
+
+//    return 0;
 }
 
 Group * Profile::findGroup(const QString &path) const
@@ -174,11 +185,7 @@ Group * Profile::createGroup(const QStringList &path, Group *parent)
         return 0;
     }
 
-    Group *created = new Group;
-    created->setName(name);
-    parent->addItem(created);
-
-    return createGroup(path.mid(1), created);
+    return createGroup(path.mid(1), parent->createGroup(name));
 }
 
 void Profile::setActiveGroup(Group *group)
@@ -354,6 +361,7 @@ void Profile::toXml(QXmlStreamWriter &xml)
 
 void Profile::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
+    beginResetModel();
     while (!xml.atEnd())
     {
         xml.readNext();
@@ -393,6 +401,57 @@ void Profile::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
             }
         }
     }
+    endResetModel();
+}
+
+class ProfileValidator : public QAbstractMessageHandler
+{
+public:
+    explicit ProfileValidator(QObject *parent = 0) : QAbstractMessageHandler(parent) {}
+    ~ProfileValidator() { qDeleteAll(errors); }
+
+    QList<XmlError *> errors;
+
+protected:
+    virtual void handleMessage(QtMsgType type, const QString &description, const QUrl &identifier, const QSourceLocation &sourceLocation)
+    {
+        Q_UNUSED(type)
+        Q_UNUSED(identifier)
+
+        errors << new XmlError(sourceLocation.line(), sourceLocation.column(), description);
+    }
+};
+
+bool Profile::validateXml(const QString &text, QList<XmlError *> *errors)
+{
+    QFile res(":/schema/profile");
+    res.open(QFile::ReadOnly | QFile::Text);
+    QTextStream ts(&res);
+    QString content(ts.readAll());
+
+    QXmlSchema schema;
+    schema.load(content.toUtf8());
+    Q_ASSERT(schema.isValid());
+
+    QXmlSchemaValidator validator(schema);
+    ProfileValidator *pv = new ProfileValidator;
+    validator.setMessageHandler(pv);
+    if (!validator.validate(text.toUtf8()))
+    {
+        if (errors)
+        {
+            foreach (XmlError *err, pv->errors)
+            {
+                errors->append(new XmlError(*err));
+            }
+        }
+
+        delete pv;
+        return false;
+    }
+
+    delete pv;
+    return true;
 }
 
 Qt::ItemFlags Profile::flags(const QModelIndex &index) const
@@ -463,7 +522,7 @@ int Profile::rowCount(const QModelIndex &parent) const
     }
 
     Group * parentItem = qobject_cast<Group*>(itemForIndex(parent));
-    return parentItem ? parentItem->items().count() : 0;
+    return parentItem ? parentItem->itemCount() : 0;
 }
 
 int Profile::columnCount(const QModelIndex &parent) const
@@ -484,7 +543,12 @@ QModelIndex Profile::index(int row, int column,
     Group *parentItem = qobject_cast<Group*>(itemForIndex(parent));
     Q_ASSERT(parentItem);
 
-    ProfileItem *item = parentItem->items().at(row);
+    if (row >= parentItem->itemCount())
+    {
+        return QModelIndex();
+    }
+
+    ProfileItem *item = parentItem->item(row);
     if (!item)
     {
         return QModelIndex();
@@ -514,7 +578,7 @@ QModelIndex Profile::parent(const QModelIndex &index) const
             Group *grandparentItem = parentItem->group();
             if (grandparentItem)
             {
-                int row = grandparentItem->items().indexOf(parentItem);
+                int row = grandparentItem->itemIndex(parentItem);
                 return createIndex(row, 0, parentItem);
             }
         }
@@ -523,18 +587,41 @@ QModelIndex Profile::parent(const QModelIndex &index) const
     return QModelIndex();
 }
 
-ProfileItem * Profile::itemForIndex(const QModelIndex &index) const
+bool Profile::removeRows(int row, int count, const QModelIndex &parent)
 {
-    if (index.isValid())
+    if (count < 1)
     {
-        ProfileItem * item = static_cast<ProfileItem*>(index.internalPointer());
-        if (item)
-        {
-            return item;
-        }
+        return false;
     }
 
-    return m_root;
+    Group *group = qobject_cast<Group*>(itemForIndex(parent));
+    Q_ASSERT(group);
+    if (!group)
+    {
+        return false;
+    }
+
+    count = qMin(count, group->itemCount() - row);
+
+    beginRemoveRows(parent, row, row + count - 1);
+    for (int n = row; n < row + count; n++)
+    {
+        group->removeItem(n);
+    }
+    endRemoveRows();
+
+    return true;
+}
+
+ProfileItem * Profile::itemForIndex(const QModelIndex &index) const
+{
+    if (!index.isValid())
+    {
+        return m_root;
+    }
+
+    ProfileItem * item = static_cast<ProfileItem*>(index.internalPointer());
+    return item;
 }
 
 QStringList Profile::pathForIndex(const QModelIndex &index) const
@@ -582,6 +669,139 @@ QModelIndex Profile::indexForPath(const QModelIndex &parent, const QStringList &
     return QModelIndex();
 }
 
+QModelIndex Profile::cutItem(const QModelIndex &index)
+{
+    if (!index.isValid())
+    {
+        return index;
+    }
+
+    copyItem(index);
+
+    ProfileItem *item = itemForIndex(index);
+    Q_ASSERT(item);
+
+    Group *parentItem = item->group();
+    Q_ASSERT(parentItem);
+
+    int row = parentItem->itemIndex(item);
+    Q_ASSERT(row == index.row());
+
+    beginRemoveRows(index.parent(), row, row);
+    parentItem->removeItem(row);
+    endRemoveRows();
+
+    if (row > 0)
+    {
+        row--;
+        return createIndex(row, 0, parentItem->item(row));
+    }
+
+    if (parentItem != m_root)
+    {
+        Group *grandparentItem = parentItem->group();
+        Q_ASSERT(grandparentItem);
+        return createIndex(grandparentItem->itemIndex(parentItem), 0, parentItem);
+    }
+
+    return QModelIndex();
+}
+
+void Profile::copyItem(const QModelIndex &index) const
+{
+    ProfileItem *item = itemForIndex(index);
+    Q_ASSERT(item);
+
+    QString output;
+    QXmlStreamWriter xml(&output);
+
+    xml.setAutoFormatting(true);
+    xml.setAutoFormattingIndent(2);
+
+    xml.writeStartDocument();
+    xml.writeStartElement("settings");
+
+    xml.writeStartElement(item->tagName());
+    item->toXml(xml);
+    xml.writeEndElement();
+
+    xml.writeEndElement();
+    xml.writeEndDocument();
+
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(output);
+}
+
+QModelIndex Profile::pasteItem(const QModelIndex &index)
+{
+    if (!index.isValid())
+    {
+        return index;
+    }
+
+    ProfileItem *siblingItem = itemForIndex(index);
+    Q_ASSERT(siblingItem);
+
+    Group *parentItem = qobject_cast<Group*>(siblingItem);
+    if (!parentItem)
+    {
+        parentItem = siblingItem->group();
+    }
+    Q_ASSERT(parentItem);
+
+    const QClipboard *clipboard = QApplication::clipboard();
+    QXmlStreamReader xml(clipboard->text());
+    QList<XmlError*> errors;
+
+    Profile *pastedItems = new Profile;
+    pastedItems->fromXml(xml, errors);
+
+    ProfileItem *firstItem = 0;
+    int row = parentItem->itemIndex(siblingItem) + 1;
+    int count = pastedItems->m_root->itemCount();
+    beginInsertRows(index.parent(), row, count + row);
+    for (int n = 0; n < count; n++)
+    {
+        ProfileItem *child = pastedItems->m_root->item(n);
+        if (!firstItem)
+        {
+            firstItem = child;
+        }
+
+        parentItem->addItem(child);
+    }
+    endInsertRows();
+
+    delete pastedItems;
+
+    return createIndex(row, 0, firstItem);
+}
+
+QModelIndex Profile::newItem(ProfileItem *item, const QModelIndex &index)
+{
+    ProfileItem *siblingItem = itemForIndex(index);
+    Q_ASSERT(siblingItem);
+
+    Group *parentItem = qobject_cast<Group*>(siblingItem);
+    if (!parentItem)
+    {
+        parentItem = siblingItem->group();
+    }
+    Q_ASSERT(parentItem);
+
+    // TODO: smarter naming scheme to try and avoid duplicates
+    static quint32 counter = 0;
+    item->setName(QString("New Item %1").arg(++counter));
+
+    beginInsertRows(indexForPath(parentItem->path()), parentItem->itemCount() - 1, parentItem->itemCount() - 1);
+    parentItem->addItem(item);
+    endInsertRows();
+
+    emit settingsChanged();
+
+    return createIndex(parentItem->itemCount() - 1, 0, item);
+}
+
 void Profile::changeOption(const QString &key, const QVariant &val)
 {
     if (m_options.value(key) != val)
@@ -589,21 +809,6 @@ void Profile::changeOption(const QString &key, const QVariant &val)
         m_options.insert(key, val);
         emit optionChanged(key, val);
     }
-}
-
-void Profile::updateSetting()
-{
-    emit settingsChanged();
-}
-
-void Profile::addSetting(ProfileItem *item)
-{
-    emit settingAdded(item);
-}
-
-void Profile::removeSetting(ProfileItem *item)
-{
-    emit settingRemoved(item);
 }
 
 void Profile::handleTimer(Timer *timer)

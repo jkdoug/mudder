@@ -53,6 +53,11 @@ public:
 private slots:
     void settingModified(bool changed, bool valid);
 
+    void cut();
+    void copy();
+    void paste();
+    void clipboardChanged();
+
     void saveCurrentItem();
     void discardCurrentItem();
 

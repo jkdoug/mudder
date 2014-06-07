@@ -79,6 +79,10 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionCut"/>
+   <addaction name="actionCopy"/>
+   <addaction name="actionPaste"/>
+   <addaction name="separator"/>
    <addaction name="actionSave"/>
    <addaction name="actionDiscard"/>
   </widget>
@@ -112,8 +116,54 @@
     <string>Discard changes</string>
    </property>
   </action>
+  <action name="actionCut">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="client.qrc">
+     <normaloff>:/icons/edit_cut</normaloff>:/icons/edit_cut</iconset>
+   </property>
+   <property name="text">
+    <string>Cut</string>
+   </property>
+   <property name="toolTip">
+    <string>Cut selection to clipboard</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="client.qrc">
+     <normaloff>:/icons/edit_copy</normaloff>:/icons/edit_copy</iconset>
+   </property>
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy selection to clipboard</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="client.qrc">
+     <normaloff>:/icons/edit_paste</normaloff>:/icons/edit_paste</iconset>
+   </property>
+   <property name="text">
+    <string>Paste</string>
+   </property>
+   <property name="toolTip">
+    <string>Paste from clipboard</string>
+   </property>
+  </action>
  </widget>
  <resources>
+  <include location="client.qrc"/>
   <include location="../editor/editor.qrc"/>
  </resources>
  <connections/>

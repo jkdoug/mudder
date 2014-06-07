@@ -38,12 +38,17 @@ class XmlError;
 class Group : public ProfileItem
 {
     Q_OBJECT
+
+    friend class Profile;
+
 public:
     explicit Group(QObject *parent = 0);
 
     virtual int sequence() const { return 0; }
 
-    QList<ProfileItem *> items() { return m_items; }
+    int itemCount() const { return m_items.count(); }
+    int itemIndex(ProfileItem *item) { return m_items.indexOf(item); }
+    ProfileItem * item(int index) { return m_items.at(index); }
 
     QList<Accelerator *> sortedAccelerators(bool enabled = true, bool all = true) const;
     QList<Alias *> sortedAliases(bool enabled = true, bool all = true) const;
@@ -53,18 +58,11 @@ public:
     QList<Trigger *> sortedTriggers(bool enabled = true, bool all = true) const;
     QList<Variable *> sortedVariables(bool all = true) const;
 
-    void addItem(ProfileItem *item);
-    bool removeItem(ProfileItem *item);
-
     virtual QIcon icon() const { return QIcon(":/icons/group"); }
 
     virtual QString tagName() const { return "group"; }
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
-
-signals:
-    void settingAdded(ProfileItem *item);
-    void settingRemoved(ProfileItem *item);
 
 private slots:
     void childModified(ProfileItem *item);
@@ -72,6 +70,11 @@ private slots:
 private:
     template<class C>
     QList<C *> sortedItems(bool enabled, bool all) const;
+
+    Group * createGroup(const QString &name);
+    int addItem(ProfileItem *item);
+    int removeItem(ProfileItem *item);
+    int removeItem(int index);
 
     QList<ProfileItem *> m_items;
 
