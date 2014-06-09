@@ -24,7 +24,7 @@
       <xs:extension base="profileItem">
         <xs:sequence>
           <!-- Make this optional only for triggers with 'omit' if possible -->
-          <xs:element name="send" type="xs:string" minOccurs="0" />
+          <xs:element name="send" type="xs:string" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -155,7 +155,7 @@
 
   <xs:element name="accelerator" type="acceleratorItem" />
 
-  <xs:element name="alias" type="matchableItem" />
+  <xs:element name="alias" type="aliasItem" />
 
   <xs:element name="event" type="eventItem" />
 
