@@ -34,7 +34,8 @@
 
 SettingsWindow::SettingsWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::SettingsWindow)
+    ui(new Ui::SettingsWindow),
+    m_proxy(0)
 {
     ui->setupUi(this);
 
@@ -127,6 +128,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     }
 
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(clipboardChanged()));
+    connect(ui->filter, SIGNAL(textChanged(QString)), SLOT(filterTextChanged(QString)));
 }
 
 SettingsWindow::~SettingsWindow()
@@ -143,7 +145,14 @@ void SettingsWindow::setProfile(Profile *p)
             ui->treeView->selectionModel()->disconnect(this);
         }
 
-        ui->treeView->setModel(p);
+        if (m_proxy)
+        {
+            delete m_proxy;
+        }
+        m_proxy = new SettingsFilterModel(this);
+        m_proxy->setSourceModel(p);
+
+        ui->treeView->setModel(m_proxy);
 
         connect(ui->treeView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), SLOT(currentChanged(QModelIndex,QModelIndex)));
         connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(selectionChanged(QItemSelection,QItemSelection)));
@@ -154,7 +163,12 @@ void SettingsWindow::setProfile(Profile *p)
 
 Profile * SettingsWindow::profile() const
 {
-    return qobject_cast<Profile*>(ui->treeView->model());
+    if (!m_proxy)
+    {
+        return 0;
+    }
+
+    return qobject_cast<Profile*>(m_proxy->sourceModel());
 }
 
 void SettingsWindow::settingModified(bool changed, bool valid)
@@ -167,17 +181,22 @@ void SettingsWindow::settingModified(bool changed, bool valid)
 
 void SettingsWindow::cut()
 {
-    ui->treeView->setCurrentIndex(profile()->cutItem(ui->treeView->currentIndex()));
+    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
+    QModelIndex future(proxyIndex(profile()->cutItem(current)));
+    ui->treeView->setCurrentIndex(future);
 }
 
 void SettingsWindow::copy()
 {
-    profile()->copyItem(ui->treeView->currentIndex());
+    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
+    profile()->copyItem(current);
 }
 
 void SettingsWindow::paste()
 {
-    ui->treeView->setCurrentIndex(profile()->pasteItem(ui->treeView->currentIndex()));
+    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
+    QModelIndex future(proxyIndex(profile()->pasteItem(current)));
+    ui->treeView->setCurrentIndex(future);
 }
 
 void SettingsWindow::clipboardChanged()
@@ -187,7 +206,7 @@ void SettingsWindow::clipboardChanged()
 
 void SettingsWindow::saveCurrentItem()
 {
-    QModelIndex current(ui->treeView->currentIndex());
+    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
     if (!current.isValid())
     {
         return;
@@ -227,7 +246,7 @@ void SettingsWindow::saveCurrentItem()
 
 void SettingsWindow::discardCurrentItem()
 {
-    QModelIndex current(ui->treeView->currentIndex());
+    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
     if (!current.isValid())
     {
         return;
@@ -261,39 +280,47 @@ void SettingsWindow::discardCurrentItem()
     settingModified(false, loaded);
 }
 
+void SettingsWindow::addItem(const QString &type)
+{
+    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
+    ProfileItem *item = ProfileItemFactory::create(type);
+    QModelIndex future(proxyIndex(profile()->newItem(item, current)));
+    ui->treeView->setCurrentIndex(future);
+}
+
 void SettingsWindow::addAccelerator()
 {
-    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("accelerator"), ui->treeView->currentIndex()));
+    addItem("accelerator");
 }
 
 void SettingsWindow::addAlias()
 {
-    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("alias"), ui->treeView->currentIndex()));
+    addItem("alias");
 }
 
 void SettingsWindow::addEvent()
 {
-    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("event"), ui->treeView->currentIndex()));
+    addItem("event");
 }
 
 void SettingsWindow::addGroup()
 {
-    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("group"), ui->treeView->currentIndex()));
+    addItem("group");
 }
 
 void SettingsWindow::addTimer()
 {
-    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("timer"), ui->treeView->currentIndex()));
+    addItem("timer");
 }
 
 void SettingsWindow::addTrigger()
 {
-    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("trigger"), ui->treeView->currentIndex()));
+    addItem("trigger");
 }
 
 void SettingsWindow::addVariable()
 {
-    ui->treeView->setCurrentIndex(profile()->newItem(ProfileItemFactory::create("variable"), ui->treeView->currentIndex()));
+    addItem("variable");
 }
 
 
@@ -304,7 +331,7 @@ void SettingsWindow::currentChanged(const QModelIndex &current, const QModelInde
     int index = 0;
     if (current.isValid())
     {
-        ProfileItem *item = profile()->itemForIndex(current);
+        ProfileItem *item = profile()->itemForIndex(sourceIndex(current));
         Q_ASSERT(item);
         Q_ASSERT(m_editors.contains(item->tagName()));
 
@@ -331,4 +358,29 @@ void SettingsWindow::selectionChanged(const QItemSelection &selected, const QIte
     {
         m_stackedEditors->setCurrentIndex(0);
     }
+}
+
+void SettingsWindow::filterTextChanged(const QString &text)
+{
+    m_proxy->setFilterWildcard(text);
+}
+
+QModelIndex SettingsWindow::proxyIndex(const QModelIndex &modelIndex)
+{
+    if (modelIndex.model() != m_proxy)
+    {
+        return m_proxy->mapFromSource(modelIndex);
+    }
+
+    return modelIndex;
+}
+
+QModelIndex SettingsWindow::sourceIndex(const QModelIndex &modelIndex)
+{
+    if (modelIndex.model() == m_proxy)
+    {
+        return m_proxy->mapToSource(modelIndex);
+    }
+
+    return modelIndex;
 }

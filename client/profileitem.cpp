@@ -119,7 +119,7 @@ void ProfileItem::clone(const ProfileItem &rhs)
 
 QString ProfileItem::fullName() const
 {
-    return path().join("/");
+    return path().join('/').prepend('/');
 }
 
 Group * ProfileItem::group() const
@@ -134,7 +134,7 @@ QStringList ProfileItem::path() const
         return QStringList() << group()->path() << name();
     }
 
-    return QStringList() << name();
+    return QStringList();
 }
 
 bool ProfileItem::enabled() const

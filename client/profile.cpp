@@ -643,7 +643,7 @@ QModelIndex Profile::indexForPath(const QStringList &path) const
 
 QModelIndex Profile::indexForPath(const QModelIndex &parent, const QStringList &path) const
 {
-    if (path.isEmpty())
+    if (path.isEmpty() || path.join('/') == "/")
     {
         return QModelIndex();
     }
@@ -782,10 +782,12 @@ QModelIndex Profile::newItem(ProfileItem *item, const QModelIndex &index)
     ProfileItem *siblingItem = itemForIndex(index);
     Q_ASSERT(siblingItem);
 
+    QModelIndex parentIndex(index);
     Group *parentItem = qobject_cast<Group*>(siblingItem);
     if (!parentItem)
     {
         parentItem = siblingItem->group();
+        parentIndex = index.parent();
     }
     Q_ASSERT(parentItem);
 
@@ -793,13 +795,14 @@ QModelIndex Profile::newItem(ProfileItem *item, const QModelIndex &index)
     static quint32 counter = 0;
     item->setName(QString("New Item %1").arg(++counter));
 
-    beginInsertRows(indexForPath(parentItem->path()), parentItem->itemCount() - 1, parentItem->itemCount() - 1);
-    parentItem->addItem(item);
+    int row = parentItem->itemCount();
+    beginInsertRows(parentIndex, row, row);
+    row = parentItem->addItem(item);
     endInsertRows();
 
     emit settingsChanged();
 
-    return createIndex(parentItem->itemCount() - 1, 0, item);
+    return createIndex(row, 0, item);
 }
 
 void Profile::changeOption(const QString &key, const QVariant &val)

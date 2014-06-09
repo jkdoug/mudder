@@ -29,6 +29,7 @@
 #include <QMap>
 #include <QStackedWidget>
 #include <QToolButton>
+#include "settingsfiltermodel.h"
 
 namespace Ui {
 class SettingsWindow;
@@ -72,13 +73,22 @@ private slots:
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
+    void filterTextChanged(const QString &text);
+
 private:
+    QModelIndex proxyIndex(const QModelIndex &modelIndex);
+    QModelIndex sourceIndex(const QModelIndex &modelIndex);
+
+    void addItem(const QString &type);
+
     Ui::SettingsWindow *ui;
 
     QToolButton *m_buttonNew;
 
     QStackedWidget *m_stackedEditors;
     QMap<QString, int> m_editors;
+
+    SettingsFilterModel *m_proxy;
 };
 
 #endif // SETTINGSWINDOW_H

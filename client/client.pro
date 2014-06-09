@@ -46,7 +46,8 @@ SOURCES += main.cpp\
     configscripting.cpp \
     dialogprofile.cpp \
     configinput.cpp \
-    configoutput.cpp
+    configoutput.cpp \
+    settingsfiltermodel.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -85,7 +86,8 @@ HEADERS  += mainwindow.h \
     configscripting.h \
     dialogprofile.h \
     configinput.h \
-    configoutput.h
+    configoutput.h \
+    settingsfiltermodel.h
 
 FORMS    += mainwindow.ui \
     console.ui \
