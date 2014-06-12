@@ -44,8 +44,9 @@ public:
     bool match(const QString &str);
 
     virtual QIcon icon() const { return QIcon(":/icons/event"); }
-
+    virtual QString value() const { return m_title; }
     virtual QString tagName() const { return "event"; }
+
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 

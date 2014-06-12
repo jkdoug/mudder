@@ -47,7 +47,8 @@ SOURCES += main.cpp\
     dialogprofile.cpp \
     configinput.cpp \
     configoutput.cpp \
-    settingsfiltermodel.cpp
+    settingsfiltermodel.cpp \
+    richtextdelegate.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -87,7 +88,8 @@ HEADERS  += mainwindow.h \
     dialogprofile.h \
     configinput.h \
     configoutput.h \
-    settingsfiltermodel.h
+    settingsfiltermodel.h \
+    richtextdelegate.h
 
 FORMS    += mainwindow.ui \
     console.ui \

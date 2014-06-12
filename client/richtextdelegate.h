@@ -21,22 +21,31 @@
 */
 
 
-#ifndef ALIAS_H
-#define ALIAS_H
+#ifndef RICHTEXTDELEGATE_H
+#define RICHTEXTDELEGATE_H
 
-#include "matchable.h"
+#include <QStyledItemDelegate>
+#include <QTextDocument>
 
-class Alias : public Matchable
+
+class QModelIndex;
+class QPainter;
+class QStyleOptionViewItem;
+
+
+class RichTextDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
 public:
-    explicit Alias(QObject *parent = 0);
+    explicit RichTextDelegate(QObject *parent = 0);
+    ~RichTextDelegate();
 
-    virtual QIcon icon() const { return QIcon(":/icons/alias"); }
-    virtual QString tagName() const { return "alias"; }
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-    virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
+private:
+    mutable QTextDocument m_document;
 };
 
-#endif // ALIAS_H
+#endif // RICHTEXTDELEGATE_H

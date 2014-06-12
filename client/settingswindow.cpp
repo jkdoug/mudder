@@ -21,6 +21,7 @@
 */
 
 
+#include <QClipboard>
 #include <QLabel>
 #include <QMenu>
 #include "settingswindow.h"
@@ -30,7 +31,7 @@
 #include "profileitem.h"
 #include "profileitemfactory.h"
 #include "editsetting.h"
-#include <QClipboard>
+#include "richtextdelegate.h"
 
 SettingsWindow::SettingsWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -38,6 +39,8 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     m_proxy(0)
 {
     ui->setupUi(this);
+
+    ui->treeView->setItemDelegateForColumn(0, new RichTextDelegate(this));
 
     QAction *newAccelerator = new QAction(tr("A&ccelerator"), this);
     newAccelerator->setStatusTip(tr("Create a new key accelerator"));

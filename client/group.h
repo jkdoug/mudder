@@ -59,8 +59,9 @@ public:
     QList<Variable *> sortedVariables(bool all = true) const;
 
     virtual QIcon icon() const { return QIcon(":/icons/group"); }
-
+    virtual QString value() const { return QString(); }
     virtual QString tagName() const { return "group"; }
+
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 

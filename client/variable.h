@@ -51,14 +51,14 @@ public:
     void setContents(const QVariant &contents);
     QString typeName();
 
+    virtual int sequence() const { return 0; }
     virtual QIcon icon() const { return QIcon(":/icons/variable"); }
     virtual QString value() const { return contents().toString(); }
-    virtual int sequence() const { return 0; }
+    virtual QString tagName() const { return "variable"; }
 
     static QVariant::Type translateType(const QString &type);
     static QVariant translateValue(const QVariant &value, QVariant::Type type);
 
-    virtual QString tagName() const { return "variable"; }
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 

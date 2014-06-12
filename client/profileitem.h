@@ -55,10 +55,10 @@ public:
     Group * group() const;
     QStringList path() const;
 
-    virtual QIcon icon() const { return QIcon(); }
-    virtual QString value() const { return QString(); }
+    virtual QIcon icon() const = 0;
+    virtual QString value() const = 0;
+    virtual QString tagName() const = 0;
 
-    virtual QString tagName() const { return "item"; }
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 

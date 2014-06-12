@@ -481,7 +481,14 @@ QVariant Profile::data(const QModelIndex &index, int role) const
             switch (index.column())
             {
             case Name:
-                return item->name();
+                if (item->enabled())
+                {
+                    return item->name();
+                }
+                else
+                {
+                    return QString("<p style=\"color:dimgray;\">%1").arg(item->name());
+                }
 
             default:
                 Q_ASSERT(false);
