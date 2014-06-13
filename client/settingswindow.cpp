@@ -77,20 +77,20 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     newVariable->setIcon(QIcon(":/icons/variable"));
     connect(newVariable, SIGNAL(triggered()), SLOT(addVariable()));
 
-    QMenu *menuNew = new QMenu(this);
-    menuNew->addAction(newAccelerator);
-    menuNew->addAction(newAlias);
-    menuNew->addAction(newEvent);
-    menuNew->addAction(newGroup);
-    menuNew->addAction(newTimer);
-    menuNew->addAction(newTrigger);
-    menuNew->addAction(newVariable);
+    m_newItem = new QMenu(tr("&New"), this);
+    m_newItem->addAction(newAccelerator);
+    m_newItem->addAction(newAlias);
+    m_newItem->addAction(newEvent);
+    m_newItem->addAction(newGroup);
+    m_newItem->addAction(newTimer);
+    m_newItem->addAction(newTrigger);
+    m_newItem->addAction(newVariable);
 
     m_buttonNew = new QToolButton(this);
     m_buttonNew->setDefaultAction(newTrigger);
     m_buttonNew->setEnabled(false);
     m_buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
-    m_buttonNew->setMenu(menuNew);
+    m_buttonNew->setMenu(m_newItem);
 
     ui->toolBar->insertWidget(ui->actionSave, m_buttonNew);
     ui->toolBar->insertSeparator(ui->actionSave);
@@ -381,6 +381,11 @@ void SettingsWindow::selectionChanged(const QItemSelection &selected, const QIte
 
 void SettingsWindow::showContextMenu(const QPoint &point)
 {
+    if (profile() == 0)
+    {
+        return;
+    }
+
     QList<QAction *> actions;
 
     QModelIndex selected(ui->treeView->indexAt(point));
@@ -388,6 +393,10 @@ void SettingsWindow::showContextMenu(const QPoint &point)
     {
         actions << m_deleteItem;
     }
+
+    actions << m_newItem->menuAction();
+
+    qCDebug(MUDDER_PROFILE) << "Context Menu" << selected;
 
     QMenu::exec(actions, ui->treeView->mapToGlobal(point));
 }

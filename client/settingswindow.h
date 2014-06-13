@@ -91,6 +91,7 @@ private:
     QToolButton *m_buttonNew;
 
     QAction *m_deleteItem;
+    QMenu *m_newItem;
 
     QStackedWidget *m_stackedEditors;
     QMap<QString, int> m_editors;
