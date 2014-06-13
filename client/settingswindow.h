@@ -24,6 +24,7 @@
 #ifndef SETTINGSWINDOW_H
 #define SETTINGSWINDOW_H
 
+#include <QAction>
 #include <QItemSelection>
 #include <QMainWindow>
 #include <QMap>
@@ -70,8 +71,12 @@ private slots:
     void addTrigger();
     void addVariable();
 
+    void deleteItem();
+
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
+    void showContextMenu(const QPoint &point);
 
     void filterTextChanged(const QString &text);
 
@@ -84,6 +89,8 @@ private:
     Ui::SettingsWindow *ui;
 
     QToolButton *m_buttonNew;
+
+    QAction *m_deleteItem;
 
     QStackedWidget *m_stackedEditors;
     QMap<QString, int> m_editors;

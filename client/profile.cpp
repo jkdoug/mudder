@@ -617,6 +617,8 @@ bool Profile::removeRows(int row, int count, const QModelIndex &parent)
     }
     endRemoveRows();
 
+    emit settingsChanged();
+
     return true;
 }
 
@@ -698,10 +700,11 @@ QModelIndex Profile::cutItem(const QModelIndex &index)
     parentItem->removeItem(row);
     endRemoveRows();
 
+    emit settingsChanged();
+
     if (row > 0)
     {
-        row--;
-        return createIndex(row, 0, parentItem->item(row));
+        return createIndex(row - 1, 0, parentItem->item(row));
     }
 
     if (parentItem != m_root)
@@ -780,6 +783,8 @@ QModelIndex Profile::pasteItem(const QModelIndex &index)
     endInsertRows();
 
     delete pastedItems;
+
+    emit settingsChanged();
 
     return createIndex(row, 0, firstItem);
 }

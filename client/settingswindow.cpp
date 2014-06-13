@@ -102,6 +102,10 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     connect(ui->actionSave, SIGNAL(triggered()), SLOT(saveCurrentItem()));
     connect(ui->actionDiscard, SIGNAL(triggered()), SLOT(discardCurrentItem()));
 
+    m_deleteItem = new QAction(tr("&Delete"), this);
+    m_deleteItem->setStatusTip(tr("Delete the selected item"));
+    connect(m_deleteItem, SIGNAL(triggered()), SLOT(deleteItem()));
+
     m_stackedEditors = new QStackedWidget(this);
     ui->splitter->addWidget(m_stackedEditors);
 
@@ -131,6 +135,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     }
 
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(clipboardChanged()));
+    connect(ui->treeView, SIGNAL(customContextMenuRequested(QPoint)), SLOT(showContextMenu(QPoint)));
     connect(ui->filter, SIGNAL(textChanged(QString)), SLOT(filterTextChanged(QString)));
 }
 
@@ -326,6 +331,17 @@ void SettingsWindow::addVariable()
     addItem("variable");
 }
 
+void SettingsWindow::deleteItem()
+{
+    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
+    if (!current.isValid())
+    {
+        return;
+    }
+
+    profile()->removeRow(current.row(), current.parent());
+}
+
 
 void SettingsWindow::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
@@ -361,6 +377,19 @@ void SettingsWindow::selectionChanged(const QItemSelection &selected, const QIte
     {
         m_stackedEditors->setCurrentIndex(0);
     }
+}
+
+void SettingsWindow::showContextMenu(const QPoint &point)
+{
+    QList<QAction *> actions;
+
+    QModelIndex selected(ui->treeView->indexAt(point));
+    if (selected.isValid())
+    {
+        actions << m_deleteItem;
+    }
+
+    QMenu::exec(actions, ui->treeView->mapToGlobal(point));
 }
 
 void SettingsWindow::filterTextChanged(const QString &text)
