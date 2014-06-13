@@ -55,9 +55,10 @@ public:
 private slots:
     void settingModified(bool changed, bool valid);
 
-    void cut();
-    void copy();
-    void paste();
+    void deleteItem();
+    void cutItem();
+    void copyItem();
+    void pasteItem();
     void clipboardChanged();
 
     void saveCurrentItem();
@@ -71,8 +72,6 @@ private slots:
     void addTrigger();
     void addVariable();
 
-    void deleteItem();
-
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
@@ -84,13 +83,14 @@ private:
     QModelIndex proxyIndex(const QModelIndex &modelIndex);
     QModelIndex sourceIndex(const QModelIndex &modelIndex);
 
-    void addItem(const QString &type);
+    void setCurrentIndex(const QModelIndex &index);
+
+    void addItem(const QString &type, QAction *action = 0);
 
     Ui::SettingsWindow *ui;
 
     QToolButton *m_buttonNew;
 
-    QAction *m_deleteItem;
     QMenu *m_newItem;
 
     QStackedWidget *m_stackedEditors;

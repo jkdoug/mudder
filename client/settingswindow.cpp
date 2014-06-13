@@ -92,19 +92,16 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     m_buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
     m_buttonNew->setMenu(m_newItem);
 
-    ui->toolBar->insertWidget(ui->actionSave, m_buttonNew);
-    ui->toolBar->insertSeparator(ui->actionSave);
+    ui->toolBar->insertWidget(ui->actionDelete, m_buttonNew);
+    ui->toolBar->insertSeparator(ui->actionDelete);
 
-    connect(ui->actionCut, SIGNAL(triggered()), SLOT(cut()));
-    connect(ui->actionCopy, SIGNAL(triggered()), SLOT(copy()));
-    connect(ui->actionPaste, SIGNAL(triggered()), SLOT(paste()));
+    connect(ui->actionDelete, SIGNAL(triggered()), SLOT(deleteItem()));
+    connect(ui->actionCut, SIGNAL(triggered()), SLOT(cutItem()));
+    connect(ui->actionCopy, SIGNAL(triggered()), SLOT(copyItem()));
+    connect(ui->actionPaste, SIGNAL(triggered()), SLOT(pasteItem()));
 
-    connect(ui->actionSave, SIGNAL(triggered()), SLOT(saveCurrentItem()));
+    connect(ui->actionApply, SIGNAL(triggered()), SLOT(saveCurrentItem()));
     connect(ui->actionDiscard, SIGNAL(triggered()), SLOT(discardCurrentItem()));
-
-    m_deleteItem = new QAction(tr("&Delete"), this);
-    m_deleteItem->setStatusTip(tr("Delete the selected item"));
-    connect(m_deleteItem, SIGNAL(triggered()), SLOT(deleteItem()));
 
     m_stackedEditors = new QStackedWidget(this);
     ui->splitter->addWidget(m_stackedEditors);
@@ -183,28 +180,39 @@ void SettingsWindow::settingModified(bool changed, bool valid)
 {
     qCDebug(MUDDER_PROFILE) << "Settings window modified:" << changed << valid;
 
-    ui->actionSave->setEnabled(changed && valid);
+    ui->actionApply->setEnabled(changed && valid);
     ui->actionDiscard->setEnabled(changed);
 }
 
-void SettingsWindow::cut()
+void SettingsWindow::deleteItem()
+{
+    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
+    if (!current.isValid())
+    {
+        return;
+    }
+
+    profile()->removeRow(current.row(), current.parent());
+}
+
+void SettingsWindow::cutItem()
 {
     QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
     QModelIndex future(proxyIndex(profile()->cutItem(current)));
-    ui->treeView->setCurrentIndex(future);
+    setCurrentIndex(future);
 }
 
-void SettingsWindow::copy()
+void SettingsWindow::copyItem()
 {
     QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
     profile()->copyItem(current);
 }
 
-void SettingsWindow::paste()
+void SettingsWindow::pasteItem()
 {
     QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
     QModelIndex future(proxyIndex(profile()->pasteItem(current)));
-    ui->treeView->setCurrentIndex(future);
+    setCurrentIndex(future);
 }
 
 void SettingsWindow::clipboardChanged()
@@ -288,58 +296,52 @@ void SettingsWindow::discardCurrentItem()
     settingModified(false, loaded);
 }
 
-void SettingsWindow::addItem(const QString &type)
+void SettingsWindow::addItem(const QString &type, QAction *action)
 {
     QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
     ProfileItem *item = ProfileItemFactory::create(type);
     QModelIndex future(proxyIndex(profile()->newItem(item, current)));
-    ui->treeView->setCurrentIndex(future);
+    setCurrentIndex(future);
+
+    if (action)
+    {
+        m_buttonNew->setDefaultAction(action);
+    }
 }
 
 void SettingsWindow::addAccelerator()
 {
-    addItem("accelerator");
+    addItem("accelerator", qobject_cast<QAction*>(sender()));
 }
 
 void SettingsWindow::addAlias()
 {
-    addItem("alias");
+    addItem("alias", qobject_cast<QAction*>(sender()));
 }
 
 void SettingsWindow::addEvent()
 {
-    addItem("event");
+    addItem("event", qobject_cast<QAction*>(sender()));
 }
 
 void SettingsWindow::addGroup()
 {
-    addItem("group");
+    addItem("group", qobject_cast<QAction*>(sender()));
 }
 
 void SettingsWindow::addTimer()
 {
-    addItem("timer");
+    addItem("timer", qobject_cast<QAction*>(sender()));
 }
 
 void SettingsWindow::addTrigger()
 {
-    addItem("trigger");
+    addItem("trigger", qobject_cast<QAction*>(sender()));
 }
 
 void SettingsWindow::addVariable()
 {
-    addItem("variable");
-}
-
-void SettingsWindow::deleteItem()
-{
-    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
-    if (!current.isValid())
-    {
-        return;
-    }
-
-    profile()->removeRow(current.row(), current.parent());
+    addItem("variable", qobject_cast<QAction*>(sender()));
 }
 
 
@@ -372,6 +374,7 @@ void SettingsWindow::selectionChanged(const QItemSelection &selected, const QIte
     bool selection = !selected.isEmpty();
     ui->actionCopy->setEnabled(selection);
     ui->actionCut->setEnabled(selection);
+    ui->actionDelete->setEnabled(selection);
 
     if (!selection)
     {
@@ -386,19 +389,24 @@ void SettingsWindow::showContextMenu(const QPoint &point)
         return;
     }
 
-    QList<QAction *> actions;
+    QMenu * popup = new QMenu(this);
+
+    popup->addAction(m_newItem->menuAction());
+    popup->addSeparator();
 
     QModelIndex selected(ui->treeView->indexAt(point));
     if (selected.isValid())
     {
-        actions << m_deleteItem;
+        popup->addAction(ui->actionDelete);
+        popup->addAction(ui->actionCut);
+        popup->addAction(ui->actionCopy);
     }
 
-    actions << m_newItem->menuAction();
+    popup->addAction(ui->actionPaste);
 
-    qCDebug(MUDDER_PROFILE) << "Context Menu" << selected;
+    popup->exec(ui->treeView->mapToGlobal(point));
 
-    QMenu::exec(actions, ui->treeView->mapToGlobal(point));
+    delete popup;
 }
 
 void SettingsWindow::filterTextChanged(const QString &text)
@@ -424,4 +432,10 @@ QModelIndex SettingsWindow::sourceIndex(const QModelIndex &modelIndex)
     }
 
     return modelIndex;
+}
+
+void SettingsWindow::setCurrentIndex(const QModelIndex &index)
+{
+    ui->treeView->setCurrentIndex(index);
+    ui->treeView->scrollTo(index);
 }

@@ -24,6 +24,9 @@
         <file alias="options">icons/game_options.png</file>
         <file alias="input">icons/prefs_input.png</file>
         <file alias="output">icons/prefs_output.png</file>
+        <file alias="apply">icons/settings_apply.png</file>
+        <file alias="delete">icons/settings_delete.png</file>
+        <file alias="discard">icons/settings_discard.png</file>
     </qresource>
     <qresource prefix="/lua">
         <file alias="io_exists">lua/io_exists.lua</file>

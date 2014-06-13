@@ -79,26 +79,27 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionDelete"/>
    <addaction name="actionCut"/>
    <addaction name="actionCopy"/>
    <addaction name="actionPaste"/>
    <addaction name="separator"/>
-   <addaction name="actionSave"/>
+   <addaction name="actionApply"/>
    <addaction name="actionDiscard"/>
   </widget>
-  <action name="actionSave">
+  <action name="actionApply">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../editor/editor.qrc">
-     <normaloff>:/icons/small_save</normaloff>:/icons/small_save</iconset>
+    <iconset resource="client.qrc">
+     <normaloff>:/icons/apply</normaloff>:/icons/apply</iconset>
    </property>
    <property name="text">
-    <string>&amp;Save</string>
+    <string>Apply</string>
    </property>
    <property name="toolTip">
-    <string>Save changes</string>
+    <string>Apply changes</string>
    </property>
   </action>
   <action name="actionDiscard">
@@ -106,11 +107,11 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../editor/editor.qrc">
-     <normaloff>:/icons/small_close</normaloff>:/icons/small_close</iconset>
+    <iconset resource="client.qrc">
+     <normaloff>:/icons/discard</normaloff>:/icons/discard</iconset>
    </property>
    <property name="text">
-    <string>&amp;Discard</string>
+    <string>Discard</string>
    </property>
    <property name="toolTip">
     <string>Discard changes</string>
@@ -161,10 +162,24 @@
     <string>Paste from clipboard</string>
    </property>
   </action>
+  <action name="actionDelete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="client.qrc">
+     <normaloff>:/icons/delete</normaloff>:/icons/delete</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete selection</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="client.qrc"/>
-  <include location="../editor/editor.qrc"/>
  </resources>
  <connections/>
 </ui>
