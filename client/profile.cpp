@@ -75,10 +75,11 @@ Profile::Profile(QObject *parent) :
 template <class C>
 C * Profile::findItem(const QString &name) const
 {
-    QModelIndex itemIndex(indexForPath(name.split('/')));
+    QStringList names(QDir::cleanPath(name).split('/', QString::SkipEmptyParts));
+    QModelIndex itemIndex(indexForPath(names));
     if (!itemIndex.isValid())
     {
-        qCDebug(MUDDER_PROFILE) << "Item not found:" << name;
+        qCDebug(MUDDER_PROFILE) << "Item not found:" << names;
         return 0;
     }
 
@@ -113,18 +114,20 @@ C * Profile::findItem(const QString &name) const
 
 Group * Profile::findGroup(const QString &path) const
 {
-    QString cleanPath(QDir::cleanPath(path));
-    if (cleanPath.isEmpty())
-    {
-        return activeGroup();
-    }
+    return findItem<Group>(path);
 
-    if (cleanPath.at(0) == '/')
-    {
-        return findGroup(cleanPath.mid(1).split('/', QString::SkipEmptyParts), rootGroup());
-    }
+//    QString cleanPath(QDir::cleanPath(path));
+//    if (cleanPath.isEmpty())
+//    {
+//        return activeGroup();
+//    }
 
-    return findGroup(cleanPath.split('/', QString::SkipEmptyParts), activeGroup());
+//    if (cleanPath.at(0) == '/')
+//    {
+//        return findGroup(cleanPath.mid(1).split('/', QString::SkipEmptyParts), rootGroup());
+//    }
+
+//    return findGroup(cleanPath.split('/', QString::SkipEmptyParts), activeGroup());
 }
 
 Group * Profile::findGroup(const QStringList &path, Group *parent) const
@@ -195,31 +198,39 @@ void Profile::setActiveGroup(Group *group)
 
 QVariant Profile::getVariable(const QString &name)
 {
-    QString varName(name.section('/', -1));
-    qCDebug(MUDDER_PROFILE) << "GetVariable varName:" << varName;
-    if (varName.isEmpty())
+    Variable *variable = findItem<Variable>(name);
+    if (variable)
     {
-        return QVariant();
-    }
-
-    QString groupName(name.left(qMax(name.length() - varName.length(), 0)));
-    qCDebug(MUDDER_PROFILE) << "GetVariable groupName:" << groupName;
-    Group *group = findGroup(groupName);
-    if (!group)
-    {
-        return QVariant();
-    }
-
-    foreach (Variable *var, group->sortedVariables(groupName.isEmpty()))
-    {
-        if (var->name().compare(varName, Qt::CaseInsensitive) == 0)
-        {
-            qCDebug(MUDDER_PROFILE) << "GetVariable found:" << var->fullName();
-            return var->contents();
-        }
+        return variable->contents();
     }
 
     return QVariant();
+
+//    QString varName(name.section('/', -1));
+//    qCDebug(MUDDER_PROFILE) << "GetVariable varName:" << varName;
+//    if (varName.isEmpty())
+//    {
+//        return QVariant();
+//    }
+
+//    QString groupName(name.left(qMax(name.length() - varName.length(), 0)));
+//    qCDebug(MUDDER_PROFILE) << "GetVariable groupName:" << groupName;
+//    Group *group = findGroup(groupName);
+//    if (!group)
+//    {
+//        return QVariant();
+//    }
+
+//    foreach (Variable *var, group->sortedVariables(groupName.isEmpty()))
+//    {
+//        if (var->name().compare(varName, Qt::CaseInsensitive) == 0)
+//        {
+//            qCDebug(MUDDER_PROFILE) << "GetVariable found:" << var->fullName();
+//            return var->contents();
+//        }
+//    }
+
+//    return QVariant();
 }
 
 bool Profile::setVariable(const QString &name, const QVariant &val)
@@ -271,27 +282,16 @@ bool Profile::setVariable(const QString &name, const QVariant &val)
 
 bool Profile::deleteVariable(const QString &name)
 {
-    QString varName(name.section('/', -1));
-    qCDebug(MUDDER_PROFILE) << "DeleteVariable varName:" << varName;
-    if (varName.isEmpty())
+    Variable *variable = findItem<Variable>(name);
+    if (variable)
     {
-        return false;
-    }
-
-    QString groupName(name.left(qMax(name.length() - varName.length(), 0)));
-    qCDebug(MUDDER_PROFILE) << "DeleteVariable groupName:" << groupName;
-    Group *group = findGroup(groupName);
-    if (!group)
-    {
-        return false;
-    }
-
-    foreach (Variable *var, group->sortedVariables(groupName.isEmpty()))
-    {
-        if (var->name().compare(varName, Qt::CaseInsensitive) == 0)
+        Group *group = variable->group();
+        if (!group)
         {
-            return group->removeItem(var);
+            return false;
         }
+
+        return removeRow(group->itemIndex(variable), indexForPath(group->path()));
     }
 
     return false;
