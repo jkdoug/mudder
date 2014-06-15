@@ -25,8 +25,8 @@
 #include "logger.h"
 #include "coreapplication.h"
 
-ProxyAction::ProxyAction(QAction *action, QList<int> contexts, QObject *parent) :
-    Command(contexts, parent),
+ProxyAction::ProxyAction(QAction *action, QObject *parent) :
+    Command(parent),
     m_initialized(false)
 {
     m_action = action;

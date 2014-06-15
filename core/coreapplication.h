@@ -25,8 +25,10 @@
 #define COREAPPLICATION_H
 
 #include "core_global.h"
+#include "actionmanager.h"
 #include "contextmanager.h"
 #include <QApplication>
+#include <QWidget>
 
 class CORESHARED_EXPORT CoreApplication : public QApplication
 {
@@ -40,6 +42,10 @@ public:
     static void setApplicationBusy(bool busy);
     static bool applicationBusy();
 
+    static void setMainWindow(QWidget *win);
+    static QWidget * mainWindow();
+
+    static ActionManager * actionManager();
     static ContextManager * contextManager();
 
     bool notify(QObject *object, QEvent *event);
@@ -57,9 +63,13 @@ private:
 
     int m_busyCount;
 
+    QWidget *m_mainWindow;
+
+    ActionManager *m_actionManager;
     ContextManager *m_contextManager;
 };
 
+#define ACTION_MANAGER CoreApplication::actionManager()
 #define CONTEXT_MANAGER CoreApplication::contextManager()
 
 #endif // COREAPPLICATION_H

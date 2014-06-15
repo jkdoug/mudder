@@ -46,6 +46,8 @@ private:
     QString m_userText;
 
     QShortcut *m_shortcut;
+
+    QList<int> m_contexts;
 };
 
 #endif // SHORTCUTCOMMAND_H

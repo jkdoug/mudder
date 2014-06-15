@@ -34,7 +34,7 @@ class CORESHARED_EXPORT ProxyAction : public Command
 {
     Q_OBJECT
 public:
-    explicit ProxyAction(QAction *action, QList<int> contexts, QObject *parent = 0);
+    explicit ProxyAction(QAction *action, QObject *parent = 0);
     ~ProxyAction();
 
     virtual QAction * action() const { return m_action; }
@@ -58,6 +58,8 @@ private:
 
     QPointer<QAction> m_activeAction;
     QHash<int, QPointer<QAction> > m_contextActions;
+
+    QList<int> m_contexts;
 };
 
 #endif // PROXYACTION_H

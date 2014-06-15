@@ -178,8 +178,6 @@ Profile * SettingsWindow::profile() const
 
 void SettingsWindow::settingModified(bool changed, bool valid)
 {
-    qCDebug(MUDDER_PROFILE) << "Settings window modified:" << changed << valid;
-
     ui->actionApply->setEnabled(changed && valid);
     ui->actionDiscard->setEnabled(changed);
 }

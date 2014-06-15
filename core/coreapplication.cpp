@@ -35,12 +35,15 @@ CoreApplication::CoreApplication(int &argc, char **argv) :
     {
         m_instance = this;
 
+        m_actionManager = new ActionManager;
         m_contextManager = new ContextManager;
     }
 }
 
 CoreApplication::~CoreApplication()
 {
+    delete m_actionManager;
+    delete m_contextManager;
 }
 
 CoreApplication * CoreApplication::instance()
@@ -86,6 +89,21 @@ void CoreApplication::q_setApplicationBusy(bool busy)
 bool CoreApplication::applicationBusy()
 {
     return instance()->m_busyCount > 0;
+}
+
+void CoreApplication::setMainWindow(QWidget *win)
+{
+    instance()->m_mainWindow = win;
+}
+
+QWidget * CoreApplication::mainWindow()
+{
+    return instance()->m_mainWindow;
+}
+
+ActionManager * CoreApplication::actionManager()
+{
+    return instance()->m_actionManager;
 }
 
 ContextManager * CoreApplication::contextManager()

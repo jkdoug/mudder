@@ -20,7 +20,9 @@ SOURCES += \
     proxyaction.cpp \
     connection.cpp \
     configpage.cpp \
-    configwidget.cpp
+    configwidget.cpp \
+    actionmanager.cpp \
+    actioncontainer.cpp
 
 HEADERS +=\
         core_global.h \
@@ -32,7 +34,9 @@ HEADERS +=\
     proxyaction.h \
     connection.h \
     configpage.h \
-    configwidget.h
+    configwidget.h \
+    actionmanager.h \
+    actioncontainer.h
 
 unix {
     target.path = /usr/lib

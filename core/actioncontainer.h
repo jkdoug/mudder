@@ -21,24 +21,36 @@
 */
 
 
+#ifndef ACTIONCONTAINER_H
+#define ACTIONCONTAINER_H
+
+#include <QAction>
+#include <QList>
+#include <QMap>
+#include <QMenu>
+#include <QObject>
+#include <QPointer>
+#include <QString>
+#include "core_global.h"
 #include "command.h"
 
-Command::Command(QObject *parent) :
-    QObject(parent)
+class CORESHARED_EXPORT ActionContainer : public QObject
 {
-}
+    Q_OBJECT
+public:
+    explicit ActionContainer(const QString &name, QObject *parent = 0);
+    ~ActionContainer();
 
-void Command::setDefaultKey(const QKeySequence &key)
-{
-    m_defaultKey = key;
-    handleKeyChange(m_currentKey);
-    emit keyChanged();
-}
+    virtual QMenu *menu() const { return m_menu; }
 
-void Command::setKey(const QKeySequence &key)
-{
-    QKeySequence old(m_currentKey);
-    m_currentKey = key;
-    handleKeyChange(old);
-    emit keyChanged();
-}
+    virtual void addAction(Command *action, const QString &before = QString());
+    virtual void addSeparator(const QString &before = QString());
+    virtual void addMenu(ActionContainer *menu, const QString &before = QString());
+
+private:
+    QMenu *m_menu;
+    QList<QPointer<ActionContainer> > m_subMenus;
+    QMap<QString, QAction*> m_actionMap;
+};
+
+#endif // ACTIONCONTAINER_H

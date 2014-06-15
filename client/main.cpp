@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 //    LOG->toggleConsoleEngine(true);
 
     MainWindow w;
+    CoreApplication::setMainWindow(&w);
     w.show();
 
     int result = a.exec();

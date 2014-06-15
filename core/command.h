@@ -37,7 +37,7 @@ class CORESHARED_EXPORT Command : public QObject
 {
     Q_OBJECT
 public:
-    explicit Command(QList<int> contexts, QObject *parent = 0);
+    explicit Command(QObject *parent = 0);
 
     void setDefaultKey(const QKeySequence &key);
     QKeySequence defaultKey() const { return m_defaultKey; }
@@ -45,16 +45,14 @@ public:
     void setKey(const QKeySequence &key);
     QKeySequence key() const { return m_currentKey; }
 
-    QList<int> contexts() const { return m_contexts; }
+    void setDefaultText(const QString &text) { m_defaultText = text; }
+    QString defaultText() const { return m_defaultText; }
 
     virtual QAction * action() const { return 0; }
     virtual QShortcut * shortcut() const { return 0; }
     virtual QString text() const = 0;
 
     virtual void handleKeyChange(const QKeySequence &old) = 0;
-
-public slots:
-    virtual void changeContexts(QList<int> contexts) = 0;
 
 signals:
     void keyChanged();
@@ -63,7 +61,7 @@ protected:
     QKeySequence m_defaultKey;
     QKeySequence m_currentKey;
 
-    QList<int> m_contexts;
+    QString m_defaultText;
 };
 
 #endif // COMMAND_H

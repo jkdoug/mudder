@@ -25,18 +25,21 @@
 #include "logger.h"
 
 ShortcutCommand::ShortcutCommand(const QString &text, QShortcut *shortcut, QList<int> contexts, QObject *parent) :
-    Command(contexts, parent)
+    Command(parent)
 {
     Q_ASSERT(shortcut);
 
     m_userText = text;
     m_shortcut = shortcut;
     m_shortcut->setEnabled(false);
+    m_contexts = contexts;
 }
 
 void ShortcutCommand::handleKeyChange(const QKeySequence &old)
 {
+    Q_UNUSED(old);
 
+    m_shortcut->setKey(key());
 }
 
 void ShortcutCommand::changeContexts(QList<int> contexts)
