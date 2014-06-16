@@ -69,12 +69,12 @@ void ConsoleDocumentLayout::draw(QPainter *painter, const PaintContext &context)
         {
             line = lines.at(n);
             height -= line.height();
-            line.setPosition(QPointF(0, height));
+            line.setPosition(QPointF(r.left(), height));
         }
 
         textLayout->endLayout();
 
-        textLayout->draw(painter, QPoint(0, 0));
+        textLayout->draw(painter, QPointF(0, 0));
 
         textBlock = textBlock.previous();
     }

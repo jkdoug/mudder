@@ -60,7 +60,7 @@ void ConsoleDisplay::paintEvent(QPaintEvent *e)
     }
 
     QAbstractTextDocumentLayout::PaintContext ctx;
-    ctx.clip = rect();
+    ctx.clip = rect().marginsRemoved(QMargins(2, 2, 2, 2));
     ctx.palette = palette();
     ctx.cursorPosition = m_scrollLines;
 
