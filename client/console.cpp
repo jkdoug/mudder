@@ -527,7 +527,7 @@ void Console::processTimer(Timer *timer)
 
     if (timer->once())
     {
-        // TODO: delete timer
+        m_profile->deleteItem(m_profile->indexForPath(timer->path()));
     }
 }
 

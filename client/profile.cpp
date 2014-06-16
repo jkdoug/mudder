@@ -632,15 +632,8 @@ QModelIndex Profile::indexForPath(const QModelIndex &parent, const QStringList &
     return QModelIndex();
 }
 
-QModelIndex Profile::cutItem(const QModelIndex &index)
+QModelIndex Profile::deleteItem(const QModelIndex &index)
 {
-    if (!index.isValid())
-    {
-        return index;
-    }
-
-    copyItem(index);
-
     ProfileItem *item = itemForIndex(index);
     Q_ASSERT(item);
 
@@ -653,6 +646,8 @@ QModelIndex Profile::cutItem(const QModelIndex &index)
     beginRemoveRows(index.parent(), row, row);
     parentItem->removeItem(row);
     endRemoveRows();
+
+    delete item;
 
     emit settingsChanged();
 
@@ -669,6 +664,18 @@ QModelIndex Profile::cutItem(const QModelIndex &index)
     }
 
     return QModelIndex();
+}
+
+QModelIndex Profile::cutItem(const QModelIndex &index)
+{
+    if (!index.isValid())
+    {
+        return index;
+    }
+
+    copyItem(index);
+
+    return deleteItem(index);
 }
 
 void Profile::copyItem(const QModelIndex &index) const

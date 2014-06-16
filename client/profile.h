@@ -104,6 +104,7 @@ public:
     ProfileItem * itemForIndex(const QModelIndex &index) const;
     QStringList pathForIndex(const QModelIndex &index) const;
     QModelIndex indexForPath(const QStringList &path) const;
+    QModelIndex deleteItem(const QModelIndex &index);
     QModelIndex cutItem(const QModelIndex &index);
     void copyItem(const QModelIndex &index) const;
     QModelIndex pasteItem(const QModelIndex &index);
