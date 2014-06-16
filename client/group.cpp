@@ -108,11 +108,6 @@ void Group::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
     enable(xml.attributes().value("enabled").compare("n", Qt::CaseInsensitive) != 0);
 }
 
-void Group::childModified(ProfileItem *item)
-{
-    emit modified(item);
-}
-
 template<class C>
 QList<C *> Group::sortedItems(bool enabled, bool all) const
 {
@@ -169,7 +164,7 @@ int Group::addItem(ProfileItem *item)
     item->setParent(this);
     m_items << item;
 
-    connect(item, SIGNAL(modified(ProfileItem *)), SLOT(childModified(ProfileItem *)));
+    connect(item, SIGNAL(modified(ProfileItem *)), SIGNAL(modified(ProfileItem *)));
 
     Group *group = qobject_cast<Group *>(item);
     if (group)

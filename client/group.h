@@ -65,9 +65,6 @@ public:
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
-private slots:
-    void childModified(ProfileItem *item);
-
 private:
     template<class C>
     QList<C *> sortedItems(bool enabled, bool all) const;
