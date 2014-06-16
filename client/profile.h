@@ -45,7 +45,6 @@ public:
     explicit Profile(QObject *parent = 0);
 
     Group * rootGroup() const { return m_root; }
-    Group * findGroup(const QString &path) const;
     Group * activeGroup() const { return m_activeGroup?m_activeGroup:m_root; }
     void setActiveGroup(Group *group);
 
@@ -127,12 +126,10 @@ private:
     QModelIndex indexForPath(const QModelIndex &parent, const QStringList &path) const;
 
     template<class C>
-    C * findItem(const QString &name) const;
-
-    Group * findGroup(const QStringList &path, Group *parent) const;
+    C * findItem(const QString &name, Group *parent = 0) const;
 
     Group * createGroup(const QString &path);
-    Group * createGroup(const QStringList &path, Group *parent);
+    Group * createGroup(const QStringList &path, Group *parent = 0);
 
     Group *m_root;
     Group *m_activeGroup;
