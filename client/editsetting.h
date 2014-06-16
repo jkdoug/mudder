@@ -36,6 +36,8 @@ public:
     virtual bool load(ProfileItem *item) = 0;
     virtual bool save(ProfileItem *item) = 0;
 
+    virtual void enableItem(bool flag) { Q_UNUSED(flag) }
+
 signals:
     void itemModified(bool changed, bool valid);
 

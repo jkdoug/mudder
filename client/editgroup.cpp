@@ -102,6 +102,12 @@ bool EditGroup::save(ProfileItem *item)
     return true;
 }
 
+void EditGroup::enableItem(bool flag)
+{
+    m_enabled = flag;
+    ui->enabled->setChecked(flag);
+}
+
 void EditGroup::changed()
 {
     if (m_name.isNull())

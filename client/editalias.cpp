@@ -171,6 +171,12 @@ bool EditAlias::save(ProfileItem *item)
     return true;
 }
 
+void EditAlias::enableItem(bool flag)
+{
+    m_enabled = flag;
+    ui->enabled->setChecked(flag);
+}
+
 void EditAlias::changed()
 {
     if (m_name.isNull())

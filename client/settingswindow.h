@@ -55,6 +55,7 @@ public:
 private slots:
     void settingModified(bool changed, bool valid);
 
+    void enableItem(bool on);
     void deleteItem();
     void cutItem();
     void copyItem();

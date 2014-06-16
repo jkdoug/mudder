@@ -183,6 +183,12 @@ bool EditTrigger::save(ProfileItem *item)
     return true;
 }
 
+void EditTrigger::enableItem(bool flag)
+{
+    m_enabled = flag;
+    ui->enabled->setChecked(flag);
+}
+
 void EditTrigger::changed()
 {
     if (m_name.isNull())

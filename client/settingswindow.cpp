@@ -30,6 +30,7 @@
 #include "profile.h"
 #include "profileitem.h"
 #include "profileitemfactory.h"
+#include "variable.h"
 #include "editsetting.h"
 #include "richtextdelegate.h"
 
@@ -95,6 +96,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     ui->toolBar->insertWidget(ui->actionDelete, m_buttonNew);
     ui->toolBar->insertSeparator(ui->actionDelete);
 
+    connect(ui->actionEnabled, SIGNAL(triggered(bool)), SLOT(enableItem(bool)));
     connect(ui->actionDelete, SIGNAL(triggered()), SLOT(deleteItem()));
     connect(ui->actionCut, SIGNAL(triggered()), SLOT(cutItem()));
     connect(ui->actionCopy, SIGNAL(triggered()), SLOT(copyItem()));
@@ -180,6 +182,29 @@ void SettingsWindow::settingModified(bool changed, bool valid)
 {
     ui->actionApply->setEnabled(changed && valid);
     ui->actionDiscard->setEnabled(changed);
+}
+
+void SettingsWindow::enableItem(bool on)
+{
+    QModelIndex current(sourceIndex(ui->treeView->currentIndex()));
+    if (!current.isValid())
+    {
+        return;
+    }
+
+    ProfileItem *item = profile()->itemForIndex(current);
+    Q_ASSERT(item);
+    if (!item)
+    {
+        qCWarning(MUDDER_PROFILE) << "Attempted to toggle an invalid profile item.";
+        return;
+    }
+
+    item->enable(on);
+
+    int index = m_editors[item->tagName()];
+    EditSetting *editor = qobject_cast<EditSetting *>(m_stackedEditors->widget(index));
+    editor->enableItem(on);
 }
 
 void SettingsWindow::deleteItem()
@@ -395,6 +420,15 @@ void SettingsWindow::showContextMenu(const QPoint &point)
     QModelIndex selected(ui->treeView->indexAt(point));
     if (selected.isValid())
     {
+        ProfileItem *item = profile()->itemForIndex(sourceIndex(selected));
+        if (item && !qobject_cast<Variable*>(item))
+        {
+            ui->actionEnabled->setChecked(item->enabledFlag());
+
+            popup->addAction(ui->actionEnabled);
+            popup->addSeparator();
+        }
+
         popup->addAction(ui->actionDelete);
         popup->addAction(ui->actionCut);
         popup->addAction(ui->actionCopy);

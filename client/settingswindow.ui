@@ -177,6 +177,17 @@
     <string>Delete selection</string>
    </property>
   </action>
+  <action name="actionEnabled">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enabled</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle the enabled state.</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="client.qrc"/>

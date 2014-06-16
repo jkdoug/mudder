@@ -42,6 +42,8 @@ public:
     virtual bool load(ProfileItem *item);
     virtual bool save(ProfileItem *item);
 
+    virtual void enableItem(bool flag);
+
 private slots:
     void changed();
 

@@ -158,6 +158,12 @@ bool EditEvent::save(ProfileItem *item)
     return true;
 }
 
+void EditEvent::enableItem(bool flag)
+{
+    m_enabled = flag;
+    ui->enabled->setChecked(flag);
+}
+
 void EditEvent::changed()
 {
     if (m_name.isNull())

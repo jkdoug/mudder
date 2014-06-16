@@ -137,6 +137,12 @@ bool EditTimer::save(ProfileItem *item)
     return true;
 }
 
+void EditTimer::enableItem(bool flag)
+{
+    m_enabled = flag;
+    ui->enabled->setChecked(flag);
+}
+
 void EditTimer::changed()
 {
     if (m_name.isNull())
