@@ -427,10 +427,15 @@ QVariant Profile::data(const QModelIndex &index, int role) const
     {
         if (role == Qt::DisplayRole || role == Qt::EditRole)
         {
+            Executable *executable = qobject_cast<Executable*>(item);
             switch (index.column())
             {
             case Name:
-                if (item->enabled())
+                if (executable && executable->failed())
+                {
+                    return QString("<p style=\"color:red;\">%1").arg(item->name());
+                }
+                else if (item->enabled())
                 {
                     return item->name();
                 }
