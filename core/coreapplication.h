@@ -25,7 +25,6 @@
 #define COREAPPLICATION_H
 
 #include "core_global.h"
-#include "actionmanager.h"
 #include "contextmanager.h"
 #include <QApplication>
 #include <QWidget>
@@ -45,7 +44,6 @@ public:
     static void setMainWindow(QWidget *win);
     static QWidget * mainWindow();
 
-    static ActionManager * actionManager();
     static ContextManager * contextManager();
 
     bool notify(QObject *object, QEvent *event);
@@ -65,11 +63,9 @@ private:
 
     QWidget *m_mainWindow;
 
-    ActionManager *m_actionManager;
     ContextManager *m_contextManager;
 };
 
-#define ACTION_MANAGER CoreApplication::actionManager()
 #define CONTEXT_MANAGER CoreApplication::contextManager()
 
 #endif // COREAPPLICATION_H

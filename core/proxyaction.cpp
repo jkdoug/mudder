@@ -26,7 +26,7 @@
 #include "coreapplication.h"
 
 ProxyAction::ProxyAction(QAction *action, QObject *parent) :
-    Command(parent),
+    QObject(parent),
     m_initialized(false)
 {
     m_action = action;
@@ -65,6 +65,21 @@ ProxyAction::~ProxyAction()
     {
         delete m_backup;
     }
+}
+
+void ProxyAction::setDefaultKey(const QKeySequence &key)
+{
+    m_defaultKey = key;
+    handleKeyChange(m_currentKey);
+    emit keyChanged();
+}
+
+void ProxyAction::setKey(const QKeySequence &key)
+{
+    QKeySequence old(m_currentKey);
+    m_currentKey = key;
+    handleKeyChange(old);
+    emit keyChanged();
 }
 
 QString ProxyAction::text() const
@@ -138,11 +153,10 @@ void ProxyAction::addAction(QAction *action, QList<int> contexts)
         {
             LOG_WARNING(QString("Attempting to register an action for a multi-context (\"Standard Context\") action twice. Last action will be ignored: %1")
                         .arg(action->text()));
-
             return;
         }
 
-        m_contextActions[0] = action;
+        m_contextActions.insert(0, action);
     }
     else
     {
@@ -157,7 +171,7 @@ void ProxyAction::addAction(QAction *action, QList<int> contexts)
                 continue;
             }
 
-            m_contextActions[context] = action;
+            m_contextActions.insert(context, action);
 
             if (action->objectName().isEmpty())
             {

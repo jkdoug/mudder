@@ -14,29 +14,21 @@ DEFINES += CORE_LIBRARY
 SOURCES += \
     coresettings.cpp \
     coreapplication.cpp \
-    contextmanager.cpp \
-    command.cpp \
-    shortcutcommand.cpp \
     proxyaction.cpp \
     connection.cpp \
     configpage.cpp \
     configwidget.cpp \
-    actionmanager.cpp \
-    actioncontainer.cpp
+    contextmanager.cpp
 
 HEADERS +=\
         core_global.h \
     coresettings.h \
     coreapplication.h \
-    contextmanager.h \
-    command.h \
-    shortcutcommand.h \
     proxyaction.h \
     connection.h \
     configpage.h \
     configwidget.h \
-    actionmanager.h \
-    actioncontainer.h
+    contextmanager.h
 
 unix {
     target.path = /usr/lib

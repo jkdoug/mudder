@@ -35,14 +35,12 @@ CoreApplication::CoreApplication(int &argc, char **argv) :
     {
         m_instance = this;
 
-        m_actionManager = new ActionManager;
         m_contextManager = new ContextManager;
     }
 }
 
 CoreApplication::~CoreApplication()
 {
-    delete m_actionManager;
     delete m_contextManager;
 }
 
@@ -99,11 +97,6 @@ void CoreApplication::setMainWindow(QWidget *win)
 QWidget * CoreApplication::mainWindow()
 {
     return instance()->m_mainWindow;
-}
-
-ActionManager * CoreApplication::actionManager()
-{
-    return instance()->m_actionManager;
 }
 
 ContextManager * CoreApplication::contextManager()

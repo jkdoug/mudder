@@ -25,17 +25,25 @@
 #define PROXYACTION_H
 
 #include "core_global.h"
-#include "command.h"
 #include <QAction>
 #include <QHash>
 #include <QPointer>
 
-class CORESHARED_EXPORT ProxyAction : public Command
+class CORESHARED_EXPORT ProxyAction : public QObject
 {
     Q_OBJECT
 public:
     explicit ProxyAction(QAction *action, QObject *parent = 0);
     ~ProxyAction();
+
+    void setDefaultKey(const QKeySequence &key);
+    QKeySequence defaultKey() const { return m_defaultKey; }
+
+    void setKey(const QKeySequence &key);
+    QKeySequence key() const { return m_currentKey; }
+
+    void setDefaultText(const QString &text) { m_defaultText = text; }
+    QString defaultText() const { return m_defaultText; }
 
     virtual QAction * action() const { return m_action; }
     virtual QString text() const;
@@ -44,6 +52,9 @@ public:
 
     void addAction(QAction *action, QList<int> contexts);
 
+signals:
+    void keyChanged();
+
 public slots:
     virtual void changeContexts(QList<int> contexts);
 
@@ -51,6 +62,11 @@ private slots:
     void updateFrontend();
 
 private:
+    QKeySequence m_defaultKey;
+    QKeySequence m_currentKey;
+
+    QString m_defaultText;
+
     QAction *m_action;
     QAction *m_backup;
 
