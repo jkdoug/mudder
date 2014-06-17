@@ -21,6 +21,7 @@
 */
 
 
+#include <QApplication>
 #include <QMessageBox>
 #include "engine.h"
 #include "LuaBridge.h"
@@ -352,26 +353,29 @@ void Engine::initialize(Console *c)
         .addCFunction("JsonEncode", Engine::jsonEncode)
         .addCFunction("GetVariable", Engine::getVariable)
         .addCFunction("SetVariable", Engine::setVariable)
-        .addCFunction("DeleteVariable", Engine::deleteVariable);
+        .addCFunction("DeleteVariable", Engine::deleteVariable)
+        .addCFunction("IsConnected", Engine::isConnected)
+        .addCFunction("Connect", Engine::connectRemote)
+        .addCFunction("Disconnect", Engine::disconnectRemote)
+        .addCFunction("Version", Engine::version);
 
     lua_settop(m_global, 0);
 
-    Q_ASSERT(loadResource(m_global, ":/lua/io_exists") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/string_commas") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/string_explode") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/string_join") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/string_split") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/string_title") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/string_trim") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/string_wrap") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/table_contains") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/table_copy") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/table_ordered") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/table_print") == LUA_OK);
-    Q_ASSERT(loadResource(m_global, ":/lua/table_size") == LUA_OK);
+    loadResource(m_global, ":/lua/io_exists");
+    loadResource(m_global, ":/lua/string_commas");
+    loadResource(m_global, ":/lua/string_explode");
+    loadResource(m_global, ":/lua/string_join");
+    loadResource(m_global, ":/lua/string_split");
+    loadResource(m_global, ":/lua/string_title");
+    loadResource(m_global, ":/lua/string_trim");
+    loadResource(m_global, ":/lua/string_wrap");
+    loadResource(m_global, ":/lua/table_contains");
+    loadResource(m_global, ":/lua/table_copy");
+    loadResource(m_global, ":/lua/table_ordered");
+    loadResource(m_global, ":/lua/table_print");
+    loadResource(m_global, ":/lua/table_size");
 
     setRegistryData("CONSOLE", (void *)c);
-    c->printInfo("Script engine initialized.");
 }
 
 void Engine::setRegistryData(const QString &name, void *data)
@@ -813,6 +817,40 @@ int Engine::deleteVariable(lua_State *L)
     Profile *p = c->profile();
 
     push(L, p->deleteVariable(luaL_checkstring(L, 1)));
+
+    return 1;
+}
+
+int Engine::isConnected(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+
+    push(L, c->isConnected());
+
+    return 1;
+}
+
+int Engine::connectRemote(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+
+    c->connectToServer();
+
+    return 0;
+}
+
+int Engine::disconnectRemote(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+
+    c->disconnectFromServer();
+
+    return 0;
+}
+
+int Engine::version(lua_State *L)
+{
+    push(L, qPrintable(QApplication::applicationVersion()));
 
     return 1;
 }

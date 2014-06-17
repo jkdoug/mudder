@@ -64,6 +64,10 @@ public:
     static int getVariable(lua_State *L);
     static int setVariable(lua_State *L);
     static int deleteVariable(lua_State *L);
+    static int isConnected(lua_State *L);
+    static int connectRemote(lua_State *L);
+    static int disconnectRemote(lua_State *L);
+    static int version(lua_State *L);
 
 public slots:
     void enableGMCP(bool flag);
