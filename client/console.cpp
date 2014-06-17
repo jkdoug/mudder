@@ -90,6 +90,7 @@ Console::Console(QWidget *parent) :
     setAttribute(Qt::WA_DeleteOnClose);
 
     qCDebug(MUDDER_CONSOLE) << "Console window initialized.";
+    printInfo("Hello, Fodder!");
 }
 
 Console::~Console()

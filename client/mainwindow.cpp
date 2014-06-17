@@ -97,7 +97,6 @@ void MainWindow::closeEvent(QCloseEvent *e)
         qCDebug(MUDDER_APP) << "Main window will not close yet; editor windows still open.";
 
         e->ignore();
-        return;
     }
     else
     {
