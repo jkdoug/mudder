@@ -46,7 +46,7 @@ public:
 
     virtual int sequence() const { return 0; }
 
-    int itemCount() const { return m_items.count(); }
+    int itemCount(bool recurse = false) const;
     int itemIndex(ProfileItem *item) { return m_items.indexOf(item); }
     ProfileItem * item(int index) { return m_items.at(index); }
 

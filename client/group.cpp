@@ -35,6 +35,19 @@ Group::Group(QObject *parent) :
 {
 }
 
+int Group::itemCount(bool recurse) const
+{
+    int count = m_items.count();
+    if (recurse)
+    {
+        foreach (Group *group, m_groups)
+        {
+            count += group->itemCount(true);
+        }
+    }
+    return count;
+}
+
 QList<Accelerator *> Group::sortedAccelerators(bool enabled, bool all) const
 {
     return sortedItems<Accelerator>(enabled, all);
