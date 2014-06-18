@@ -302,7 +302,7 @@ void Connection::readyToRead()
         }
     }
 
-    if (data.length() > 0)
+    if (!data.isEmpty())
     {
         handleData(data);
     }
@@ -456,7 +456,7 @@ void Connection::handleTelnetCommand(const QString &cmd)
 
 void Connection::handleData(const QByteArray &data)
 {
-    if (data.length() < 1)
+    if (data.isEmpty())
     {
         return;
     }
