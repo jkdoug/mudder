@@ -29,6 +29,7 @@
 #include "logging.h"
 #include "profile.h"
 #include "xmlerror.h"
+#include "accelerator.h"
 #include "alias.h"
 #include "group.h"
 #include "timer.h"
@@ -76,6 +77,7 @@ Console::Console(QWidget *parent) :
     connect(m_connection, SIGNAL(hostFound(QHostInfo)), SLOT(lookupComplete(QHostInfo)));
     connect(m_connection, SIGNAL(echo(bool)), SLOT(echoToggled(bool)));
 
+    connect(ui->input, SIGNAL(accelerator(QKeySequence)), SLOT(processAccelerators(QKeySequence)));
     connect(m_document, SIGNAL(blockAdded(QTextBlock, bool)), SLOT(processTriggers(QTextBlock, bool)));
     connect(m_document, SIGNAL(contentsChanged()), ui->output, SLOT(update()));
     connect(m_document, SIGNAL(contentsChanged()), SLOT(updateScroll()));
@@ -284,6 +286,9 @@ void Console::commandEntered(const QString &cmd)
 {
     qCDebug(MUDDER_CONSOLE) << "Command entered:" << cmd;
 
+    // TODO: re-design this to push functionality to the command line
+    //  and signal commands to be processed instead
+
     QString prefix(m_profile->scriptPrefix());
     if (!prefix.isEmpty() && cmd.startsWith(prefix))
     {
@@ -300,15 +305,7 @@ void Console::commandEntered(const QString &cmd)
         QStringList cmds(cmd.split(regex));
         foreach (QString c, cmds)
         {
-            if (!processAliases(c))
-            {
-                m_connection->send(c);
-
-                if (m_echoOn)
-                {
-                    m_document->command(c);
-                }
-            }
+            processAliases(c);
         }
 
         scrollToBottom();
@@ -402,11 +399,39 @@ void Console::optionChanged(const QString &key, const QVariant &val)
 {
     Q_UNUSED(key)
     Q_UNUSED(val)
+
+    // TODO: handle console-related preferences as they change
 }
 
-bool Console::processAliases(const QString &cmd)
+void Console::processAccelerators(const QKeySequence &key)
 {
-    bool ret = false;
+    QList<Accelerator *> accelerators(m_profile->rootGroup()->sortedAccelerators());
+    foreach (Accelerator *accelerator, accelerators)
+    {
+        if (accelerator->key() == key)
+        {
+            Group *previousGroup = m_profile->activeGroup();
+            Q_ASSERT(previousGroup != 0);
+            m_profile->setActiveGroup(accelerator->group());
+
+            if (!accelerator->execute(m_engine))
+            {
+                m_profile->setActiveGroup(previousGroup);
+                accelerator->setFailed(true);
+                continue;
+            }
+
+            m_profile->setActiveGroup(previousGroup);
+
+            ui->input->setAccelerated(true);
+            break;
+        }
+    }
+}
+
+void Console::processAliases(const QString &cmd)
+{
+    bool matched = false;
     QList<Alias *> aliases(m_profile->rootGroup()->sortedAliases());
     foreach (Alias *alias, aliases)
     {
@@ -430,7 +455,7 @@ bool Console::processAliases(const QString &cmd)
 
                 if (!alias->keepEvaluating())
                 {
-                    return true;
+                    return;
                 }
 
                 continue;
@@ -440,17 +465,25 @@ bool Console::processAliases(const QString &cmd)
 
             if (!alias->keepEvaluating())
             {
-                return true;
+                return;
             }
 
-            ret = true;
+            matched = true;
         }
     }
 
-    return ret;
+    if (!matched)
+    {
+        m_connection->send(cmd);
+
+        if (m_echoOn)
+        {
+            m_document->command(cmd);
+        }
+    }
 }
 
-bool Console::processTriggers(QTextBlock block, bool prompt)
+void Console::processTriggers(QTextBlock block, bool prompt)
 {
     Q_UNUSED(prompt)
 
@@ -509,7 +542,7 @@ bool Console::processTriggers(QTextBlock block, bool prompt)
         }
     }
 
-    return !omitted;
+    // TODO: check for omitted lines to delete
 }
 
 void Console::processTimer(Timer *timer)

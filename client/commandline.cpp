@@ -26,11 +26,11 @@
 #include <QFont>
 
 CommandLine::CommandLine(QWidget *parent) :
-    QPlainTextEdit(parent)
+    QPlainTextEdit(parent),
+    m_historyPosition(-1),
+    m_escapeClears(true),
+    m_accelerated(false)
 {
-    m_historyPosition = -1;
-    m_escapeClears = true;
-
     connect(this, SIGNAL(command(QString)), SLOT(addToHistory(QString)));
 }
 
@@ -100,7 +100,14 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
         break;
 
     default:
-        // TODO: process accelerators, return if a match is found
+        emit accelerator(QKeySequence(e->key() + e->modifiers()));
+
+        if (m_accelerated)
+        {
+            m_accelerated = false;
+            e->accept();
+            return;
+        }
         break;
     }
 

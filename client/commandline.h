@@ -34,11 +34,14 @@ class CommandLine : public QPlainTextEdit
 public:
     explicit CommandLine(QWidget *parent = 0);
 
+    void setAccelerated(bool flag = true) { m_accelerated = flag; }
+
 public slots:
     void optionChanged(const QString &key, const QVariant &val);
 
 signals:
     void command(const QString &cmd);
+    void accelerator(const QKeySequence &key);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e);
@@ -55,6 +58,7 @@ private:
     int m_historyPosition;
 
     bool m_escapeClears;
+    bool m_accelerated;
 };
 
 #endif // COMMANDLINE_H

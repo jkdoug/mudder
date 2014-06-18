@@ -98,8 +98,9 @@ private slots:
     void scrollbarMoved(int pos);
     void updateScroll();
     void optionChanged(const QString &key, const QVariant &val);
-    bool processAliases(const QString &cmd);
-    bool processTriggers(QTextBlock block, bool prompt);
+    void processAccelerators(const QKeySequence &key);
+    void processAliases(const QString &cmd);
+    void processTriggers(QTextBlock block, bool prompt);
     void processTimer(Timer *timer);
 
 private:
