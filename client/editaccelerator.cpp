@@ -135,6 +135,12 @@ bool EditAccelerator::save(ProfileItem *item)
     return true;
 }
 
+void EditAccelerator::enableItem(bool flag)
+{
+    m_enabled = flag;
+    ui->enabled->setChecked(flag);
+}
+
 void EditAccelerator::changed()
 {
     if (m_name.isNull())
