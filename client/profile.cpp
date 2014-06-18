@@ -705,18 +705,15 @@ void Profile::copyItem(const QModelIndex &index) const
 
 QModelIndex Profile::pasteItem(const QModelIndex &index)
 {
-    if (!index.isValid())
-    {
-        return index;
-    }
-
-    ProfileItem *siblingItem = itemForIndex(index);
+    QModelIndex pasteIndex(index);
+    ProfileItem *siblingItem = itemForIndex(pasteIndex);
     Q_ASSERT(siblingItem);
 
     Group *parentItem = qobject_cast<Group*>(siblingItem);
     if (!parentItem)
     {
         parentItem = siblingItem->group();
+        pasteIndex = pasteIndex.parent();
     }
     Q_ASSERT(parentItem);
 
@@ -727,10 +724,25 @@ QModelIndex Profile::pasteItem(const QModelIndex &index)
     Profile *pastedItems = new Profile;
     pastedItems->fromXml(xml, errors);
 
-    ProfileItem *firstItem = 0;
-    int row = parentItem->itemIndex(siblingItem) + 1;
+    if (!errors.isEmpty())
+    {
+        qCWarning(MUDDER_PROFILE) << "Paste errors:" << errors;
+    }
+
     int count = pastedItems->m_root->itemCount();
-    beginInsertRows(index.parent(), row, count + row);
+    if (count < 1)
+    {
+        qCDebug(MUDDER_PROFILE) << "Pasted zero items";
+
+        delete pastedItems;
+        return index;
+    }
+
+    ProfileItem *firstItem = 0;
+    int row = parentItem->itemCount();
+    qCDebug(MUDDER_PROFILE) << "Pasting" << count << "items at row" << row << "under" << parentItem->fullName();
+
+    beginInsertRows(pasteIndex, row, row + count - 1);
     for (int n = 0; n < count; n++)
     {
         ProfileItem *child = pastedItems->m_root->item(n);
