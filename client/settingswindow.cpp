@@ -166,6 +166,19 @@ void SettingsWindow::setProfile(Profile *p)
     }
 
     m_buttonNew->setEnabled(p != 0);
+
+    if (!p)
+    {
+        ui->actionDelete->setEnabled(false);
+        ui->actionCopy->setEnabled(false);
+        ui->actionCut->setEnabled(false);
+        ui->actionPaste->setEnabled(false);
+
+        ui->actionApply->setEnabled(false);
+        ui->actionDiscard->setEnabled(false);
+
+        m_stackedEditors->setCurrentIndex(0);
+    }
 }
 
 Profile * SettingsWindow::profile() const
