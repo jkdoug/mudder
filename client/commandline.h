@@ -24,8 +24,10 @@
 #ifndef COMMANDLINE_H
 #define COMMANDLINE_H
 
+#include <QCompleter>
 #include <QPlainTextEdit>
 #include <QStringList>
+#include <QStringListModel>
 #include <QVariant>
 
 class CommandLine : public QPlainTextEdit
@@ -47,18 +49,25 @@ signals:
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e);
+    virtual void focusInEvent(QFocusEvent *e);
 
 private slots:
     void addToHistory(const QString &cmd);
+    void insertCompletion(const QString &completion);
 
 private:
     void adjustHeight();
     void historyUp();
     void historyDown();
+    QString textUnderCursor() const;
+    void updateCompletions();
     void processCommand(const QString &text);
 
     QStringList m_history;
     int m_historyPosition;
+
+    QCompleter *m_completer;
+    QStringListModel *m_completionModel;
 
     bool m_escapeClears;
     bool m_clearCommandLine;

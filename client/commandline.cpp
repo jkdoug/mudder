@@ -23,8 +23,10 @@
 
 #include "commandline.h"
 #include "coresettings.h"
+#include <QAbstractItemView>
 #include <QFont>
 #include <QRegularExpression>
+#include <QScrollBar>
 
 CommandLine::CommandLine(QWidget *parent) :
     QPlainTextEdit(parent),
@@ -36,6 +38,19 @@ CommandLine::CommandLine(QWidget *parent) :
     m_scriptPrefix("/"),
     m_commandSeparator(";")
 {
+    m_completer = new QCompleter(this);
+    m_completionModel = new QStringListModel(m_completer);
+
+    m_completer->setModel(m_completionModel);
+    m_completer->setModelSorting(QCompleter::CaseInsensitivelySortedModel);
+    m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+    m_completer->setWrapAround(false);
+
+    m_completer->setWidget(this);
+    m_completer->setCompletionMode(QCompleter::PopupCompletion);
+    m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+
+    connect(m_completer, SIGNAL(activated(QString)), SLOT(insertCompletion(QString)));
     connect(this, SIGNAL(command(QString)), SLOT(addToHistory(QString)));
 }
 
@@ -70,72 +85,133 @@ void CommandLine::echoToggled(bool flag)
 
 void CommandLine::keyPressEvent(QKeyEvent *e)
 {
-    switch (e->key())
+    if (m_completer && m_completer->popup() && m_completer->popup()->isVisible())
     {
-    case Qt::Key_Enter:
-    case Qt::Key_Return:
-        if (e->modifiers().testFlag(Qt::ShiftModifier))
-        {
-            textCursor().insertBlock();
-            adjustHeight();
-        }
-        else
-        {
-            processCommand(toPlainText());
-        }
-        e->accept();
-        return;
-
-    case Qt::Key_Down:
-        if (e->modifiers().testFlag(Qt::ControlModifier))
-        {
-            moveCursor(QTextCursor::Down);
-        }
-        else
-        {
-            historyDown();
-            adjustHeight();
-        }
-        e->accept();
-        return;
-
-    case Qt::Key_Up:
-        if (e->modifiers().testFlag(Qt::ControlModifier))
-        {
-            moveCursor(QTextCursor::Up);
-        }
-        else
-        {
-            historyUp();
-            adjustHeight();
-        }
-        e->accept();
-        return;
-
-    case Qt::Key_Escape:
-        if (m_escapeClears && e->modifiers() == 0)
-        {
-            clear();
-            e->accept();
+       switch (e->key())
+       {
+       case Qt::Key_Enter:
+       case Qt::Key_Return:
+       case Qt::Key_Escape:
+       case Qt::Key_Tab:
+       case Qt::Key_Backtab:
+            e->ignore();
             return;
-        }
-        break;
 
-    default:
-        emit accelerator(QKeySequence(e->key() + e->modifiers()));
-
-        if (m_accelerated)
-        {
-            m_accelerated = false;
-            e->accept();
-            return;
-        }
-        break;
+       default:
+           break;
+       }
     }
 
-    QPlainTextEdit::keyPressEvent(e);
+    const bool isShortcut = e->modifiers().testFlag(Qt::ControlModifier) && e->key() == Qt::Key_E;
+    if (!m_completer || !isShortcut)
+    {
+        switch (e->key())
+        {
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+            if (e->modifiers().testFlag(Qt::ShiftModifier))
+            {
+                textCursor().insertBlock();
+                adjustHeight();
+            }
+            else
+            {
+                processCommand(toPlainText());
+            }
+            e->accept();
+            return;
 
-    adjustHeight();
+        case Qt::Key_Down:
+            if (e->modifiers().testFlag(Qt::ControlModifier))
+            {
+                moveCursor(QTextCursor::Down);
+            }
+            else
+            {
+                historyDown();
+                adjustHeight();
+            }
+            e->accept();
+            return;
+
+        case Qt::Key_Up:
+            if (e->modifiers().testFlag(Qt::ControlModifier))
+            {
+                moveCursor(QTextCursor::Up);
+            }
+            else
+            {
+                historyUp();
+                adjustHeight();
+            }
+            e->accept();
+            return;
+
+        case Qt::Key_Escape:
+            if (m_escapeClears && e->modifiers() == 0)
+            {
+                clear();
+                e->accept();
+                return;
+            }
+            break;
+
+        default:
+            emit accelerator(QKeySequence(e->key() + e->modifiers()));
+
+            if (m_accelerated)
+            {
+                m_accelerated = false;
+                e->accept();
+                return;
+            }
+            break;
+        }
+
+        updateCompletions();
+
+        QPlainTextEdit::keyPressEvent(e);
+
+        adjustHeight();
+    }
+
+    const bool ctrlOrShift = e->modifiers().testFlag(Qt::ControlModifier) || e->modifiers().testFlag(Qt::ShiftModifier);
+    if (!m_completer || (ctrlOrShift && e->text().isEmpty()))
+    {
+        return;
+    }
+
+    static QString endOfWord("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-=");
+    bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;
+    QString completionPrefix(textUnderCursor());
+
+    if (!isShortcut && (hasModifier || e->text().isEmpty() ||
+        completionPrefix.length() < 3 || endOfWord.contains(e->text().right(1))))
+    {
+        m_completer->popup()->hide();
+        return;
+    }
+
+    if (completionPrefix != m_completer->completionPrefix())
+    {
+        m_completer->setCompletionPrefix(completionPrefix);
+        m_completer->popup()->setCurrentIndex(m_completer->completionModel()->index(0, 0));
+    }
+
+    QRect cr(cursorRect());
+    cr.setWidth(m_completer->popup()->sizeHintForColumn(0)
+                + m_completer->popup()->verticalScrollBar()->sizeHint().width());
+    m_completer->complete(cr);
+}
+
+void CommandLine::focusInEvent(QFocusEvent *e)
+{
+    if (m_completer)
+    {
+        m_completer->setWidget(this);
+    }
+
+    QPlainTextEdit::focusInEvent(e);
 }
 
 void CommandLine::addToHistory(const QString &cmd)
@@ -151,6 +227,23 @@ void CommandLine::addToHistory(const QString &cmd)
     {
         m_historyPosition = -1;
     }
+}
+
+void CommandLine::insertCompletion(const QString &completion)
+{
+    if (m_completer->widget() != this)
+    {
+        return;
+    }
+
+    int extra = completion.length() - m_completer->completionPrefix().length();
+
+    QTextCursor tc(textCursor());
+    tc.movePosition(QTextCursor::Left);
+    tc.movePosition(QTextCursor::EndOfWord);
+    tc.insertText(completion.right(extra));
+
+    setTextCursor(tc);
 }
 
 void CommandLine::adjustHeight()
@@ -205,6 +298,36 @@ void CommandLine::historyDown()
         setPlainText(m_history.at(m_historyPosition));
         selectAll();
     }
+}
+
+QString CommandLine::textUnderCursor() const
+{
+    QTextCursor tc(textCursor());
+    tc.select(QTextCursor::WordUnderCursor);
+    return tc.selectedText();
+}
+
+void CommandLine::updateCompletions()
+{
+//    QStringList recentLines(console()->buffer()->lastLines(250));
+//    QStringList goodWords;
+//    foreach (QString line, recentLines)
+//    {
+//        QStringList words(line.split(QRegularExpression("\\b")));
+//        foreach (QString word, words)
+//        {
+//            if (word.length() > 3)
+//            {
+//                goodWords.append(word);
+//            }
+//        }
+//    }
+
+//    goodWords.removeDuplicates();
+//    goodWords.sort(Qt::CaseInsensitive);
+//    m_completionModel->setStringList(goodWords);
+
+    m_completionModel->setStringList(QStringList() << "sample one" << "sample two" << "samwise gamgee");
 }
 
 void CommandLine::processCommand(const QString &text)
