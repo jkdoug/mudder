@@ -221,8 +221,7 @@ void CommandLine::processCommand(const QString &text)
     }
     else
     {
-        QString sep(m_commandSeparator + "\n");
-        QRegularExpression regex("[" + QRegularExpression::escape(sep) + "]");
+        QRegularExpression regex("(?:" + QRegularExpression::escape(m_commandSeparator) + "|\\n)");
         QStringList cmds(text.split(regex));
         foreach (QString cmd, cmds)
         {
