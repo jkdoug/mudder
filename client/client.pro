@@ -79,9 +79,9 @@ HEADERS  += mainwindow.h \
     editgroup.h \
     editevent.h \
     edittrigger.h \
-    ../luabridge/LuaBridge.h \
-    ../luabridge/RefCountedObject.h \
-    ../luabridge/RefCountedPtr.h \
+    ../luabridge/Source/LuaBridge/LuaBridge.h \
+    ../luabridge/Source/LuaBridge/RefCountedObject.h \
+    ../luabridge/Source/LuaBridge/RefCountedPtr.h \
     logging.h \
     configconnection.h \
     configscripting.h \
@@ -112,7 +112,7 @@ RESOURCES += \
 
 win32-g++: QMAKE_CXXFLAGS += -Wno-ignored-qualifiers
 
-INCLUDEPATH += $$PWD/../luabridge
+INCLUDEPATH += $$PWD/../luabridge/Source/LuaBridge
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../lua52/release/ -llua52
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../lua52/debug/ -llua52
