@@ -848,32 +848,15 @@ void Profile::readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors)
             }
             else if (xml.name() == "commandLine")
             {
-                QString sep(xml.attributes().value("separator").toString());
-                if (!sep.isEmpty())
-                {
-                    if (sep.length() > 1)
-                    {
-                        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("command separator should be a single character"));
-                    }
-                    setCommandSeparator(sep.at(0));
-                }
-
                 setClearCommandLine(xml.attributes().value("clear").compare("n", Qt::CaseInsensitive) != 0);
                 setEscapeClearsCommand(xml.attributes().value("escape").compare("n", Qt::CaseInsensitive) != 0);
+
+                setCommandSeparator(xml.attributes().value("separator").toString());
             }
             else if (xml.name() == "scripting")
             {
-                QString prefix(xml.attributes().value("prefix").toString());
-                if (!prefix.isEmpty())
-                {
-                    setScriptPrefix(prefix);
-                }
-
-                QString script(xml.attributes().value("file").toString());
-                if (!script.isEmpty())
-                {
-                    setScriptFileName(script);
-                }
+                setScriptPrefix(xml.attributes().value("prefix").toString());
+                setScriptFileName(xml.attributes().value("file").toString());
             }
             else if (xml.name() == "display")
             {

@@ -90,6 +90,7 @@ protected:
 private slots:
     void contentsModified();
     void commandEntered(const QString &cmd);
+    void scriptEntered(const QString &code);
     void connectionEstablished();
     void connectionLost();
     void lookupComplete(const QHostInfo &hostInfo);
@@ -97,7 +98,6 @@ private slots:
     void echoToggled(bool on);
     void scrollbarMoved(int pos);
     void updateScroll();
-    void optionChanged(const QString &key, const QVariant &val);
     void processAccelerators(const QKeySequence &key);
     void processAliases(const QString &cmd);
     void processTriggers(QTextBlock block, bool prompt);

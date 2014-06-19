@@ -54,6 +54,7 @@ void ConfigInput::load()
 
     ui->checkClear->setChecked(m_profile->clearCommandLine());
     ui->checkEscape->setChecked(m_profile->escapeClearsCommand());
+    ui->commandSeparator->setText(m_profile->commandSeparator());
 }
 
 void ConfigInput::save()
@@ -66,4 +67,5 @@ void ConfigInput::save()
 
     m_profile->setClearCommandLine(ui->checkClear->isChecked());
     m_profile->setEscapeClearsCommand(ui->checkEscape->isChecked());
+    m_profile->setCommandSeparator(ui->commandSeparator->text());
 }

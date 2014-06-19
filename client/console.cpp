@@ -59,10 +59,10 @@ Console::Console(QWidget *parent) :
     ui->output->setDocument(m_document);
 
     connect(ui->input, SIGNAL(command(QString)), SLOT(commandEntered(QString)));
+    connect(ui->input, SIGNAL(script(QString)), SLOT(scriptEntered(QString)));
 
     m_profile = new Profile(this);
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), SLOT(contentsModified()));
-    connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), ui->input, SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), m_document, SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
@@ -76,6 +76,7 @@ Console::Console(QWidget *parent) :
     connect(m_connection, SIGNAL(disconnected()), SLOT(connectionLost()));
     connect(m_connection, SIGNAL(hostFound(QHostInfo)), SLOT(lookupComplete(QHostInfo)));
     connect(m_connection, SIGNAL(echo(bool)), SLOT(echoToggled(bool)));
+    connect(m_connection, SIGNAL(echo(bool)), ui->input, SLOT(echoToggled(bool)));
 
     connect(ui->input, SIGNAL(accelerator(QKeySequence)), SLOT(processAccelerators(QKeySequence)));
     connect(m_document, SIGNAL(blockAdded(QTextBlock, bool)), SLOT(processTriggers(QTextBlock, bool)));
@@ -289,36 +290,23 @@ void Console::commandEntered(const QString &cmd)
     // TODO: re-design this to push functionality to the command line
     //  and signal commands to be processed instead
 
-    QString prefix(m_profile->scriptPrefix());
-    if (!prefix.isEmpty() && cmd.startsWith(prefix))
-    {
-        m_engine->execute(cmd.mid(prefix.length()));
-    }
-    else if (cmd.isEmpty())
+    if (cmd.isEmpty())
     {
         send("");
     }
     else
     {
-        QString sep(m_profile->commandSeparator() + "\n");
-        QRegularExpression regex("[" + QRegularExpression::escape(sep) + "]");
-        QStringList cmds(cmd.split(regex));
-        foreach (QString c, cmds)
-        {
-            processAliases(c);
-        }
-
-        scrollToBottom();
+        processAliases(cmd);
     }
 
-    if (m_profile->clearCommandLine() || !m_echoOn)
-    {
-        ui->input->clear();
-    }
-    else
-    {
-        ui->input->selectAll();
-    }
+    scrollToBottom();
+}
+
+void Console::scriptEntered(const QString &code)
+{
+    qCDebug(MUDDER_CONSOLE) << "Script entered:" << code;
+
+    m_engine->execute(code);
 }
 
 void Console::connectionEstablished()
@@ -393,14 +381,6 @@ void Console::updateScroll()
         ui->scrollbar->setRange(1, 1);
     }
     ui->scrollbar->setPageStep(10);
-}
-
-void Console::optionChanged(const QString &key, const QVariant &val)
-{
-    Q_UNUSED(key)
-    Q_UNUSED(val)
-
-    // TODO: handle console-related preferences as they change
 }
 
 void Console::processAccelerators(const QKeySequence &key)

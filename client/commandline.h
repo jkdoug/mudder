@@ -38,9 +38,11 @@ public:
 
 public slots:
     void optionChanged(const QString &key, const QVariant &val);
+    void echoToggled(bool flag);
 
 signals:
     void command(const QString &cmd);
+    void script(const QString &cmd);
     void accelerator(const QKeySequence &key);
 
 protected:
@@ -53,12 +55,18 @@ private:
     void adjustHeight();
     void historyUp();
     void historyDown();
+    void processCommand(const QString &text);
 
     QStringList m_history;
     int m_historyPosition;
 
     bool m_escapeClears;
+    bool m_clearCommandLine;
+    bool m_echoOn;
     bool m_accelerated;
+
+    QString m_scriptPrefix;
+    QString m_commandSeparator;
 };
 
 #endif // COMMANDLINE_H

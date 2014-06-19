@@ -24,12 +24,17 @@
 #include "commandline.h"
 #include "coresettings.h"
 #include <QFont>
+#include <QRegularExpression>
 
 CommandLine::CommandLine(QWidget *parent) :
     QPlainTextEdit(parent),
     m_historyPosition(-1),
     m_escapeClears(true),
-    m_accelerated(false)
+    m_clearCommandLine(false),
+    m_echoOn(true),
+    m_accelerated(false),
+    m_scriptPrefix("/"),
+    m_commandSeparator(";")
 {
     connect(this, SIGNAL(command(QString)), SLOT(addToHistory(QString)));
 }
@@ -44,6 +49,23 @@ void CommandLine::optionChanged(const QString &key, const QVariant &val)
     {
         m_escapeClears = val.toBool();
     }
+    else if (key == "clearCommandLine")
+    {
+        m_clearCommandLine = val.toBool();
+    }
+    else if (key == "scriptPrefix")
+    {
+        m_scriptPrefix = val.toString();
+    }
+    else if (key == "commandSeparator")
+    {
+        m_commandSeparator = val.toString();
+    }
+}
+
+void CommandLine::echoToggled(bool flag)
+{
+    m_echoOn = flag;
 }
 
 void CommandLine::keyPressEvent(QKeyEvent *e)
@@ -59,7 +81,7 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
         }
         else
         {
-            emit command(toPlainText());
+            processCommand(toPlainText());
         }
         e->accept();
         return;
@@ -181,6 +203,39 @@ void CommandLine::historyDown()
         m_historyPosition = qBound(0, m_historyPosition, m_history.length() - 1);
 
         setPlainText(m_history.at(m_historyPosition));
+        selectAll();
+    }
+}
+
+void CommandLine::processCommand(const QString &text)
+{
+    if (text.isEmpty())
+    {
+        emit command("");
+        return;
+    }
+
+    if (!m_scriptPrefix.isEmpty() && text.startsWith(m_scriptPrefix))
+    {
+        emit script(text.mid(m_scriptPrefix.length()));
+    }
+    else
+    {
+        QString sep(m_commandSeparator + "\n");
+        QRegularExpression regex("[" + QRegularExpression::escape(sep) + "]");
+        QStringList cmds(text.split(regex));
+        foreach (QString cmd, cmds)
+        {
+            emit command(cmd);
+        }
+    }
+
+    if (m_clearCommandLine || !m_echoOn)
+    {
+        clear();
+    }
+    else
+    {
         selectAll();
     }
 }
