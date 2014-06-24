@@ -51,6 +51,8 @@ void ConfigOutput::load()
     ui->comboFont->setCurrentFont(font);
     ui->comboFontSize->setCurrentIndex(font.pointSize() - 6);
     ui->checkAntiAliased->setChecked(font.styleStrategy() == QFont::PreferAntialias);
+
+    ui->scrollback->setValue(qBound(ui->scrollback->minimum(), m_profile->scrollbackLines(), ui->scrollback->maximum()));
 }
 
 void ConfigOutput::save()
@@ -60,4 +62,6 @@ void ConfigOutput::save()
     font.setStyleHint(QFont::TypeWriter);
     font.setStyleStrategy(ui->checkAntiAliased->isChecked()?QFont::PreferAntialias:QFont::NoAntialias);
     m_profile->setOutputFont(font);
+
+    m_profile->setScrollbackLines(ui->scrollback->value());
 }

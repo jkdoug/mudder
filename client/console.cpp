@@ -35,10 +35,14 @@
 #include "timer.h"
 #include "trigger.h"
 #include <QAbstractTextDocumentLayout>
+#include <QClipboard>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMenu>
 #include <QMessageBox>
 #include <QPainter>
+#include <QTextDocumentFragment>
+#include <QToolTip>
 
 Console::Console(QWidget *parent) :
     QWidget(parent),
@@ -55,20 +59,26 @@ Console::Console(QWidget *parent) :
 
     m_isUntitled = true;
 
-    m_document = new ConsoleDocument(this);
-    ui->output->setDocument(m_document);
-
     connect(ui->input, SIGNAL(command(QString)), SLOT(commandEntered(QString)));
     connect(ui->input, SIGNAL(script(QString)), SLOT(scriptEntered(QString)));
 
     m_profile = new Profile(this);
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), SLOT(contentsModified()));
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), ui->input, SLOT(optionChanged(QString, QVariant)));
-    connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), m_document, SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
     connect(m_profile, SIGNAL(timerFired(Timer*)), SLOT(processTimer(Timer*)));
 
+    m_document = new ConsoleDocument(this);
+    m_document->setMaximumBlockCount(m_profile->scrollbackLines() + 1);
+    ui->output->setDocument(m_document);
+    connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), m_document, SLOT(optionChanged(QString, QVariant)));
+
     m_echoOn = true;
+
+    m_mousePressed = false;
+    m_selectionStart = 0;
+    m_selectionEnd = 0;
+    m_clickPos = -1;
 
     m_connection = new Connection(this);
     connect(m_connection, SIGNAL(dataReceived(QByteArray)), SLOT(dataReceived(QByteArray)));
@@ -263,6 +273,149 @@ void Console::closeEvent(QCloseEvent *e)
     }
 }
 
+void Console::mouseMoveEvent(QMouseEvent *e)
+{
+    if (!m_document)
+    {
+        return;
+    }
+
+    if (m_mousePressed)
+    {
+        QPointF hitPos(e->pos().x(), fabs(e->pos().y() - ui->output->height()));
+
+        int pos = m_document->documentLayout()->hitTest(hitPos, Qt::FuzzyHit);
+        if (pos < 0)
+        {
+            e->ignore();
+            return;
+        }
+
+        m_selectionEnd = pos;
+
+        m_document->select(m_selectionStart, m_selectionEnd);
+
+        if (e->y() < 10)
+        {
+            scrollUp(1);
+        }
+        else if (e->y() > ui->output->height() - 10)
+        {
+            scrollDown(1);
+        }
+    }
+
+    e->accept();
+}
+
+void Console::mousePressEvent(QMouseEvent *e)
+{
+    if (!m_document)
+    {
+        return;
+    }
+
+    if (e->button() == Qt::LeftButton)
+    {
+        QPointF hitPos(e->pos().x(), fabs(e->pos().y() - ui->output->height()));
+
+        m_clickPos = m_document->documentLayout()->hitTest(hitPos, Qt::ExactHit);
+
+        m_mousePressed = true;
+        m_selectionStart = m_clickPos;
+        m_selectionEnd = m_clickPos;
+    }
+}
+
+void Console::mouseReleaseEvent(QMouseEvent *e)
+{
+    if (!m_document)
+    {
+        return;
+    }
+
+    if (e->button() == Qt::RightButton)
+    {
+        QMenu *popup = new QMenu(this);
+
+        if (m_document->hasSelection())
+        {
+            QAction *actionCopy = new QAction(tr("&Copy"), this);
+            actionCopy->setStatusTip(tr("Copy selected text to clipboard"));
+            connect(actionCopy, SIGNAL(triggered()), SLOT(copy()));
+
+            QAction *actionCopyHtml = new QAction(tr("Copy as &HTML"), this);
+            actionCopyHtml->setStatusTip(tr("Copy selected text to clipboard as HTML"));
+            connect(actionCopyHtml, SIGNAL(triggered()), SLOT(copyHtml()));
+
+            QAction *actionSelectNone = new QAction(tr("Select &None"), this);
+            actionSelectNone->setStatusTip(tr("Removes the current text selection"));
+            connect(actionSelectNone, SIGNAL(triggered()), m_document, SLOT(selectNone()));
+
+            popup->addAction(actionCopy);
+            popup->addAction(actionCopyHtml);
+            popup->addSeparator();
+            popup->addAction(actionSelectNone);
+        }
+
+        QAction *actionSelectAll = new QAction(tr("Select &All"), this);
+        actionSelectAll->setStatusTip(tr("Select all buffered output text"));
+        connect(actionSelectAll, SIGNAL(triggered()), m_document, SLOT(selectAll()));
+
+        QAction *actionClearBuffer = new QAction(tr("C&lear output buffer"), this);
+        actionClearBuffer->setStatusTip(tr("Deletes all text stored in the output text buffer"));
+        connect(actionClearBuffer, SIGNAL(triggered()), m_document, SLOT(clear()));
+
+        popup->addAction(actionSelectAll);
+        popup->addSeparator();
+        popup->addAction(actionClearBuffer);
+
+        popup->popup(mapToGlobal(e->pos()), popup->actions().at(0));
+    }
+    else if (e->button() == Qt::MiddleButton)
+    {
+        scrollTo(m_document->blockCount());
+    }
+    else if (e->button() == Qt::LeftButton)
+    {
+        // TODO: don't clear selection when clicking within the selected text?
+        QPointF hitPos(e->pos().x(), fabs(e->pos().y() - ui->output->height()));
+
+        if (m_document->documentLayout()->hitTest(hitPos, Qt::ExactHit) == m_clickPos)
+        {
+            m_document->selectNone();
+
+            m_selectionStart = 0;
+            m_selectionEnd = 0;
+        }
+
+        m_mousePressed = false;
+        m_clickPos = -1;
+    }
+    else
+    {
+        QString anchor(m_document->documentLayout()->anchorAt(e->pos()));
+        if (anchor != m_linkHovered)
+        {
+
+            m_linkHovered = anchor;
+
+            if (m_linkHovered.isEmpty())
+            {
+                QToolTip::hideText();
+                setCursor(Qt::IBeamCursor);
+            }
+            else
+            {
+                QToolTip::showText(e->globalPos(), "Test hint\nhttp://google.com");
+                setCursor(Qt::PointingHandCursor);
+            }
+        }
+    }
+
+    e->accept();
+}
+
 void Console::wheelEvent(QWheelEvent *e)
 {
     const int k = 3;
@@ -381,6 +534,23 @@ void Console::updateScroll()
         ui->scrollbar->setRange(1, 1);
     }
     ui->scrollbar->setPageStep(10);
+}
+
+void Console::copy()
+{
+    QTextDocumentFragment fragment(*m_document->cursor());
+    QApplication::clipboard()->setText(fragment.toPlainText());
+
+    m_document->selectNone();
+}
+
+void Console::copyHtml()
+{
+    // TODO: much more efficient toHtml
+    QTextDocumentFragment fragment(*m_document->cursor());
+    QApplication::clipboard()->setText(fragment.toHtml("utf-8"));
+
+    m_document->selectNone();
 }
 
 void Console::processAccelerators(const QKeySequence &key)

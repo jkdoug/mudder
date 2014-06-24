@@ -85,6 +85,9 @@ signals:
 
 protected:
     virtual void closeEvent(QCloseEvent *e);
+    virtual void mouseMoveEvent(QMouseEvent *e);
+    virtual void mousePressEvent(QMouseEvent *e);
+    virtual void mouseReleaseEvent(QMouseEvent *e);
     virtual void wheelEvent(QWheelEvent *e);
 
 private slots:
@@ -98,6 +101,8 @@ private slots:
     void echoToggled(bool on);
     void scrollbarMoved(int pos);
     void updateScroll();
+    void copy();
+    void copyHtml();
     void processAccelerators(const QKeySequence &key);
     void processAliases(const QString &cmd);
     void processTriggers(QTextBlock block, bool prompt);
@@ -122,6 +127,12 @@ private:
     Connection *m_connection;
 
     bool m_echoOn;
+
+    QString m_linkHovered;
+    bool m_mousePressed;
+    int m_selectionStart;
+    int m_selectionEnd;
+    int m_clickPos;
 };
 
 #endif // CONSOLE_H

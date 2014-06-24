@@ -70,6 +70,8 @@ Profile::Profile(QObject *parent) :
     outputFont.setStyleHint(QFont::TypeWriter);
     outputFont.setStyleStrategy(QFont::PreferAntialias);
     m_options.insert("outputFont", outputFont);
+
+    m_options.insert("scrollbackLines", 1000);
 }
 
 template <class C>
@@ -284,6 +286,7 @@ void Profile::toXml(QXmlStreamWriter &xml)
     xml.writeEndElement();
 
     xml.writeStartElement("display");
+    xml.writeAttribute("scrollback", QString::number(scrollbackLines()));
 
     xml.writeStartElement("inputFont");
     xml.writeAttribute("family", inputFont().family());

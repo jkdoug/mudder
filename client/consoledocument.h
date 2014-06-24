@@ -36,6 +36,11 @@ class ConsoleDocument : public QTextDocument
 public:
     explicit ConsoleDocument(QObject *parent = 0);
 
+    bool hasSelection() const { return m_cursor->hasSelection(); }
+    QTextCursor * cursor() const { return m_cursor; }
+
+    QTextCharFormat formatSelection() const { return m_formatSelection; }
+
     QString toPlainText(int start, int stop);
     QString toPlainText(QTextCursor cur = QTextCursor());
 
@@ -48,6 +53,10 @@ public slots:
     void warning(const QString &msg);
     void info(const QString &msg);
     void optionChanged(const QString &key, const QVariant &val);
+    void select(int start, int stop);
+    void selectAll();
+    void selectNone();
+    virtual void clear();
 
 signals:
     void blockAdded(QTextBlock block, bool prompt);
@@ -77,6 +86,7 @@ private:
     int m_gagLine;
 
     QTextCharFormat m_formatDefault;
+    QTextCharFormat m_formatSelection;
     QTextCharFormat m_formatCommand;
     QTextCharFormat m_formatCurrent;
     QTextCharFormat m_formatError;

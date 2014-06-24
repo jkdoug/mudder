@@ -86,6 +86,9 @@ public:
     QFont outputFont() const { return m_options.value("outputFont").value<QFont>(); }
     void setOutputFont(const QFont &font) { changeOption("outputFont", font); }
 
+    int scrollbackLines() const { return m_options.value("scrollbackLines").toInt(); }
+    void setScrollbackLines(int max) { changeOption("scrollbackLines", max); }
+
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
     static bool validateXml(const QString &text, QList<XmlError *> *errors = 0);

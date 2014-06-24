@@ -25,8 +25,9 @@
 #define CONSOLEDISPLAY_H
 
 #include <QAbstractTextDocumentLayout>
-#include <QTextDocument>
 #include <QWidget>
+#include "consoledocument.h"
+#include "consoledocumentlayout.h"
 
 class ConsoleDisplay : public QWidget
 {
@@ -34,18 +35,19 @@ class ConsoleDisplay : public QWidget
 public:
     explicit ConsoleDisplay(QWidget *parent = 0);
 
-    void setDocument(QTextDocument *doc) { m_document = doc; }
+    void setDocument(ConsoleDocument *doc) { m_document = doc; }
 
     void setScrollLines(int lines) { m_scrollLines = lines; }
     int scrollLines() const { return m_scrollLines; }
 
-    QAbstractTextDocumentLayout * documentLayout();
+    ConsoleDocumentLayout * documentLayout();
 
 protected:
     virtual void paintEvent(QPaintEvent *e);
+    virtual void resizeEvent(QResizeEvent *e);
 
 private:
-    QTextDocument *m_document;
+    ConsoleDocument *m_document;
 
     int m_scrollLines;
 };

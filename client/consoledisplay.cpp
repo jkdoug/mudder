@@ -37,14 +37,14 @@ ConsoleDisplay::ConsoleDisplay(QWidget *parent) :
     setPalette(pal);
 }
 
-QAbstractTextDocumentLayout * ConsoleDisplay::documentLayout()
+ConsoleDocumentLayout *ConsoleDisplay::documentLayout()
 {
     if (!m_document)
     {
         return 0;
     }
 
-    return m_document->documentLayout();
+    return qobject_cast<ConsoleDocumentLayout*>(m_document->documentLayout());
 }
 
 void ConsoleDisplay::paintEvent(QPaintEvent *e)
@@ -59,10 +59,28 @@ void ConsoleDisplay::paintEvent(QPaintEvent *e)
         return;
     }
 
+    QVector<QAbstractTextDocumentLayout::Selection> selections;
+    if (m_document->hasSelection())
+    {
+        QAbstractTextDocumentLayout::Selection selection;
+        selection.cursor = *m_document->cursor();
+        selection.format = m_document->formatSelection();
+        selections.append(selection);
+    }
+
     QAbstractTextDocumentLayout::PaintContext ctx;
     ctx.clip = rect().marginsRemoved(QMargins(2, 2, 2, 2));
+    ctx.selections = selections;
     ctx.palette = palette();
     ctx.cursorPosition = m_scrollLines;
 
     m_document->documentLayout()->draw(&painter, ctx);
+}
+
+void ConsoleDisplay::resizeEvent(QResizeEvent *e)
+{
+    if (e->oldSize().width() != e->size().width())
+    {
+        documentLayout()->setTextWidth(e->size().width());
+    }
 }

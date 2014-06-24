@@ -52,6 +52,8 @@ CommandLine::CommandLine(QWidget *parent) :
 
     connect(m_completer, SIGNAL(activated(QString)), SLOT(insertCompletion(QString)));
     connect(this, SIGNAL(command(QString)), SLOT(addToHistory(QString)));
+
+    updateCompletions();
 }
 
 void CommandLine::optionChanged(const QString &key, const QVariant &val)
@@ -85,7 +87,7 @@ void CommandLine::echoToggled(bool flag)
 
 void CommandLine::keyPressEvent(QKeyEvent *e)
 {
-    if (m_completer && m_completer->popup() && m_completer->popup()->isVisible())
+    if (m_completer->popup()->isVisible())
     {
        switch (e->key())
        {
@@ -102,8 +104,8 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
        }
     }
 
-    const bool isShortcut = e->modifiers().testFlag(Qt::ControlModifier) && e->key() == Qt::Key_E;
-    if (!m_completer || !isShortcut)
+    const bool isShortcut = e->modifiers().testFlag(Qt::ControlModifier) && e->key() == Qt::Key_Space;
+    if (!isShortcut)
     {
         switch (e->key())
         {
@@ -168,15 +170,13 @@ void CommandLine::keyPressEvent(QKeyEvent *e)
             break;
         }
 
-        updateCompletions();
-
         QPlainTextEdit::keyPressEvent(e);
 
         adjustHeight();
     }
 
     const bool ctrlOrShift = e->modifiers().testFlag(Qt::ControlModifier) || e->modifiers().testFlag(Qt::ShiftModifier);
-    if (!m_completer || (ctrlOrShift && e->text().isEmpty()))
+    if (ctrlOrShift && e->text().isEmpty())
     {
         return;
     }

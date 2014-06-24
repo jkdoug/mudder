@@ -43,11 +43,27 @@ public:
     virtual QRectF frameBoundingRect(QTextFrame *frame) const;
     virtual QRectF blockBoundingRect(const QTextBlock &block) const;
 
+    void ensureBlockLayout(const QTextBlock &block) const;
+
+    qreal textWidth() const { return m_width; }
+    void setTextWidth(qreal width);
+
 protected:
     virtual void documentChanged(int from, int charsRemoved, int charsAdded);
 
 private:
-    QTextBlock bottomBlock(int scroll = 0) const;
+    QTextBlock bottomBlock(int scroll = -1) const;
+
+    void layoutBlock(const QTextBlock &block);
+    qreal blockWidth(const QTextBlock &block);
+
+    void relayout();
+
+    qreal m_width;
+    qreal m_maximumWidth;
+    int m_maximumWidthBlockNumber;
+    int m_blockCount;
+    mutable int m_scroll;
 };
 
 #endif // CONSOLEDOCUMENTLAYOUT_H

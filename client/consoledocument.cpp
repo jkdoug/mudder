@@ -50,6 +50,9 @@ ConsoleDocument::ConsoleDocument(QObject *parent) :
     m_bgHighColorMode = false;
     m_isPrompt = false;
 
+    m_formatSelection.setForeground(QColor("gainsboro"));
+    m_formatSelection.setBackground(QColor("dodgerblue"));
+
     m_formatCommand.setForeground(Qt::darkYellow);
 
     m_formatWarning.setForeground(Qt::red);
@@ -249,6 +252,47 @@ void ConsoleDocument::optionChanged(const QString &key, const QVariant &val)
         fmt.setFont(m_formatDefault.font());
         m_cursor->mergeCharFormat(fmt);
     }
+    else if (key == "scrollbackLines")
+    {
+        setMaximumBlockCount(val.toInt() + 1);
+    }
+}
+
+void ConsoleDocument::select(int start, int stop)
+{
+    if (start == stop)
+    {
+        selectNone();
+        return;
+    }
+
+    m_cursor->setPosition(start);
+    m_cursor->setPosition(stop, QTextCursor::KeepAnchor);
+
+    emit contentsChanged();
+}
+
+void ConsoleDocument::selectAll()
+{
+    m_cursor->select(QTextCursor::Document);
+
+    emit contentsChanged();
+}
+
+void ConsoleDocument::selectNone()
+{
+    m_cursor->clearSelection();
+
+    emit contentsChanged();
+}
+
+void ConsoleDocument::clear()
+{
+    QTextDocument::clear();
+
+    delete m_cursor;
+    m_cursor = new QTextCursor(this);
+    m_cursor->setCharFormat(m_formatCurrent);
 }
 
 void ConsoleDocument::newLine()
