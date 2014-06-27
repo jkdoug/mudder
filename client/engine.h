@@ -26,6 +26,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QVariant>
 #include "lua.hpp"
 
 class Console;
@@ -53,6 +54,8 @@ public:
     bool execute(const QString &code, const QObject *item = 0);
     bool execute(int id, const QObject *item = 0);
 
+    bool callEventHandler(const QString &name, const QVariantList &args = QVariantList());
+
     void saveCaptures(const Matchable *item);
 
     static int print(lua_State *L);
@@ -68,6 +71,7 @@ public:
     static int connectRemote(lua_State *L);
     static int disconnectRemote(lua_State *L);
     static int version(lua_State *L);
+    static int raiseEvent(lua_State *L);
 
 public slots:
     void enableGMCP(bool flag);

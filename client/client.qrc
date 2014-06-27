@@ -42,6 +42,7 @@
         <file alias="table_ordered">lua/table_ordered.lua</file>
         <file alias="table_print">lua/table_print.lua</file>
         <file alias="table_size">lua/table_size.lua</file>
+        <file alias="inspect">lua/inspect.lua</file>
     </qresource>
     <qresource prefix="/schema">
         <file alias="profile">schema/profile.xsd</file>
