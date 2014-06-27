@@ -436,7 +436,7 @@ QVariant Profile::data(const QModelIndex &index, int role) const
             case Name:
                 if (executable && executable->failed())
                 {
-                    return QString("<p style=\"color:red;\">%1").arg(item->name());
+                    return QString("<p style=\"color:red;\"><b>%1").arg(item->name());
                 }
                 else if (item->enabled())
                 {
@@ -444,7 +444,7 @@ QVariant Profile::data(const QModelIndex &index, int role) const
                 }
                 else
                 {
-                    return QString("<p style=\"color:dimgray;\">%1").arg(item->name());
+                    return QString("<p style=\"color:dimgray;\"><i>%1").arg(item->name());
                 }
 
             default:
