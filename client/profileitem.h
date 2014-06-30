@@ -44,7 +44,7 @@ class ProfileItem : public QObject
     Q_PROPERTY(int sequence READ sequence WRITE setSequence)
 
 public:
-    virtual const QString & name() const { return m_name; }
+    virtual QString name() const { return m_name; }
     void setName(const QString &name);
     virtual QString fullName() const;
     virtual bool enabled() const;

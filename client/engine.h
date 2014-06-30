@@ -27,9 +27,10 @@
 #include <QObject>
 #include <QString>
 #include <QVariant>
-#include "lua.hpp"
+#include "luastate.h"
 
 class Console;
+class Event;
 class Matchable;
 
 class Engine : public QObject
@@ -49,14 +50,16 @@ public:
 
     static int panic(lua_State *L);
     void error(lua_State *L, const QString &event);
-    void findTraceback(lua_State *L);
 
-    bool execute(const QString &code, const QObject *item = 0);
-    bool execute(int id, const QObject *item = 0);
+    bool execute(const QString &code, const QObject *item = 0, const QVariantList &args = QVariantList());
+    bool execute(int id, const QObject *item = 0, const QVariantList &args = QVariantList());
 
-    bool callEventHandler(const QString &name, const QVariantList &args = QVariantList());
+    void processEvents(const QString &name, const QVariantList &args = QVariantList());
 
+    void saveArguments(const QVariantList &args);
     void saveCaptures(const Matchable *item);
+    void clearArguments();
+    void clearCaptures();
 
     static int print(lua_State *L);
     static int send(lua_State *L);
@@ -72,6 +75,8 @@ public:
     static int disconnectRemote(lua_State *L);
     static int version(lua_State *L);
     static int raiseEvent(lua_State *L);
+    static int registerEvent(lua_State *L);
+    static int unregisterEvent(lua_State *L);
 
 public slots:
     void enableGMCP(bool flag);
@@ -83,7 +88,7 @@ protected:
     static QString concatArgs(lua_State *L, const QString &delimiter = "", const int first = 1);
 
 private:
-    lua_State *m_global;
+    LuaState m_global;
 
     QString m_chunk;
 

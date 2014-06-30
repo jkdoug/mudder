@@ -48,7 +48,8 @@ SOURCES += main.cpp\
     configinput.cpp \
     configoutput.cpp \
     settingsfiltermodel.cpp \
-    richtextdelegate.cpp
+    richtextdelegate.cpp \
+    luastate.cpp
 
 HEADERS  += mainwindow.h \
     console.h \
@@ -89,7 +90,8 @@ HEADERS  += mainwindow.h \
     configinput.h \
     configoutput.h \
     settingsfiltermodel.h \
-    richtextdelegate.h
+    richtextdelegate.h \
+    luastate.h
 
 FORMS    += mainwindow.ui \
     console.ui \

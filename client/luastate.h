@@ -21,36 +21,28 @@
 */
 
 
-#ifndef EDITEVENT_H
-#define EDITEVENT_H
+#ifndef LUASTATE_H
+#define LUASTATE_H
 
-#include "editsetting.h"
+#include <QObject>
+#include "lua.hpp"
 
-namespace Ui {
-class EditEvent;
-}
-
-class EditEvent : public EditSetting
+class LuaState : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit EditEvent(QWidget *parent = 0);
-    ~EditEvent();
+    explicit LuaState(QObject *parent = 0);
+    ~LuaState();
 
-    virtual bool load(ProfileItem *item);
-    virtual bool save(ProfileItem *item);
+    inline operator lua_State*() { return m_state; }
 
-    virtual void enableItem(bool flag);
-
-private slots:
-    void changed();
+    int pcall(int args, int rets);
+    static int pcall(lua_State *L, int args, int rets);
 
 private:
-    Ui::EditEvent *ui;
+    static void tracebackFunction(lua_State *L);
 
-    QString m_pattern;
-    QString m_contents;
+    lua_State *m_state;
 };
 
-#endif // EDITEVENT_H
+#endif // LUASTATE_H

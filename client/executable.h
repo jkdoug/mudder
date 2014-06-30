@@ -24,6 +24,7 @@
 #ifndef EXECUTABLE_H
 #define EXECUTABLE_H
 
+#include <QVariant>
 #include "profileitem.h"
 
 class Engine;
@@ -51,7 +52,7 @@ public:
 
     virtual bool enabled() const;
 
-    bool execute(Engine *e);
+    virtual bool execute(Engine *e, const QVariantList &args = QVariantList());
 
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
@@ -67,7 +68,6 @@ protected:
 
     void clone(const Executable &rhs);
 
-private:
     QString m_contents;
 
     bool m_failed;

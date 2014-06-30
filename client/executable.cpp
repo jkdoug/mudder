@@ -100,7 +100,7 @@ bool Executable::enabled() const
     return !m_failed && ProfileItem::enabled();
 }
 
-bool Executable::execute(Engine *e)
+bool Executable::execute(Engine *e, const QVariantList &args)
 {
     if (m_contents.isEmpty())
     {
@@ -110,7 +110,7 @@ bool Executable::execute(Engine *e)
     QElapsedTimer timer;
     timer.start();
 
-    bool result = e->execute(contents(), this);
+    bool result = e->execute(contents(), this, args);
 
     m_executionCount++;
     m_totalTime = m_totalTime + timer.elapsed() / 1000.0;

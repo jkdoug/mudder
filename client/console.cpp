@@ -31,6 +31,7 @@
 #include "xmlerror.h"
 #include "accelerator.h"
 #include "alias.h"
+#include "event.h"
 #include "group.h"
 #include "timer.h"
 #include "trigger.h"
@@ -430,6 +431,193 @@ void Console::wheelEvent(QWheelEvent *e)
     e->accept();
 }
 
+
+void Console::processAccelerators(const QKeySequence &key)
+{
+    QList<Accelerator *> accelerators(m_profile->rootGroup()->sortedAccelerators());
+    foreach (Accelerator *accelerator, accelerators)
+    {
+        if (accelerator->key() == key)
+        {
+            Group *previousGroup = m_profile->activeGroup();
+            Q_ASSERT(previousGroup != 0);
+            m_profile->setActiveGroup(accelerator->group());
+
+            if (!accelerator->execute(m_engine))
+            {
+                m_profile->setActiveGroup(previousGroup);
+                accelerator->setFailed(true);
+                continue;
+            }
+
+            m_profile->setActiveGroup(previousGroup);
+
+            ui->input->setAccelerated(true);
+            break;
+        }
+    }
+}
+
+void Console::processAliases(const QString &cmd)
+{
+    bool matched = false;
+    QList<Alias *> aliases(m_profile->rootGroup()->sortedAliases());
+    foreach (Alias *alias, aliases)
+    {
+        if (!alias->regex().isValid())
+        {
+            printError(tr("Alias %1: %2 (column %3)").arg(alias->name()).arg(alias->regex().errorString()).arg(alias->regex().patternErrorOffset()));
+            alias->setFailed(true);
+            continue;
+        }
+
+        if (alias->match(cmd))
+        {
+            Group *previousGroup = m_profile->activeGroup();
+            Q_ASSERT(previousGroup != 0);
+            m_profile->setActiveGroup(alias->group());
+
+            if (!alias->execute(m_engine))
+            {
+                m_profile->setActiveGroup(previousGroup);
+                alias->setFailed(true);
+
+                if (!alias->keepEvaluating())
+                {
+                    return;
+                }
+
+                continue;
+            }
+
+            m_profile->setActiveGroup(previousGroup);
+
+            if (!alias->keepEvaluating())
+            {
+                return;
+            }
+
+            matched = true;
+        }
+    }
+
+    if (!matched)
+    {
+        m_connection->send(cmd);
+
+        if (m_echoOn)
+        {
+            m_document->command(cmd);
+        }
+    }
+}
+
+void Console::processEvents(const QString &name, const QVariantList &args)
+{
+    QList<Event *> events(m_profile->rootGroup()->sortedEvents());
+    foreach (Event *event, events)
+    {
+        if (event->match(name))
+        {
+            Group *previousGroup = m_profile->activeGroup();
+            Q_ASSERT(previousGroup != 0);
+            m_profile->setActiveGroup(event->group());
+
+            if (!event->execute(m_engine, args))
+            {
+                m_profile->setActiveGroup(previousGroup);
+                event->setFailed(true);
+
+                continue;
+            }
+
+            m_profile->setActiveGroup(previousGroup);
+        }
+    }
+}
+
+void Console::processTriggers(QTextBlock block, bool prompt)
+{
+    Q_UNUSED(prompt)
+
+    bool omitted = false;
+    QString text(block.text());
+    QList<Trigger *> triggers(m_profile->rootGroup()->sortedTriggers());
+    foreach (Trigger *trigger, triggers)
+    {
+        bool matched = false;
+        bool keepEvaluating = trigger->keepEvaluating();
+        int pos = 0;
+
+        while (pos < text.length())
+        {
+            if (!trigger->regex().isValid())
+            {
+                printError(tr("Trigger %1: %2 (column %3)").arg(trigger->name()).arg(trigger->regex().errorString()).arg(trigger->regex().patternErrorOffset()));
+                trigger->setFailed(true);
+                break;
+            }
+
+            matched = trigger->match(text, pos);
+            if (matched)
+            {
+                Group *previousGroup = m_profile->activeGroup();
+                Q_ASSERT(previousGroup != 0);
+                m_profile->setActiveGroup(trigger->group());
+
+                if (!trigger->execute(m_engine))
+                {
+                    m_profile->setActiveGroup(previousGroup);
+                    trigger->setFailed(true);
+                    keepEvaluating = false;
+                    break;
+                }
+
+                m_profile->setActiveGroup(previousGroup);
+
+                if (!omitted && trigger->omit())
+                {
+                    omitted = true;
+                }
+            }
+
+            if (!trigger->repeat())
+            {
+                break;
+            }
+
+            pos = trigger->matchEnd();
+        }
+
+        if (matched && !keepEvaluating)
+        {
+            break;
+        }
+    }
+
+    // TODO: check for omitted lines to delete
+}
+
+void Console::processTimer(Timer *timer)
+{
+    if (!timer)
+    {
+        return;
+    }
+
+    qCDebug(MUDDER_SCRIPT) << "Timer fired:" << timer->fullName();
+
+    if (!timer->execute(m_engine))
+    {
+        timer->enable(false);
+    }
+
+    if (timer->once())
+    {
+        m_profile->deleteItem(m_profile->indexForPath(timer->path()));
+    }
+}
+
 void Console::contentsModified()
 {
     setWindowModified(true);
@@ -552,169 +740,6 @@ void Console::copyHtml()
 
     m_document->selectNone();
 }
-
-void Console::processAccelerators(const QKeySequence &key)
-{
-    QList<Accelerator *> accelerators(m_profile->rootGroup()->sortedAccelerators());
-    foreach (Accelerator *accelerator, accelerators)
-    {
-        if (accelerator->key() == key)
-        {
-            Group *previousGroup = m_profile->activeGroup();
-            Q_ASSERT(previousGroup != 0);
-            m_profile->setActiveGroup(accelerator->group());
-
-            if (!accelerator->execute(m_engine))
-            {
-                m_profile->setActiveGroup(previousGroup);
-                accelerator->setFailed(true);
-                continue;
-            }
-
-            m_profile->setActiveGroup(previousGroup);
-
-            ui->input->setAccelerated(true);
-            break;
-        }
-    }
-}
-
-void Console::processAliases(const QString &cmd)
-{
-    bool matched = false;
-    QList<Alias *> aliases(m_profile->rootGroup()->sortedAliases());
-    foreach (Alias *alias, aliases)
-    {
-        if (!alias->regex().isValid())
-        {
-            printError(tr("Alias %1: %2 (column %3)").arg(alias->name()).arg(alias->regex().errorString()).arg(alias->regex().patternErrorOffset()));
-            alias->setFailed(true);
-            continue;
-        }
-
-        if (alias->match(cmd))
-        {
-            Group *previousGroup = m_profile->activeGroup();
-            Q_ASSERT(previousGroup != 0);
-            m_profile->setActiveGroup(alias->group());
-
-            if (!alias->execute(m_engine))
-            {
-                m_profile->setActiveGroup(previousGroup);
-                alias->setFailed(true);
-
-                if (!alias->keepEvaluating())
-                {
-                    return;
-                }
-
-                continue;
-            }
-
-            m_profile->setActiveGroup(previousGroup);
-
-            if (!alias->keepEvaluating())
-            {
-                return;
-            }
-
-            matched = true;
-        }
-    }
-
-    if (!matched)
-    {
-        m_connection->send(cmd);
-
-        if (m_echoOn)
-        {
-            m_document->command(cmd);
-        }
-    }
-}
-
-void Console::processTriggers(QTextBlock block, bool prompt)
-{
-    Q_UNUSED(prompt)
-
-    bool omitted = false;
-    QString text(block.text());
-    QList<Trigger *> triggers(m_profile->rootGroup()->sortedTriggers());
-    foreach (Trigger *trigger, triggers)
-    {
-        bool matched = false;
-        bool keepEvaluating = trigger->keepEvaluating();
-        int pos = 0;
-
-        while (pos < text.length())
-        {
-            if (!trigger->regex().isValid())
-            {
-                printError(tr("Trigger %1: %2 (column %3)").arg(trigger->name()).arg(trigger->regex().errorString()).arg(trigger->regex().patternErrorOffset()));
-                trigger->setFailed(true);
-                break;
-            }
-
-            matched = trigger->match(text, pos);
-            if (matched)
-            {
-                Group *previousGroup = m_profile->activeGroup();
-                Q_ASSERT(previousGroup != 0);
-                m_profile->setActiveGroup(trigger->group());
-
-                if (!trigger->execute(m_engine))
-                {
-                    m_profile->setActiveGroup(previousGroup);
-                    trigger->setFailed(true);
-                    keepEvaluating = false;
-                    break;
-                }
-
-                m_profile->setActiveGroup(previousGroup);
-
-                if (!omitted && trigger->omit())
-                {
-                    omitted = true;
-                }
-            }
-
-            if (!trigger->repeat())
-            {
-                break;
-            }
-
-            pos = trigger->matchEnd();
-        }
-
-        if (matched && !keepEvaluating)
-        {
-            break;
-        }
-    }
-
-    // TODO: check for omitted lines to delete
-}
-
-void Console::processTimer(Timer *timer)
-{
-    if (!timer)
-    {
-        return;
-    }
-
-    qCDebug(MUDDER_SCRIPT) << "Timer fired:" << timer->fullName();
-
-    if (!timer->execute(m_engine))
-    {
-        timer->enable(false);
-    }
-
-    if (timer->once())
-    {
-        m_profile->deleteItem(m_profile->indexForPath(timer->path()));
-    }
-}
-
 bool Console::okToContinue()
 {
     if (isWindowModified())

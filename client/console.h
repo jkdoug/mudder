@@ -90,6 +90,13 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent *e);
     virtual void wheelEvent(QWheelEvent *e);
 
+public slots:
+    void processAccelerators(const QKeySequence &key);
+    void processAliases(const QString &cmd);
+    void processEvents(const QString &name, const QVariantList &args);
+    void processTriggers(QTextBlock block, bool prompt);
+    void processTimer(Timer *timer);
+
 private slots:
     void contentsModified();
     void commandEntered(const QString &cmd);
@@ -103,10 +110,6 @@ private slots:
     void updateScroll();
     void copy();
     void copyHtml();
-    void processAccelerators(const QKeySequence &key);
-    void processAliases(const QString &cmd);
-    void processTriggers(QTextBlock block, bool prompt);
-    void processTimer(Timer *timer);
 
 private:
     bool okToContinue();

@@ -22,55 +22,53 @@
 
 
 #include "event.h"
+#include <QElapsedTimer>
+#include "engine.h"
 #include "xmlerror.h"
 
+extern "C"
+{
+    #include "lauxlib.h"
+}
+
 Event::Event(QObject *parent) :
-    Executable(parent)
+    Matchable(parent)
 {
-    m_evalCount = 0;
-    m_matchCount = 0;
+    m_reference = LUA_NOREF;
 }
 
-void Event::setTitle(const QString &title)
+QString Event::name() const
 {
-    if (title != m_title)
+    if (m_reference != LUA_NOREF)
     {
-        m_title = title;
-        emit modified(this);
-    }
-}
-
-bool Event::match(const QString &str)
-{
-    m_evalCount++;
-
-    if (m_title.compare(str) == 0)
-    {
-        m_lastMatched = QDateTime::currentDateTime();
-        m_matchCount++;
-        return true;
+        return QString("!anonHandler[%1]").arg(m_reference);
     }
 
-    return false;
+    return m_name;
 }
 
-void Event::toXml(QXmlStreamWriter &xml)
+bool Event::execute(Engine *e, const QVariantList &args)
 {
-    xml.writeAttribute("title", m_title);
+    if (m_reference == LUA_NOREF)
+    {
+        return Executable::execute(e, args);
+    }
 
-    Executable::toXml(xml);
+    QElapsedTimer timer;
+    timer.start();
+
+    bool result = e->execute(m_reference, this, args);
+
+    m_executionCount++;
+    m_totalTime = m_totalTime + timer.elapsed() / 1000.0;
+    m_averageTime = m_totalTime / m_executionCount;
+
+    return result;
 }
 
 void Event::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
-    QString title(xml.attributes().value("title").toString());
-    if (title.isEmpty())    // TODO: more validation
-    {
-        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("missing or empty 'title' attribute in event"));
-    }
-    setTitle(title);
-
-    Executable::fromXml(xml, errors);
+    Matchable::fromXml(xml, errors);
 
     if (contents().isEmpty())
     {

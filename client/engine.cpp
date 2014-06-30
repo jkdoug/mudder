@@ -27,6 +27,7 @@
 #include "LuaBridge.h"
 #include "logging.h"
 #include "console.h"
+#include "event.h"
 #include "matchable.h"
 #include "profile.h"
 #include "profileitem.h"
@@ -237,6 +238,35 @@ struct Stack <QVariant>
         }
             break;
 
+        case QMetaType::QVariantList:
+        {
+            QVariantList list(value.toList());
+
+            int n = 0;
+            lua_newtable(L);
+            foreach (QVariant v, list)
+            {
+                lua_pushnumber(L, ++n);
+                push(L, v);
+                lua_settable(L, -3);
+            }
+        }
+            break;
+
+        case QMetaType::QVariantMap:
+        {
+            QVariantMap map(value.toMap());
+
+            lua_newtable(L);
+            foreach (QString key, map.keys())
+            {
+                lua_pushstring(L, qPrintable(key));
+                push(L, map.value(key));
+                lua_settable(L, -3);
+            }
+        }
+            break;
+
         default:
             lua_pushstring(L, qPrintable(value.toString()));
             break;
@@ -309,36 +339,15 @@ struct Stack <QVariant>
 Engine::Engine(QObject *parent) :
     QObject(parent)
 {
-    m_global = 0;
     m_GMCP = false;
 }
 
 Engine::~Engine()
 {
-    if (m_global)
-    {
-        lua_close(m_global);
-        m_global = 0;
-    }
 }
 
 void Engine::initialize(Console *c)
 {
-    m_global = luaL_newstate();
-    if (!m_global)
-    {
-        qCCritical(MUDDER_SCRIPT) << "Failed to initialize Lua API.";
-
-        QMessageBox mb;
-        mb.setIcon(QMessageBox::Critical);
-        mb.setWindowTitle(tr("Engine Trouble"));
-        mb.setText(tr("Failed to initialize Lua API."));
-        mb.exec();
-        return;
-    }
-
-    luaL_openlibs(m_global);
-
     lua_atpanic(m_global, Engine::panic);
 
     getGlobalNamespace(m_global)
@@ -358,7 +367,9 @@ void Engine::initialize(Console *c)
         .addCFunction("Connect", Engine::connectRemote)
         .addCFunction("Disconnect", Engine::disconnectRemote)
         .addCFunction("Version", Engine::version)
-        .addCFunction("RaiseEvent", Engine::raiseEvent);
+        .addCFunction("RaiseEvent", Engine::raiseEvent)
+        .addCFunction("RegisterEvent", Engine::registerEvent)
+        .addCFunction("UnregisterEvent", Engine::unregisterEvent);
 
     lua_settop(m_global, 0);
 
@@ -379,6 +390,7 @@ void Engine::initialize(Console *c)
 
     setRegistryData("CONSOLE", (void *)c);
     setRegistryData("ENGINE", (void *)this);
+    setRegistryData("HANDLERS", (void *)(new EventMap()));
 }
 
 void Engine::setRegistryData(const QString &name, void *data)
@@ -487,27 +499,7 @@ void Engine::error(lua_State *L, const QString &event)
     c->printError(printLines.join('\n'));
 }
 
-inline void Engine::findTraceback(lua_State *L)
-{
-    lua_getglobal(L, "debug");
-
-    if (lua_istable(L, -1))
-    {
-        lua_getfield(L, -1, "traceback");
-
-        lua_remove(L, -2);
-
-        if (lua_isfunction(L, -1))
-        {
-            return;
-        }
-    }
-
-    lua_pop(L, 1);
-    lua_pushnil(L);
-}
-
-bool Engine::execute(const QString &code, const QObject *item)
+bool Engine::execute(const QString &code, const QObject *item, const QVariantList &args)
 {
     if (code.isEmpty())
     {
@@ -519,8 +511,6 @@ bool Engine::execute(const QString &code, const QObject *item)
         qCCritical(MUDDER_SCRIPT) << "No Lua execution unit found.";
         return false;
     }
-
-    saveCaptures(qobject_cast<const Matchable *>(item));
 
     // Start with an empty stack
     lua_settop(m_global, 0);
@@ -535,29 +525,17 @@ bool Engine::execute(const QString &code, const QObject *item)
     int err = luaL_loadstring(m_global, qPrintable(code));
     if (err != LUA_OK)
     {
-        lua_pushnil(m_global);
-        lua_setglobal(m_global, "matches");
+        clearArguments();
+        clearCaptures();
 
         error(m_global, tr("Compile error"));
         return false;
     }
 
-    // Prepare for debugging the stack
-    int base = lua_gettop(m_global);
-    findTraceback(m_global);
+    saveCaptures(qobject_cast<const Matchable *>(item));
+    saveArguments(args);
 
-    // Execute the code and look for an error value
-    if (lua_isnil(m_global, -1))
-    {
-        lua_pop(m_global, 1);
-        err = lua_pcall(m_global, 0, LUA_MULTRET, 0);
-    }
-    else
-    {
-        lua_insert(m_global, base);
-        err = lua_pcall(m_global, 0, LUA_MULTRET, base);
-        lua_remove(m_global, base);
-    }
+    err = m_global.pcall(args.count(), LUA_MULTRET);
 
     // Something didn't work, print it out
     if (err != LUA_OK)
@@ -565,8 +543,8 @@ bool Engine::execute(const QString &code, const QObject *item)
         error(m_global, tr("Run-time error"));
     }
 
-    lua_pushnil(m_global);
-    lua_setglobal(m_global, "matches");
+    clearArguments();
+    clearCaptures();
 
     lua_settop(m_global, 0);
     m_chunk.clear();
@@ -576,7 +554,7 @@ bool Engine::execute(const QString &code, const QObject *item)
     return err == LUA_OK;
 }
 
-bool Engine::execute(int id, const QObject *item)
+bool Engine::execute(int id, const QObject *item, const QVariantList &args)
 {
     if (id < 1)
     {
@@ -589,8 +567,6 @@ bool Engine::execute(int id, const QObject *item)
         return false;
     }
 
-    saveCaptures(qobject_cast<const Matchable *>(item));
-
     // Start with an empty stack
     lua_settop(m_global, 0);
 
@@ -599,7 +575,10 @@ bool Engine::execute(int id, const QObject *item)
 
     lua_rawgeti(m_global, LUA_REGISTRYINDEX, id);
 
-    int err = lua_pcall(m_global, 0, 0, 0);
+    saveCaptures(qobject_cast<const Matchable *>(item));
+    saveArguments(args);
+
+    int err = m_global.pcall(args.count(), LUA_MULTRET);
 
     // Something didn't work, print it out
     if (err != LUA_OK)
@@ -609,46 +588,42 @@ bool Engine::execute(int id, const QObject *item)
 
     lua_settop(m_global, 0);
 
-    lua_pushnil(m_global);
-    lua_setglobal(m_global, "matches");
+    clearArguments();
+    clearCaptures();
 
     setRegistryData("CALLER", 0);
 
     return err == LUA_OK;
 }
 
-bool Engine::callEventHandler(const QString &name, const QVariantList &args)
+void Engine::processEvents(const QString &name, const QVariantList &args)
 {
-    // Start with an empty stack
-    lua_settop(m_global, 0);
-
-    // Store event name for error displays
-    m_chunk = name;
-
-    // Load up the code
-    int err = luaL_loadstring(m_global, qPrintable("return " + name));
-    if (err != LUA_OK)
+    if (!m_global)
     {
-        error(m_global, tr("Compile error"));
-        return false;
+        return;
     }
 
+    EventMap *h = registryData<EventMap>("HANDLERS", m_global);
+
+    QList<Event *> events(h->value(name));
+    foreach (Event *event, events)
+    {
+        event->execute(this, args);
+    }
+}
+
+void Engine::saveArguments(const QVariantList &args)
+{
+    LuaRef a(newTable(m_global));
+
+    int n = 0;
     foreach (QVariant arg, args)
     {
+        a[++n] = arg;
         push(m_global, arg);
     }
 
-    // Execute the code and look for an error value
-    err = lua_pcall(m_global, args.count(), LUA_MULTRET, 0);
-    if (err != LUA_OK)
-    {
-        error(m_global, tr("Event handler error"));
-    }
-
-    lua_settop(m_global, 0);
-    m_chunk.clear();
-
-    return err == LUA_OK;
+    setGlobal(m_global, a, "args");
 }
 
 void Engine::saveCaptures(const Matchable * const item)
@@ -674,6 +649,18 @@ void Engine::saveCaptures(const Matchable * const item)
     }
 
     setGlobal(m_global, m, "matches");
+}
+
+void Engine::clearArguments()
+{
+    lua_pushnil(m_global);
+    lua_setglobal(m_global, "args");
+}
+
+void Engine::clearCaptures()
+{
+    lua_pushnil(m_global);
+    lua_setglobal(m_global, "matches");
 }
 
 int Engine::print(lua_State *L)
@@ -901,6 +888,7 @@ int Engine::version(lua_State *L)
 
 int Engine::raiseEvent(lua_State *L)
 {
+    Console *c = registryObject<Console>("CONSOLE", L);
     Engine *e = registryObject<Engine>("ENGINE", L);
 
     QString name(luaL_checkstring(L, 1));
@@ -912,8 +900,92 @@ int Engine::raiseEvent(lua_State *L)
         args << LuaRef::fromStack(L, n).cast<QVariant>();
     }
 
-    push(L, e->callEventHandler(name, args));
+    c->processEvents(name, args);
+    e->processEvents(name, args);
 
+    return 0;
+}
+
+int Engine::registerEvent(lua_State *L)
+{
+    Console *c = registryObject<Console>("CONSOLE", L);
+    EventMap *h = registryData<EventMap>("HANDLERS", L);
+
+    QString name(luaL_checkstring(L, 1));
+
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+
+    lua_pushvalue(L, 2);
+    int reference = luaL_ref(L, LUA_REGISTRYINDEX);
+
+    QList<Event *> events(h->value(name));
+
+    Event *event = new Event(c);
+    event->setPattern(name);
+    event->setReference(reference);
+    event->setSequence(qBound(1, (int)luaL_optnumber(L, 3, 1000), 100000));
+    events.append(event);
+
+    qSort(events.begin(), events.end());
+    h->insert(name, events);
+
+    push(L, reference);
+
+    return 1;
+}
+
+int Engine::unregisterEvent(lua_State *L)
+{
+    EventMap *h = registryData<EventMap>("HANDLERS", L);
+
+    if (lua_isnumber(L, 1))
+    {
+        int reference = LuaRef::fromStack(L, 1);
+
+        foreach (QString name, h->keys())
+        {
+            QList<Event *> events(h->value(name));
+            foreach (Event *event, events)
+            {
+                if (event->reference() == reference)
+                {
+                    luaL_unref(L, LUA_REGISTRYINDEX, reference);
+
+                    events.removeOne(event);
+                    h->insert(name, events);
+
+                    delete event;
+
+                    lua_pushboolean(L, true);
+                    return 1;
+                }
+            }
+        }
+
+        lua_pushboolean(L, false);
+        return 1;
+    }
+
+    QString name(luaL_checkstring(L, 1));
+
+    if (!h->contains(name))
+    {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+
+    int count = 0;
+    QList<Event *> events(h->take(name));
+    foreach (Event *e, events)
+    {
+        luaL_unref(L, LUA_REGISTRYINDEX, e->reference());
+
+        delete e;
+
+        count++;
+    }
+
+    lua_pushnumber(L, count);
     return 1;
 }
 
@@ -968,7 +1040,7 @@ void Engine::handleGMCP(const QString &name, const QString &args)
         data[qPrintable(modules.last())] = QVariant(doc);
     }
 
-    callEventHandler("onGMCP", varArgs);
+    processEvents("onGMCP", varArgs);
 }
 
 int Engine::loadResource(lua_State *L, const QString &resource)

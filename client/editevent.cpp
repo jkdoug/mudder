@@ -37,7 +37,7 @@ EditEvent::EditEvent(QWidget *parent) :
     ui->script->setSyntaxHighlighter(new LuaHighlighter());
 
     connect(ui->name, SIGNAL(textChanged(QString)), SLOT(changed()));
-    connect(ui->title, SIGNAL(textChanged(QString)), SLOT(changed()));
+    connect(ui->pattern, SIGNAL(textChanged(QString)), SLOT(changed()));
     connect(ui->sequence, SIGNAL(valueChanged(int)), SLOT(changed()));
     connect(ui->script, SIGNAL(textChanged()), SLOT(changed()));
     connect(ui->enabled, SIGNAL(stateChanged(int)), SLOT(changed()));
@@ -66,8 +66,8 @@ bool EditEvent::load(ProfileItem *item)
     m_name = event->name();
     ui->name->setText(m_name);
 
-    m_title = event->title();
-    ui->title->setText(m_title);
+    m_pattern = event->pattern();
+    ui->pattern->setText(m_pattern);
 
     m_sequence = event->sequence();
     ui->sequence->setValue(m_sequence);
@@ -129,18 +129,19 @@ bool EditEvent::save(ProfileItem *item)
         return false;
     }
 
-    QString title(ui->title->text());
-    if (title.isEmpty())
+    QString pattern(ui->pattern->text());
+    QRegularExpression regex(pattern);
+    if (!regex.isValid())
     {
-        QMessageBox::critical(this, tr("Invalid Event"), tr("Title may not be left empty."));
+        QMessageBox::critical(this, tr("Invalid Event"), tr("Invalid regular expression: %1").arg(regex.errorString()));
         return false;
     }
 
     m_name = name;
     event->setName(m_name);
 
-    m_title = title;
-    event->setTitle(m_title);
+    m_pattern = pattern;
+    event->setPattern(m_pattern);
 
     m_sequence = ui->sequence->value();
     event->setSequence(m_sequence);
@@ -173,15 +174,16 @@ void EditEvent::changed()
     }
 
     QString script(ui->script->toPlainText().trimmed());
+    QRegularExpression regex(ui->pattern->text());
 
     bool changed = m_name != ui->name->text() ||
-        m_title != ui->title->text() ||
+        m_pattern != ui->pattern->text() ||
         m_sequence != ui->sequence->value() ||
         m_enabled != ui->enabled->isChecked() ||
         m_contents != script;
 
     bool valid = !ui->name->text().isEmpty() &&
-        !ui->title->text().isEmpty() &&
+        regex.isValid() &&
         !script.isEmpty();
 
     emit itemModified(changed, valid);

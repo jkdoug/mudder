@@ -37,7 +37,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Title:</string>
+        <string>Pattern:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -45,12 +45,18 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="title">
+      <widget class="QLineEdit" name="pattern">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
        </property>
        <property name="placeholderText">
-        <string>Enter the title of the event to fire.</string>
+        <string>Enter a regular expression pattern.</string>
        </property>
       </widget>
      </item>

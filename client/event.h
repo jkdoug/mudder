@@ -24,38 +24,30 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include "executable.h"
-#include <QDateTime>
+#include "matchable.h"
 
-class Event : public Executable
+class Event : public Matchable
 {
     Q_OBJECT
 
 public:
     explicit Event(QObject *parent = 0);
 
-    const QString & title() const { return m_title; }
-    void setTitle(const QString &title);
+    virtual QString name() const;
+    int reference() const { return m_reference; }
+    void setReference(int reference) { m_reference = reference; }
 
-    const QDateTime & lastMatched() const { return m_lastMatched; }
-    int matchCount() const { return m_matchCount; }
-    int evalCount() const { return m_evalCount; }
-
-    bool match(const QString &str);
+    virtual bool execute(Engine *e, const QVariantList &args = QVariantList());
 
     virtual QIcon icon() const { return QIcon(":/icons/event"); }
-    virtual QString value() const { return m_title; }
     virtual QString tagName() const { return "event"; }
 
-    virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 private:
-    QString m_title;
-
-    QDateTime m_lastMatched;
-    int m_matchCount;
-    int m_evalCount;
+    int m_reference;
 };
+
+typedef QMap<QString, QList<Event *> > EventMap;
 
 #endif // EVENT_H
