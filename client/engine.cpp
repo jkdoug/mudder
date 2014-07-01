@@ -358,6 +358,8 @@ void Engine::initialize(Console *c)
         .addCFunction("Send", Engine::send)
         .addCFunction("SendAlias", Engine::sendAlias)
         .addCFunction("SendGmcp", Engine::sendGmcp)
+        .addCFunction("DeleteLine", Engine::deleteLine)
+        .addCFunction("DeleteLines", Engine::deleteLines)
         .addCFunction("JsonDecode", Engine::jsonDecode)
         .addCFunction("JsonEncode", Engine::jsonEncode)
         .addCFunction("GetVariable", Engine::getVariable)
@@ -388,27 +390,27 @@ void Engine::initialize(Console *c)
     loadResource(m_global, ":/lua/table_print");
     loadResource(m_global, ":/lua/table_size");
 
-    setRegistryData("CONSOLE", (void *)c);
-    setRegistryData("ENGINE", (void *)this);
-    setRegistryData("HANDLERS", (void *)(new EventMap()));
+   setRegistryData(m_global, "CONSOLE", (void *)c);
+   setRegistryData(m_global, "ENGINE", (void *)this);
+   setRegistryData(m_global, "HANDLERS", (void *)(new EventMap()));
 }
 
-void Engine::setRegistryData(const QString &name, void *data)
+void Engine::setRegistryData(lua_State *L, const QString &name, void *data)
 {
     if (data)
     {
-        lua_pushlightuserdata(m_global, data);
+        lua_pushlightuserdata(L, data);
     }
     else
     {
-        lua_pushnil(m_global);
+        lua_pushnil(L);
     }
 
-    lua_setfield(m_global, LUA_REGISTRYINDEX, qPrintable(name));
+    lua_setfield(L, LUA_REGISTRYINDEX, qPrintable(name));
 }
 
 template <class C>
-C * Engine::registryData(const QString &name, lua_State *L)
+C * Engine::registryData(lua_State *L, const QString &name)
 {
     lua_getfield(L, LUA_REGISTRYINDEX, qPrintable(name));
     C *data = static_cast<C *>(lua_touserdata(L, -1));
@@ -418,10 +420,9 @@ C * Engine::registryData(const QString &name, lua_State *L)
 }
 
 template <class C>
-C * Engine::registryObject(const QString &name, lua_State *L)
+C * Engine::registryObject(lua_State *L, const QString &name)
 {
-    QObject *obj = registryData<QObject>(name, L);
-    return qobject_cast<C *>(obj);
+    return qobject_cast<C *>(registryData<QObject>(L, name));
 }
 
 int Engine::panic(lua_State *L)
@@ -439,7 +440,7 @@ int Engine::panic(lua_State *L)
 
 void Engine::error(lua_State *L, const QString &event)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
 
     if (!c)
     {
@@ -463,7 +464,7 @@ void Engine::error(lua_State *L, const QString &event)
     }
 
     QString calledBy(tr("Immediate execution"));
-    ProfileItem *item = registryObject<ProfileItem>("CALLER", L);
+    ProfileItem *item = registryObject<ProfileItem>(L, "CALLER");
     if (item)
     {
         calledBy = tr("Reason: processing %1 \"%2\"").arg(item->tagName()).arg(item->name());
@@ -516,7 +517,7 @@ bool Engine::execute(const QString &code, const QObject *item, const QVariantLis
     lua_settop(m_global, 0);
 
     // Give access to the caller object
-    setRegistryData("CALLER", (void *)item);
+   setRegistryData(m_global, "CALLER", (void *)item);
 
     // Store code chunk for error displays
     m_chunk = code;
@@ -549,7 +550,7 @@ bool Engine::execute(const QString &code, const QObject *item, const QVariantLis
     lua_settop(m_global, 0);
     m_chunk.clear();
 
-    setRegistryData("CALLER", 0);
+   setRegistryData(m_global, "CALLER", 0);
 
     return err == LUA_OK;
 }
@@ -571,7 +572,7 @@ bool Engine::execute(int id, const QObject *item, const QVariantList &args)
     lua_settop(m_global, 0);
 
     // Give access to the caller object
-    setRegistryData("CALLER", (void *)item);
+   setRegistryData(m_global, "CALLER", (void *)item);
 
     lua_rawgeti(m_global, LUA_REGISTRYINDEX, id);
 
@@ -591,7 +592,7 @@ bool Engine::execute(int id, const QObject *item, const QVariantList &args)
     clearArguments();
     clearCaptures();
 
-    setRegistryData("CALLER", 0);
+   setRegistryData(m_global, "CALLER", 0);
 
     return err == LUA_OK;
 }
@@ -603,7 +604,7 @@ void Engine::processEvents(const QString &name, const QVariantList &args)
         return;
     }
 
-    EventMap *h = registryData<EventMap>("HANDLERS", m_global);
+    EventMap *h = registryData<EventMap>(m_global, "HANDLERS");
 
     QList<Event *> events(h->value(name));
     foreach (Event *event, events)
@@ -665,15 +666,15 @@ void Engine::clearCaptures()
 
 int Engine::print(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
-    c->printInfo(concatArgs(L, " "));
+    Console *c = registryObject<Console>(L, "CONSOLE");
+    c->printInfo(LuaState::concatArgs(L, " "));
 
     return 0;
 }
 
 int Engine::send(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
 
     bool echo = true;
     int n = lua_gettop(L);
@@ -694,7 +695,7 @@ int Engine::send(lua_State *L)
 
 int Engine::sendAlias(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
 
     int n = lua_gettop(L);
     for (int cmd = 1; cmd <= n; cmd++)
@@ -707,7 +708,7 @@ int Engine::sendAlias(lua_State *L)
 
 int Engine::sendGmcp(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
 
     QString msg(luaL_checkstring(L, 1));
 
@@ -723,6 +724,24 @@ int Engine::sendGmcp(lua_State *L)
 
     push(L, result);
     return 1;
+}
+
+int Engine::deleteLine(lua_State *L)
+{
+    Console *c = registryObject<Console>(L, "CONSOLE");
+
+    c->deleteLines(1);
+
+    return 0;
+}
+
+int Engine::deleteLines(lua_State *L)
+{
+    Console *c = registryObject<Console>(L, "CONSOLE");
+
+    c->deleteLines(luaL_checkinteger(L, 1));
+
+    return 0;
 }
 
 int Engine::jsonDecode(lua_State *L)
@@ -795,7 +814,7 @@ int Engine::jsonEncode(lua_State *L)
 
 int Engine::getVariable(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
     Profile *p = c->profile();
 
     push(L, p->getVariable(luaL_checkstring(L, 1)));
@@ -805,7 +824,7 @@ int Engine::getVariable(lua_State *L)
 
 int Engine::setVariable(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
     Profile *p = c->profile();
 
     if (lua_isnoneornil(L, 2))
@@ -844,7 +863,7 @@ int Engine::setVariable(lua_State *L)
 
 int Engine::deleteVariable(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
     Profile *p = c->profile();
 
     push(L, p->deleteVariable(luaL_checkstring(L, 1)));
@@ -854,7 +873,7 @@ int Engine::deleteVariable(lua_State *L)
 
 int Engine::isConnected(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
 
     push(L, c->isConnected());
 
@@ -863,7 +882,7 @@ int Engine::isConnected(lua_State *L)
 
 int Engine::connectRemote(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
 
     c->connectToServer();
 
@@ -872,7 +891,7 @@ int Engine::connectRemote(lua_State *L)
 
 int Engine::disconnectRemote(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
 
     c->disconnectFromServer();
 
@@ -888,8 +907,8 @@ int Engine::version(lua_State *L)
 
 int Engine::raiseEvent(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
-    Engine *e = registryObject<Engine>("ENGINE", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
+    Engine *e = registryObject<Engine>(L, "ENGINE");
 
     QString name(luaL_checkstring(L, 1));
 
@@ -908,8 +927,8 @@ int Engine::raiseEvent(lua_State *L)
 
 int Engine::registerEvent(lua_State *L)
 {
-    Console *c = registryObject<Console>("CONSOLE", L);
-    EventMap *h = registryData<EventMap>("HANDLERS", L);
+    Console *c = registryObject<Console>(L, "CONSOLE");
+    EventMap *h = registryData<EventMap>(L, "HANDLERS");
 
     QString name(luaL_checkstring(L, 1));
 
@@ -923,7 +942,7 @@ int Engine::registerEvent(lua_State *L)
     Event *event = new Event(c);
     event->setPattern(name);
     event->setReference(reference);
-    event->setSequence(qBound(1, (int)luaL_optnumber(L, 3, 1000), 100000));
+    event->setSequence(qBound(1, luaL_optint(L, 3, 1000), 100000));
     events.append(event);
 
     qSort(events.begin(), events.end());
@@ -936,7 +955,7 @@ int Engine::registerEvent(lua_State *L)
 
 int Engine::unregisterEvent(lua_State *L)
 {
-    EventMap *h = registryData<EventMap>("HANDLERS", L);
+    EventMap *h = registryData<EventMap>(L, "HANDLERS");
 
     if (lua_isnumber(L, 1))
     {
@@ -995,7 +1014,7 @@ void Engine::enableGMCP(bool flag)
     {
         m_GMCP = flag;
 
-        Console *c = registryObject<Console>("CONSOLE", m_global);
+        Console *c = registryObject<Console>(m_global, "CONSOLE");
         if (c)
         {
             c->printInfo(m_GMCP?tr("GMCP enabled."):tr("GMCP disabled."));
@@ -1011,12 +1030,11 @@ void Engine::handleGMCP(const QString &name, const QString &args)
         return;
     }
 
-    LuaRef gmcp = getGlobal(m_global, "gmcp");
+    QString primaryKey(modules.takeLast());
 
-    LuaRef data(gmcp);
-    for (int n = 0; n < modules.count() - 1; n++)
+    LuaRef data(getGlobal(m_global, "gmcp"));
+    foreach (QString key, modules)
     {
-        QString key(modules.at(n));
         LuaRef val(data[qPrintable(key)]);
         if (val.isNil())
         {
@@ -1026,21 +1044,19 @@ void Engine::handleGMCP(const QString &name, const QString &args)
     }
 
     QVariantList varArgs;
-    varArgs << name;
-
     QJsonDocument doc(QJsonDocument::fromJson(args.toUtf8()));
     if (doc.isEmpty())
     {
         varArgs << qPrintable(args);
-        data[qPrintable(modules.last())] = qPrintable(args);
+        data[qPrintable(primaryKey)] = qPrintable(args);
     }
     else
     {
         varArgs << QVariant(doc);
-        data[qPrintable(modules.last())] = QVariant(doc);
+        data[qPrintable(primaryKey)] = QVariant(doc);
     }
 
-    processEvents("onGMCP", varArgs);
+    processEvents(QString("onGMCP %1").arg(name), varArgs);
 }
 
 int Engine::loadResource(lua_State *L, const QString &resource)
@@ -1050,7 +1066,7 @@ int Engine::loadResource(lua_State *L, const QString &resource)
     QTextStream ts(&res);
     QString code(ts.readAll());
 
-    int ret = luaL_dostring(L, code.toLatin1().data());
+    int ret = luaL_dostring(L, qPrintable(code));
     if (ret != LUA_OK)
     {
         QString err(tr("failed to load resource '%1': %2").arg(resource).arg(lua_tostring(L, -1)));
@@ -1059,40 +1075,4 @@ int Engine::loadResource(lua_State *L, const QString &resource)
     }
 
     return ret;
-}
-
-QString Engine::concatArgs(lua_State *L, const QString &delimiter, const int first)
-{
-    int numArgs = lua_gettop(L);
-
-    lua_getglobal(L, "tostring");
-
-    QString output;
-    for (int i = first; i <= numArgs; i++)
-    {
-        lua_pushvalue(L, -1);
-        lua_pushvalue(L, i);
-        lua_call(L, 1, 1);
-
-        const char *s = lua_tostring(L, -1);
-        if (s == 0)
-        {
-            QString err(tr("'%1' must return a string to be concatenated").arg("tostring"));
-            qCCritical(MUDDER_SCRIPT) << err;
-            luaL_error(L, qPrintable(err));
-        }
-
-        if (i > first)
-        {
-            output += delimiter;
-        }
-
-        output += s;
-
-        lua_pop(L, 1);
-    }
-
-    lua_pop(L, 1);
-
-    return output;
 }

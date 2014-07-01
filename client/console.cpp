@@ -262,6 +262,11 @@ bool Console::sendGmcp(const QString &msg, const QString &data)
     return m_connection->sendGmcp(msg, data);
 }
 
+void Console::deleteLines(int count)
+{
+    m_document->deleteLines(count);
+}
+
 void Console::closeEvent(QCloseEvent *e)
 {
     if (okToContinue())
@@ -595,7 +600,10 @@ void Console::processTriggers(QTextBlock block, bool prompt)
         }
     }
 
-    // TODO: check for omitted lines to delete
+    if (omitted)
+    {
+        m_document->deleteLines(1);
+    }
 }
 
 void Console::processTimer(Timer *timer)

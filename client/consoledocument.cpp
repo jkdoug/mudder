@@ -91,24 +91,49 @@ QString ConsoleDocument::toPlainText(QTextCursor cur)
     return cur.selection().toPlainText();
 }
 
-void ConsoleDocument::deleteBlock(int num)
+//void ConsoleDocument::deleteBlock(int num)
+//{
+//    num = qBound(0, num, blockCount() - 1);
+
+//    QTextBlock block(findBlockByNumber(num));
+//    if (!block.isValid())
+//    {
+//        return;
+//    }
+
+//    QTextCursor cur(block);
+//    cur.select(QTextCursor::BlockUnderCursor);
+//    if (cur.isNull() || !cur.hasSelection())
+//    {
+//        return;
+//    }
+
+//    cur.removeSelectedText();
+//}
+
+void ConsoleDocument::deleteLines(int count)
 {
-    num = qBound(0, num, blockCount() - 1);
+    count = qBound(0, count, blockCount());
 
-    QTextBlock block(findBlockByNumber(num));
-    if (!block.isValid())
+    QTextBlock block(lastBlock());
+    if (!m_isPrompt)
     {
-        return;
+        block = block.previous();
     }
 
-    QTextCursor cur(block);
-    cur.select(QTextCursor::LineUnderCursor);
-    if (cur.isNull() || !cur.hasSelection())
+    for (int n = 0; n < count; n++)
     {
-        return;
-    }
+        if (!block.isValid())
+        {
+            return;
+        }
 
-    cur.removeSelectedText();
+        QTextCursor cur(block);
+        cur.select(QTextCursor::BlockUnderCursor);
+        block = block.previous();
+
+        cur.removeSelectedText();
+    }
 }
 
 void ConsoleDocument::process(const QByteArray &data)

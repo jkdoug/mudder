@@ -44,7 +44,8 @@ public:
     QString toPlainText(int start, int stop);
     QString toPlainText(QTextCursor cur = QTextCursor());
 
-    void deleteBlock(int num);
+//    void deleteBlock(int num);
+    void deleteLines(int count);
 
 public slots:
     void process(const QByteArray &data);

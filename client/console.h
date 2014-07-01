@@ -79,6 +79,8 @@ public:
     bool sendAlias(const QString &cmd);
     bool sendGmcp(const QString &msg, const QString &data = QString());
 
+    void deleteLines(int count);
+
 signals:
     void connectionStatusChanged(bool connected);
     void modified();

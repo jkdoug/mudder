@@ -42,11 +42,11 @@ public:
 
     void initialize(Console *c);
 
-    void setRegistryData(const QString &name, void *data);
+    static void setRegistryData(lua_State *L, const QString &name, void *data);
     template <class C>
-    static C * registryData(const QString &name, lua_State *L);
+    static C * registryData(lua_State *L, const QString &name);
     template <class C>
-    static C * registryObject(const QString &name, lua_State *L);
+    static C * registryObject(lua_State *L, const QString &name);
 
     static int panic(lua_State *L);
     void error(lua_State *L, const QString &event);
@@ -65,6 +65,8 @@ public:
     static int send(lua_State *L);
     static int sendAlias(lua_State *L);
     static int sendGmcp(lua_State *L);
+    static int deleteLine(lua_State *L);
+    static int deleteLines(lua_State *L);
     static int jsonDecode(lua_State *L);
     static int jsonEncode(lua_State *L);
     static int getVariable(lua_State *L);
@@ -84,8 +86,6 @@ public slots:
 
 protected:
     int loadResource(lua_State *L, const QString &resource);
-
-    static QString concatArgs(lua_State *L, const QString &delimiter = "", const int first = 1);
 
 private:
     LuaState m_global;

@@ -80,3 +80,38 @@ int LuaState::pcall(lua_State *L, int args, int rets)
 
     return result;
 }
+
+QString LuaState::concatArgs(lua_State *L, const QString &delimiter, const int first)
+{
+    int numArgs = lua_gettop(L);
+
+    lua_getglobal(L, "tostring");
+
+    QString output;
+    for (int i = first; i <= numArgs; i++)
+    {
+        lua_pushvalue(L, -1);
+        lua_pushvalue(L, i);
+        lua_call(L, 1, 1);
+
+        const char *s = lua_tostring(L, -1);
+        if (s == 0)
+        {
+            QString err(tr("'%1' must return a string to be concatenated").arg("tostring"));
+            luaL_error(L, qPrintable(err));
+        }
+
+        if (i > first)
+        {
+            output += delimiter;
+        }
+
+        output += s;
+
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+
+    return output;
+}

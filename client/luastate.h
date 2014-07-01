@@ -25,6 +25,7 @@
 #define LUASTATE_H
 
 #include <QObject>
+#include <QString>
 #include "lua.hpp"
 
 class LuaState : public QObject
@@ -38,6 +39,8 @@ public:
 
     int pcall(int args, int rets);
     static int pcall(lua_State *L, int args, int rets);
+
+    static QString concatArgs(lua_State *L, const QString &delimiter = " ", const int first = 1);
 
 private:
     static void tracebackFunction(lua_State *L);
