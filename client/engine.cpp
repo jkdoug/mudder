@@ -360,6 +360,7 @@ void Engine::initialize(Console *c)
         .addCFunction("SendGmcp", Engine::sendGmcp)
         .addCFunction("DeleteLine", Engine::deleteLine)
         .addCFunction("DeleteLines", Engine::deleteLines)
+        .addCFunction("Simulate", Engine::simulate)
         .addCFunction("JsonDecode", Engine::jsonDecode)
         .addCFunction("JsonEncode", Engine::jsonEncode)
         .addCFunction("GetVariable", Engine::getVariable)
@@ -740,6 +741,16 @@ int Engine::deleteLines(lua_State *L)
     Console *c = registryObject<Console>(L, "CONSOLE");
 
     c->deleteLines(luaL_checkinteger(L, 1));
+
+    return 0;
+}
+
+int Engine::simulate(lua_State *L)
+{
+    Console *c = registryObject<Console>(L, "CONSOLE");
+
+    QString str(luaL_checkstring(L, 1));
+    c->dataReceived(str.toLocal8Bit());
 
     return 0;
 }

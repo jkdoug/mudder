@@ -90,7 +90,7 @@ Console::Console(QWidget *parent) :
     connect(m_connection, SIGNAL(echo(bool)), ui->input, SLOT(echoToggled(bool)));
 
     connect(ui->input, SIGNAL(accelerator(QKeySequence)), SLOT(processAccelerators(QKeySequence)));
-    connect(m_document, SIGNAL(blockAdded(QTextBlock, bool)), SLOT(processTriggers(QTextBlock, bool)));
+    connect(m_document, SIGNAL(blockAdded(QTextBlock)), SLOT(processTriggers(QTextBlock)));
     connect(m_document, SIGNAL(contentsChanged()), ui->output, SLOT(update()));
     connect(m_document, SIGNAL(contentsChanged()), SLOT(updateScroll()));
     connect(ui->scrollbar, SIGNAL(valueChanged(int)), SLOT(scrollbarMoved(int)));
@@ -437,6 +437,14 @@ void Console::wheelEvent(QWheelEvent *e)
 }
 
 
+void Console::dataReceived(const QByteArray &data)
+{
+    m_document->process(data);
+
+    updateScroll();
+    scrollToBottom();
+}
+
 void Console::processAccelerators(const QKeySequence &key)
 {
     QList<Accelerator *> accelerators(m_profile->rootGroup()->sortedAccelerators());
@@ -541,10 +549,8 @@ void Console::processEvents(const QString &name, const QVariantList &args)
     }
 }
 
-void Console::processTriggers(QTextBlock block, bool prompt)
+void Console::processTriggers(QTextBlock block)
 {
-    Q_UNUSED(prompt)
-
     bool omitted = false;
     QString text(block.text());
     QList<Trigger *> triggers(m_profile->rootGroup()->sortedTriggers());
@@ -602,7 +608,7 @@ void Console::processTriggers(QTextBlock block, bool prompt)
 
     if (omitted)
     {
-        m_document->deleteLines(1);
+        m_document->omit();
     }
 }
 
@@ -695,14 +701,6 @@ void Console::lookupComplete(const QHostInfo &hostInfo)
     }
 
     qCDebug(MUDDER_NETWORK) << "Host lookup result:" << address;
-}
-
-void Console::dataReceived(const QByteArray &data)
-{
-    m_document->process(data);
-
-    updateScroll();
-    scrollToBottom();
 }
 
 void Console::echoToggled(bool on)

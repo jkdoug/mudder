@@ -67,6 +67,7 @@ public:
     static int sendGmcp(lua_State *L);
     static int deleteLine(lua_State *L);
     static int deleteLines(lua_State *L);
+    static int simulate(lua_State *L);
     static int jsonDecode(lua_State *L);
     static int jsonEncode(lua_State *L);
     static int getVariable(lua_State *L);

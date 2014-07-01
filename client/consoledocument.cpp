@@ -21,10 +21,10 @@
 */
 
 
-#include "consoledocument.h"
-#include "consoledocumentlayout.h"
 #include <QTextBlock>
 #include <QTextDocumentFragment>
+#include "consoledocument.h"
+#include "consoledocumentlayout.h"
 
 static const QLatin1Char ESC('\x1B');
 static const QLatin1Char ANSI_START('[');
@@ -49,6 +49,7 @@ ConsoleDocument::ConsoleDocument(QObject *parent) :
     m_fgHighColorMode = false;
     m_bgHighColorMode = false;
     m_isPrompt = false;
+    m_omit = false;
 
     m_formatSelection.setForeground(QColor("gainsboro"));
     m_formatSelection.setBackground(QColor("dodgerblue"));
@@ -91,25 +92,22 @@ QString ConsoleDocument::toPlainText(QTextCursor cur)
     return cur.selection().toPlainText();
 }
 
-//void ConsoleDocument::deleteBlock(int num)
-//{
-//    num = qBound(0, num, blockCount() - 1);
+void ConsoleDocument::deleteBlock(const QTextBlock &block)
+{
+    if (!block.isValid())
+    {
+        return;
+    }
 
-//    QTextBlock block(findBlockByNumber(num));
-//    if (!block.isValid())
-//    {
-//        return;
-//    }
+    QTextCursor cur(block);
+    cur.select(QTextCursor::BlockUnderCursor);
+    if (cur.isNull() || !cur.hasSelection())
+    {
+        return;
+    }
 
-//    QTextCursor cur(block);
-//    cur.select(QTextCursor::BlockUnderCursor);
-//    if (cur.isNull() || !cur.hasSelection())
-//    {
-//        return;
-//    }
-
-//    cur.removeSelectedText();
-//}
+    cur.removeSelectedText();
+}
 
 void ConsoleDocument::deleteLines(int count)
 {
@@ -218,11 +216,19 @@ void ConsoleDocument::process(const QByteArray &data)
 //                }
 //            }
 
-            emit blockAdded(m_cursor->block(), m_isPrompt);
+            QTextBlock added(m_cursor->block());
 
             if (!m_isPrompt)
             {
                 newLine();
+            }
+
+            emit blockAdded(added);
+
+            if (m_omit)
+            {
+                deleteBlock(added);
+                m_omit = false;
             }
 
             continue;

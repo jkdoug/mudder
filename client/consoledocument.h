@@ -44,8 +44,9 @@ public:
     QString toPlainText(int start, int stop);
     QString toPlainText(QTextCursor cur = QTextCursor());
 
-//    void deleteBlock(int num);
+    void deleteBlock(const QTextBlock &block);
     void deleteLines(int count);
+    void omit() { m_omit = true; }
 
 public slots:
     void process(const QByteArray &data);
@@ -60,7 +61,7 @@ public slots:
     virtual void clear();
 
 signals:
-    void blockAdded(QTextBlock block, bool prompt);
+    void blockAdded(QTextBlock block);
 
 private:
     void newLine();
@@ -83,6 +84,7 @@ private:
     bool m_bgHighColorMode;
     bool m_isHighColorMode;
     bool m_isPrompt;
+    bool m_omit;
 
     int m_gagLine;
 

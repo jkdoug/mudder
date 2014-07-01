@@ -93,10 +93,11 @@ protected:
     virtual void wheelEvent(QWheelEvent *e);
 
 public slots:
+    void dataReceived(const QByteArray &data);
     void processAccelerators(const QKeySequence &key);
     void processAliases(const QString &cmd);
     void processEvents(const QString &name, const QVariantList &args);
-    void processTriggers(QTextBlock block, bool prompt);
+    void processTriggers(QTextBlock block);
     void processTimer(Timer *timer);
 
 private slots:
@@ -106,7 +107,6 @@ private slots:
     void connectionEstablished();
     void connectionLost();
     void lookupComplete(const QHostInfo &hostInfo);
-    void dataReceived(const QByteArray &data);
     void echoToggled(bool on);
     void scrollbarMoved(int pos);
     void updateScroll();
