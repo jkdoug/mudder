@@ -381,7 +381,7 @@ void Console::mouseReleaseEvent(QMouseEvent *e)
     }
     else if (e->button() == Qt::MiddleButton)
     {
-        scrollTo(m_document->blockCount());
+        scrollToBottom();
     }
     else if (e->button() == Qt::LeftButton)
     {
@@ -742,7 +742,7 @@ void Console::updateScroll()
 
 void Console::copy()
 {
-    QApplication::clipboard()->setText(m_document->toPlainText(*m_document->cursor()));
+    QApplication::clipboard()->setText(m_document->toPlainText(m_document->selection()));
 
     m_document->selectNone();
 }
@@ -778,7 +778,7 @@ void Console::copyHtml()
         .arg(bg.name())
         .arg(windowTitle().replace("[*]", ""))
         .arg(QDateTime::currentDateTime().toString())
-        .arg(m_document->toHtml(*m_document->cursor(), fg, bg, font)));
+        .arg(m_document->toHtml(m_document->selection(), fg, bg, font)));
 
     QApplication::clipboard()->setText(html);
 

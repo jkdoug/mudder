@@ -63,7 +63,7 @@ void ConsoleDisplay::paintEvent(QPaintEvent *e)
     if (m_document->hasSelection())
     {
         QAbstractTextDocumentLayout::Selection selection;
-        selection.cursor = *m_document->cursor();
+        selection.cursor = m_document->selection();
         selection.format = m_document->formatSelection();
         selections.append(selection);
     }

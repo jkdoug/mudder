@@ -36,9 +36,8 @@ class ConsoleDocument : public QTextDocument
 public:
     explicit ConsoleDocument(QObject *parent = 0);
 
-    bool hasSelection() const { return m_cursor->hasSelection(); }
-    QTextCursor * cursor() const { return m_cursor; }
-
+    bool hasSelection() const { return m_selection.hasSelection(); }
+    QTextCursor selection() const { return m_selection; }
     QTextCharFormat formatSelection() const { return m_formatSelection; }
 
     QString toPlainText(int start, int stop);
@@ -72,7 +71,8 @@ private:
     QColor translateColor(const QString &name);
     void appendText(const QTextCharFormat &fmt, const QString &text, bool newline = true);
 
-    QTextCursor *m_cursor;
+    QTextCursor m_cursor;
+    QTextCursor m_selection;
 
     QString m_text;
     QString m_input;

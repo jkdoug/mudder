@@ -25,6 +25,7 @@
 #include <QTextDocumentFragment>
 #include "consoledocument.h"
 #include "consoledocumentlayout.h"
+#include "logging.h"
 
 static const QLatin1Char ESC('\x1B');
 static const QLatin1Char ANSI_START('[');
@@ -38,10 +39,10 @@ static const QString CRLFGA(CRLF + GA);
 static const QString DIGITS("0123456789");
 
 ConsoleDocument::ConsoleDocument(QObject *parent) :
-    QTextDocument(parent)
+    QTextDocument(parent),
+    m_cursor(this),
+    m_selection(this)
 {
-    m_cursor = new QTextCursor(this);
-
     m_gotESC = false;
     m_gotHeader = false;
 
@@ -72,7 +73,7 @@ ConsoleDocument::ConsoleDocument(QObject *parent) :
 
     m_formatCurrent = m_formatDefault;
 
-    m_cursor->setCharFormat(m_formatCurrent);
+    m_cursor.setCharFormat(m_formatCurrent);
 
     setDocumentLayout(new ConsoleDocumentLayout(this));
 }
@@ -349,10 +350,10 @@ void ConsoleDocument::process(const QByteArray &data)
                     processAnsi(code);
                 }
 
-                m_cursor->insertText(m_text);
+                m_cursor.insertText(m_text);
                 m_text.clear();
 
-                m_cursor->mergeCharFormat(m_formatCurrent);
+                m_cursor.mergeCharFormat(m_formatCurrent);
 
                 m_codes.clear();
             }
@@ -373,10 +374,10 @@ void ConsoleDocument::process(const QByteArray &data)
         {
             m_isPrompt = ch == GA;
 
-            m_cursor->insertText(m_text);
+            m_cursor.insertText(m_text);
             m_text.clear();
 
-//            QTextBlock b(m_cursor->block());
+//            QTextBlock b(m_cursor.block());
 //            qCDebug(MUDDER_CONSOLE) << "Text line number:" << b.blockNumber();
 //            for (QTextBlock::iterator it = b.begin(); !it.atEnd(); it++)
 //            {
@@ -387,7 +388,7 @@ void ConsoleDocument::process(const QByteArray &data)
 //                }
 //            }
 
-            QTextBlock added(m_cursor->block());
+            QTextBlock added(m_cursor.block());
 
             if (!m_isPrompt)
             {
@@ -452,7 +453,7 @@ void ConsoleDocument::optionChanged(const QString &key, const QVariant &val)
 
         QTextCharFormat fmt;
         fmt.setFont(m_formatDefault.font());
-        m_cursor->mergeCharFormat(fmt);
+        m_cursor.mergeCharFormat(fmt);
     }
     else if (key == "scrollbackLines")
     {
@@ -468,22 +469,22 @@ void ConsoleDocument::select(int start, int stop)
         return;
     }
 
-    m_cursor->setPosition(start);
-    m_cursor->setPosition(stop, QTextCursor::KeepAnchor);
+    m_selection.setPosition(start);
+    m_selection.setPosition(stop, QTextCursor::KeepAnchor);
 
     emit contentsChanged();
 }
 
 void ConsoleDocument::selectAll()
 {
-    m_cursor->select(QTextCursor::Document);
+    m_selection.select(QTextCursor::Document);
 
     emit contentsChanged();
 }
 
 void ConsoleDocument::selectNone()
 {
-    m_cursor->clearSelection();
+    m_selection.clearSelection();
 
     emit contentsChanged();
 }
@@ -492,14 +493,13 @@ void ConsoleDocument::clear()
 {
     QTextDocument::clear();
 
-    delete m_cursor;
-    m_cursor = new QTextCursor(this);
-    m_cursor->setCharFormat(m_formatCurrent);
+    m_cursor = QTextCursor(this);
+    m_cursor.setCharFormat(m_formatCurrent);
 }
 
 void ConsoleDocument::newLine()
 {
-    m_cursor->insertBlock();
+    m_cursor.insertBlock();
     m_isPrompt = false;
 }
 
@@ -787,16 +787,16 @@ inline QColor ConsoleDocument::translateColor(const QString &name)
 
 inline void ConsoleDocument::appendText(const QTextCharFormat &fmt, const QString &text, bool newline)
 {
-    QTextCharFormat previousFormat(m_cursor->charFormat());
+    QTextCharFormat previousFormat(m_cursor.charFormat());
 
-    m_cursor->mergeCharFormat(fmt);
+    m_cursor.mergeCharFormat(fmt);
 
-    m_cursor->insertText(text);
+    m_cursor.insertText(text);
 
     if (newline)
     {
         newLine();
     }
 
-    m_cursor->setCharFormat(previousFormat);
+    m_cursor.setCharFormat(previousFormat);
 }
