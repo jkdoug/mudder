@@ -64,6 +64,7 @@ Console::Console(QWidget *parent) :
     connect(ui->input, SIGNAL(script(QString)), SLOT(scriptEntered(QString)));
 
     m_profile = new Profile(this);
+    connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), SLOT(contentsModified()));
     connect(m_profile, SIGNAL(optionChanged(QString, QVariant)), ui->input, SLOT(optionChanged(QString, QVariant)));
     connect(m_profile, SIGNAL(settingsChanged()), SLOT(contentsModified()));
@@ -638,6 +639,18 @@ void Console::contentsModified()
     emit modified();
 }
 
+void Console::optionChanged(const QString &key, const QVariant &val)
+{
+    if (key == "backgroundColor")
+    {
+        QPalette pal(ui->output->palette());
+        pal.setBrush(QPalette::Base, val.value<QColor>());
+        pal.setBrush(QPalette::Window, val.value<QColor>());
+        ui->output->setPalette(pal);
+        ui->output->update();
+    }
+}
+
 void Console::commandEntered(const QString &cmd)
 {
     qCDebug(MUDDER_CONSOLE) << "Command entered:" << cmd;
@@ -765,7 +778,7 @@ void Console::copyHtml()
         .arg(bg.name())
         .arg(windowTitle().replace("[*]", ""))
         .arg(QDateTime::currentDateTime().toString())
-        .arg(m_document->toHtml(*m_document->cursor())));
+        .arg(m_document->toHtml(*m_document->cursor(), fg, bg, font)));
 
     QApplication::clipboard()->setText(html);
 

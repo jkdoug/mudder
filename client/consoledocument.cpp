@@ -55,15 +55,20 @@ ConsoleDocument::ConsoleDocument(QObject *parent) :
     m_formatSelection.setBackground(QColor("dodgerblue"));
 
     m_formatCommand.setForeground(Qt::darkYellow);
+    m_formatCommand.setBackground(Qt::NoBrush);
 
     m_formatWarning.setForeground(Qt::red);
+    m_formatWarning.setBackground(Qt::NoBrush);
 
     m_formatError.setForeground(QColor(0xFF, 0x33, 0x00));
+    m_formatError.setBackground(Qt::NoBrush);
 
     m_formatInfo.setForeground(Qt::gray);
+    m_formatInfo.setBackground(Qt::NoBrush);
 
     m_formatDefault.setFont(QFont("Consolas", 10));
     m_formatDefault.setForeground(Qt::lightGray);
+    m_formatDefault.setBackground(Qt::NoBrush);
 
     m_formatCurrent = m_formatDefault;
 
@@ -142,8 +147,8 @@ QString ConsoleDocument::toHtml(QTextCursor cur, const QColor &fg, const QColor 
         bool boldNow = fmt.fontWeight() >= QFont::Bold;
         bool italicsNow = fmt.fontItalic();
         bool underlineNow = fmt.fontUnderline();
-        QColor backgroundNow(fmt.background().color());
-        QColor foregroundNow(fmt.foreground().color());
+        QColor backgroundNow(fmt.background() != Qt::NoBrush?fmt.background().color():bg);
+        QColor foregroundNow(fmt.foreground() != Qt::NoBrush?fmt.foreground().color():fg);
         QFont fontNow(fmt.font());
 
         if (bold != boldNow ||
@@ -171,9 +176,9 @@ QString ConsoleDocument::toHtml(QTextCursor cur, const QColor &fg, const QColor 
             {
                 style.append(QString("font-family: %1; ").arg(fontNow.family()));
             }
-            if (fontNow.pixelSize() != font.pixelSize())
+            if (fontNow.pointSize() != font.pointSize())
             {
-                style.append(QString("font-size: %1px; ").arg(fontNow.pixelSize()));
+                style.append(QString("font-size: %1pt; ").arg(fontNow.pointSize()));
             }
             if (boldNow)
             {
