@@ -642,9 +642,6 @@ void Console::commandEntered(const QString &cmd)
 {
     qCDebug(MUDDER_CONSOLE) << "Command entered:" << cmd;
 
-    // TODO: re-design this to push functionality to the command line
-    //  and signal commands to be processed instead
-
     if (cmd.isEmpty())
     {
         send("");
