@@ -33,6 +33,7 @@
 #include "proxyaction.h"
 #include <QAction>
 #include <QBoxLayout>
+#include <QClipboard>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMdiArea>
@@ -63,7 +64,7 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     m_mdi->setTabsClosable(true);
     m_mdi->setTabsMovable(true);
     m_mdi->setOption(QMdiArea::DontMaximizeSubWindowOnActivation, false);
-    connect(m_mdi, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(editorModified()));
+    connect(m_mdi, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(updateActions()));
 
     m_mdi->installEventFilter(this);
 
@@ -117,13 +118,39 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     m_toolBar->addAction(m_actionSaveAs);
     connect(m_actionSaveAs, SIGNAL(triggered()), SLOT(actionSaveAs()));
 
-    m_actionClose = new QAction(tr("&Close"), this);
+    m_actionClose = new QAction(tr("Close"), this);
     m_actionClose->setIcon(QIcon(":/icons/small_close"));
     m_actionClose->setToolTip(tr("Close the current file"));
     m_actionClose->setShortcut(QKeySequence::Close);
     m_actionClose->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     m_toolBar->addAction(m_actionClose);
     connect(m_actionClose, SIGNAL(triggered()), SLOT(actionClose()));
+
+    m_toolBar->addSeparator();
+
+    m_actionCopy = new QAction(tr("&Copy"), this);
+    m_actionCopy->setIcon(QIcon(":/icons/small_copy"));
+    m_actionCopy->setToolTip(tr("Copy selection to the clipboard"));
+    m_actionCopy->setShortcut(QKeySequence::Copy);
+    m_actionCopy->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_toolBar->addAction(m_actionCopy);
+    connect(m_actionCopy, SIGNAL(triggered()), SLOT(actionCopy()));
+
+    m_actionCut = new QAction(tr("Cu&t"), this);
+    m_actionCut->setIcon(QIcon(":/icons/small_cut"));
+    m_actionCut->setToolTip(tr("Cut selection to the clipboard"));
+    m_actionCut->setShortcut(QKeySequence::Cut);
+    m_actionCut->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_toolBar->addAction(m_actionCut);
+    connect(m_actionCut, SIGNAL(triggered()), SLOT(actionCut()));
+
+    m_actionPaste = new QAction(tr("&Paste"), this);
+    m_actionPaste->setIcon(QIcon(":/icons/small_paste"));
+    m_actionPaste->setToolTip(tr("Paste text from the clipboard"));
+    m_actionPaste->setShortcut(QKeySequence::Paste);
+    m_actionPaste->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_toolBar->addAction(m_actionPaste);
+    connect(m_actionPaste, SIGNAL(triggered()), SLOT(actionPaste()));
 
     m_toolBar->addSeparator();
 
@@ -150,6 +177,8 @@ CodeEditorWindow::CodeEditorWindow(QWidget *parent) :
     mdiTabBar->setIconSize(QSize(0, 0));
 
     updateActions();
+
+    connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(updateActions()));
 }
 
 void CodeEditorWindow::actionNew()
@@ -181,6 +210,30 @@ void CodeEditorWindow::actionSaveAs()
 void CodeEditorWindow::actionClose()
 {
     m_mdi->closeActiveSubWindow();
+}
+
+void CodeEditorWindow::actionCopy()
+{
+    if (activeEditor())
+    {
+        activeEditor()->copy();
+    }
+}
+
+void CodeEditorWindow::actionCut()
+{
+    if (activeEditor())
+    {
+        activeEditor()->cut();
+    }
+}
+
+void CodeEditorWindow::actionPaste()
+{
+    if (activeEditor())
+    {
+        activeEditor()->paste();
+    }
 }
 
 void CodeEditorWindow::actionPrint()
@@ -308,10 +361,14 @@ void CodeEditorWindow::updateActions()
 {
     bool hasEditor = activeEditor() != 0;
     bool modified = hasEditor && activeEditor()->isWindowModified();
+    bool selected = hasEditor && activeEditor()->textCursor().hasSelection();
 
-    m_actionClose->setEnabled(hasEditor);
     m_actionSave->setEnabled(hasEditor && modified);
     m_actionSaveAs->setEnabled(hasEditor);
+    m_actionClose->setEnabled(hasEditor);
+    m_actionCopy->setEnabled(selected);
+    m_actionCut->setEnabled(selected);
+    m_actionPaste->setEnabled(hasEditor && !QApplication::clipboard()->text().isEmpty());
     m_actionPrint->setEnabled(hasEditor);
     m_actionPrintPreview->setEnabled(hasEditor);
 
@@ -319,11 +376,6 @@ void CodeEditorWindow::updateActions()
     {
         m_searchWidget->setPlainTextEditor(activeEditor());
     }
-}
-
-void CodeEditorWindow::editorModified()
-{
-    updateActions();
 }
 
 void CodeEditorWindow::newEditor()
@@ -367,7 +419,8 @@ void CodeEditorWindow::addEditor(CodeEditorWidget *editor)
 
     QMdiSubWindow *subWindow = m_mdi->addSubWindow(editor);
     subWindow->showMaximized();
-    connect(editor, SIGNAL(modificationChanged(bool)), SLOT(editorModified()));
+    connect(editor, SIGNAL(modificationChanged(bool)), SLOT(updateActions()));
+    connect(editor, SIGNAL(copyAvailable(bool)), SLOT(updateActions()));
 }
 
 CodeEditorWidget * CodeEditorWindow::activeEditor()

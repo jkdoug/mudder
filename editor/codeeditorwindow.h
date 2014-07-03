@@ -55,6 +55,9 @@ public slots:
     void actionSave();
     void actionSaveAs();
     void actionClose();
+    void actionCopy();
+    void actionCut();
+    void actionPaste();
     void actionPrint();
     void actionPrintPreview();
     void printPreview(QPrinter *printer);
@@ -67,7 +70,6 @@ protected:
 
 private slots:
     void updateActions();
-    void editorModified();
 
 private:
     QMdiArea *m_mdi;
@@ -78,6 +80,9 @@ private:
     QAction *m_actionSave;
     QAction *m_actionSaveAs;
     QAction *m_actionClose;
+    QAction *m_actionCopy;
+    QAction *m_actionCut;
+    QAction *m_actionPaste;
     QAction *m_actionPrint;
     QAction *m_actionPrintPreview;
 
