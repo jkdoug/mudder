@@ -48,6 +48,6 @@ private:
     int m_reference;
 };
 
-typedef QMap<QString, QList<Event *> > EventMap;
+typedef QList<Event *> EventList;
 
 #endif // EVENT_H

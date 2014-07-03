@@ -391,9 +391,9 @@ void Engine::initialize(Console *c)
     loadResource(m_global, ":/lua/table_print");
     loadResource(m_global, ":/lua/table_size");
 
-   setRegistryData(m_global, "CONSOLE", (void *)c);
-   setRegistryData(m_global, "ENGINE", (void *)this);
-   setRegistryData(m_global, "HANDLERS", (void *)(new EventMap()));
+    setRegistryData(m_global, "CONSOLE", (void *)c);
+    setRegistryData(m_global, "ENGINE", (void *)this);
+    setRegistryData(m_global, "HANDLERS", (void *)(new EventList()));
 }
 
 void Engine::setRegistryData(lua_State *L, const QString &name, void *data)
@@ -518,7 +518,7 @@ bool Engine::execute(const QString &code, const QObject *item, const QVariantLis
     lua_settop(m_global, 0);
 
     // Give access to the caller object
-   setRegistryData(m_global, "CALLER", (void *)item);
+    setRegistryData(m_global, "CALLER", (void *)item);
 
     // Store code chunk for error displays
     m_chunk = code;
@@ -551,7 +551,7 @@ bool Engine::execute(const QString &code, const QObject *item, const QVariantLis
     lua_settop(m_global, 0);
     m_chunk.clear();
 
-   setRegistryData(m_global, "CALLER", 0);
+    setRegistryData(m_global, "CALLER", 0);
 
     return err == LUA_OK;
 }
@@ -573,7 +573,7 @@ bool Engine::execute(int id, const QObject *item, const QVariantList &args)
     lua_settop(m_global, 0);
 
     // Give access to the caller object
-   setRegistryData(m_global, "CALLER", (void *)item);
+    setRegistryData(m_global, "CALLER", (void *)item);
 
     lua_rawgeti(m_global, LUA_REGISTRYINDEX, id);
 
@@ -593,7 +593,7 @@ bool Engine::execute(int id, const QObject *item, const QVariantList &args)
     clearArguments();
     clearCaptures();
 
-   setRegistryData(m_global, "CALLER", 0);
+    setRegistryData(m_global, "CALLER", 0);
 
     return err == LUA_OK;
 }
@@ -605,12 +605,14 @@ void Engine::processEvents(const QString &name, const QVariantList &args)
         return;
     }
 
-    EventMap *h = registryData<EventMap>(m_global, "HANDLERS");
+    EventList *h = registryData<EventList>(m_global, "HANDLERS");
 
-    QList<Event *> events(h->value(name));
-    foreach (Event *event, events)
+    foreach (Event *event, *h)
     {
-        event->execute(this, args);
+        if (event->match(name))
+        {
+            event->execute(this, args);
+        }
     }
 }
 
@@ -939,7 +941,7 @@ int Engine::raiseEvent(lua_State *L)
 int Engine::registerEvent(lua_State *L)
 {
     Console *c = registryObject<Console>(L, "CONSOLE");
-    EventMap *h = registryData<EventMap>(L, "HANDLERS");
+    EventList *h = registryData<EventList>(L, "HANDLERS");
 
     QString name(luaL_checkstring(L, 1));
 
@@ -948,16 +950,13 @@ int Engine::registerEvent(lua_State *L)
     lua_pushvalue(L, 2);
     int reference = luaL_ref(L, LUA_REGISTRYINDEX);
 
-    QList<Event *> events(h->value(name));
-
     Event *event = new Event(c);
     event->setPattern(name);
     event->setReference(reference);
     event->setSequence(qBound(1, luaL_optint(L, 3, 1000), 100000));
-    events.append(event);
+    h->append(event);
 
-    qSort(events.begin(), events.end());
-    h->insert(name, events);
+    qSort(h->begin(), h->end());
 
     push(L, reference);
 
@@ -966,56 +965,26 @@ int Engine::registerEvent(lua_State *L)
 
 int Engine::unregisterEvent(lua_State *L)
 {
-    EventMap *h = registryData<EventMap>(L, "HANDLERS");
+    EventList *h = registryData<EventList>(L, "HANDLERS");
 
-    if (lua_isnumber(L, 1))
+    int reference = LuaRef::fromStack(L, 1);
+
+    foreach (Event *event, *h)
     {
-        int reference = LuaRef::fromStack(L, 1);
-
-        foreach (QString name, h->keys())
+        if (event->reference() == reference)
         {
-            QList<Event *> events(h->value(name));
-            foreach (Event *event, events)
-            {
-                if (event->reference() == reference)
-                {
-                    luaL_unref(L, LUA_REGISTRYINDEX, reference);
+            luaL_unref(L, LUA_REGISTRYINDEX, reference);
 
-                    events.removeOne(event);
-                    h->insert(name, events);
+            h->removeOne(event);
 
-                    delete event;
+            delete event;
 
-                    lua_pushboolean(L, true);
-                    return 1;
-                }
-            }
+            lua_pushboolean(L, true);
+            return 1;
         }
-
-        lua_pushboolean(L, false);
-        return 1;
     }
 
-    QString name(luaL_checkstring(L, 1));
-
-    if (!h->contains(name))
-    {
-        lua_pushboolean(L, false);
-        return 1;
-    }
-
-    int count = 0;
-    QList<Event *> events(h->take(name));
-    foreach (Event *e, events)
-    {
-        luaL_unref(L, LUA_REGISTRYINDEX, e->reference());
-
-        delete e;
-
-        count++;
-    }
-
-    lua_pushnumber(L, count);
+    lua_pushboolean(L, false);
     return 1;
 }
 
