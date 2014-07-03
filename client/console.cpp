@@ -729,20 +729,49 @@ void Console::updateScroll()
 
 void Console::copy()
 {
-    QTextDocumentFragment fragment(*m_document->cursor());
-    QApplication::clipboard()->setText(fragment.toPlainText());
+    QApplication::clipboard()->setText(m_document->toPlainText(*m_document->cursor()));
 
     m_document->selectNone();
 }
 
 void Console::copyHtml()
 {
-    // TODO: much more efficient toHtml
-    QTextDocumentFragment fragment(*m_document->cursor());
-    QApplication::clipboard()->setText(fragment.toHtml("utf-8"));
+    QFont font(profile()->outputFont());
+    QColor fg(Qt::lightGray);
+    QColor bg(profile()->background());
+
+    QString html(QString("<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'>\n"
+        "<html>\n"
+        " <head>\n"
+        "  <style>\n"
+        "  <!--\n"
+        "   body { font-family: '%1', 'Courier New', 'Monospace', 'Courier'; }\n"
+        "   body { font-size: %2pt; }\n"
+        "   body { white-space: pre-wrap; }\n"
+        "   body { color: %3; }\n"
+        "   body { background-color: %4; }\n"
+        "  -->\n"
+        "  </style>\n"
+        "  <title>%5 (%6)</title>\n"
+        "  <meta http-equiv='content-type' content='text/html; charset=utf-8'>\n"
+        " </head>\n"
+        " <body>\n"
+        "%7\n"
+        " </body>\n"
+        "</html>\n")
+        .arg(font.family())
+        .arg(font.pointSize())
+        .arg(fg.name())
+        .arg(bg.name())
+        .arg(windowTitle().replace("[*]", ""))
+        .arg(QDateTime::currentDateTime().toString())
+        .arg(m_document->toHtml(*m_document->cursor())));
+
+    QApplication::clipboard()->setText(html);
 
     m_document->selectNone();
 }
+
 bool Console::okToContinue()
 {
     if (isWindowModified())

@@ -25,6 +25,7 @@
 #define PROFILE_H
 
 #include <QAbstractItemModel>
+#include <QColor>
 #include <QFont>
 #include <QHash>
 #include <QList>
@@ -86,6 +87,9 @@ public:
     QFont outputFont() const { return m_options.value("outputFont").value<QFont>(); }
     void setOutputFont(const QFont &font) { changeOption("outputFont", font); }
 
+    QColor background() const { return m_options.value("backgroundColor").value<QColor>(); }
+    void setBackground(const QColor &color) { changeOption("backgroundColor", color); }
+
     int scrollbackLines() const { return m_options.value("scrollbackLines").toInt(); }
     void setScrollbackLines(int max) { changeOption("scrollbackLines", max); }
 
@@ -125,6 +129,7 @@ signals:
 protected:
     void readProfile(QXmlStreamReader &xml, QList<XmlError *> &errors);
     void readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors);
+    void readColors(QXmlStreamReader &xml, QList<XmlError *> &errors);
 
 private:
     QModelIndex indexForPath(const QModelIndex &parent, const QStringList &path) const;

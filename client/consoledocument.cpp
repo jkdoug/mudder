@@ -92,6 +92,172 @@ QString ConsoleDocument::toPlainText(QTextCursor cur)
     return cur.selection().toPlainText();
 }
 
+QString ConsoleDocument::toHtml(int start, int stop, const QColor &fg, const QColor &bg, const QFont &font)
+{
+    QTextCursor cursor(this);
+    cursor.setPosition(qMax(start, 0));
+    cursor.setPosition(qMin(stop, characterCount() - 1), QTextCursor::KeepAnchor);
+
+    return toHtml(cursor, fg, bg, font);
+}
+
+QString ConsoleDocument::toHtml(QTextCursor cur, const QColor &fg, const QColor &bg, const QFont &font)
+{
+    if (cur.isNull())
+    {
+        cur = QTextCursor(this);
+        cur.select(QTextCursor::Document);
+    }
+
+    QString text;
+    if (!cur.hasSelection())
+    {
+        return text;
+    }
+
+    bool bold = false;
+    bool italics = false;
+    bool underline = false;
+    bool opened = false;
+
+    QColor background(bg);
+    QColor foreground(fg);
+    QFont fonted(font);
+
+    int selectionStart = cur.selectionStart();
+    int selectionEnd = cur.selectionEnd();
+
+    cur.setPosition(selectionStart);
+    while (cur.position() < selectionEnd && !cur.atEnd())
+    {
+        QChar ch(characterAt(cur.position()));
+
+        cur.setPosition(cur.position() + 1);
+        if (ch.toLatin1() == 0)
+        {
+            continue;
+        }
+
+        QTextCharFormat fmt(cur.charFormat());
+        bool boldNow = fmt.fontWeight() >= QFont::Bold;
+        bool italicsNow = fmt.fontItalic();
+        bool underlineNow = fmt.fontUnderline();
+        QColor backgroundNow(fmt.background().color());
+        QColor foregroundNow(fmt.foreground().color());
+        QFont fontNow(fmt.font());
+
+        if (bold != boldNow ||
+            italics != italicsNow ||
+            underline != underlineNow ||
+            background != backgroundNow ||
+            foreground != foregroundNow ||
+            fonted != fontNow)
+        {
+            if (opened)
+            {
+                text.append("</span>");
+            }
+
+            QString style("<span style='");
+            if (backgroundNow != bg)
+            {
+                style.append(QString("background: %1; ").arg(backgroundNow.name()));
+            }
+            if (foregroundNow != fg)
+            {
+                style.append(QString("color: %1; ").arg(foregroundNow.name()));
+            }
+            if (fontNow.family() != font.family())
+            {
+                style.append(QString("font-family: %1; ").arg(fontNow.family()));
+            }
+            if (fontNow.pixelSize() != font.pixelSize())
+            {
+                style.append(QString("font-size: %1px; ").arg(fontNow.pixelSize()));
+            }
+            if (boldNow)
+            {
+                style.append("font-weight: bold; ");
+            }
+            if (italicsNow)
+            {
+                style.append("font-style: italics; ");
+            }
+            if (underlineNow)
+            {
+                style.append("font-decoration: underline; ");
+            }
+            style.append("'>");
+
+            if (style.contains(":"))
+            {
+                text.append(style);
+                opened = true;
+            }
+
+            bold = boldNow;
+            italics = italicsNow;
+            underline = underlineNow;
+            background = backgroundNow;
+            foreground = foregroundNow;
+            fonted = fontNow;
+        }
+
+        switch (ch.toLatin1())
+        {
+        case '<':
+            text.append("&lt;");
+            break;
+
+        case '>':
+            text.append("&gt;");
+            break;
+
+        case '&':
+            text.append("&amp;");
+            break;
+
+        case '\'':
+            text.append("&apos;");
+            break;
+
+        case '\"':
+            text.append("&quot;");
+            break;
+
+        default:
+            text.append(ch);
+            break;
+        }
+
+        if (cur.atBlockEnd())
+        {
+            if (opened)
+            {
+                text.append("</span>");
+
+                bold = false;
+                italics = false;
+                underline = false;
+                background = bg;
+                foreground = fg;
+                fonted = font;
+
+                opened = false;
+            }
+
+            text.append("\n");
+        }
+    }
+
+    if (opened)
+    {
+        text.append("</span>");
+    }
+
+    return text;
+}
+
 void ConsoleDocument::deleteBlock(const QTextBlock &block)
 {
     if (!block.isValid())

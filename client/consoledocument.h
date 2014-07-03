@@ -44,6 +44,9 @@ public:
     QString toPlainText(int start, int stop);
     QString toPlainText(QTextCursor cur = QTextCursor());
 
+    QString toHtml(int start, int stop, const QColor &fg = QColor(), const QColor &bg = QColor(), const QFont &font = QFont());
+    QString toHtml(QTextCursor cur = QTextCursor(), const QColor &fg = QColor(), const QColor &bg = QColor(), const QFont &font = QFont());
+
     void deleteBlock(const QTextBlock &block);
     void deleteLines(int count);
     void omit() { m_omit = true; }

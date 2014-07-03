@@ -71,6 +71,8 @@ Profile::Profile(QObject *parent) :
     outputFont.setStyleStrategy(QFont::PreferAntialias);
     m_options.insert("outputFont", outputFont);
 
+    m_options.insert("backgroundColor", QColor(Qt::black));
+
     m_options.insert("scrollbackLines", 1000);
 }
 
@@ -299,6 +301,10 @@ void Profile::toXml(QXmlStreamWriter &xml)
     xml.writeAttribute("size", QString::number(outputFont().pointSize()));
     xml.writeAttribute("antialias", (outputFont().styleStrategy() == QFont::PreferAntialias)?"y":"n");
     xml.writeEndElement();
+
+    xml.writeStartElement("colors");
+    xml.writeAttribute("bg", background().name());
+    xml.writeEndElement();  // colors
 
     xml.writeEndElement();  // display
 
@@ -943,6 +949,46 @@ void Profile::readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 font.setStyleHint(QFont::TypeWriter);
                 font.setStyleStrategy(antiAlias?QFont::PreferAntialias:QFont::NoAntialias);
                 setOutputFont(font);
+            }
+            else if (xml.name() == "colors")
+            {
+                readColors(xml, errors);
+            }
+        }
+    }
+}
+
+void Profile::readColors(QXmlStreamReader &xml, QList<XmlError *> &errors)
+{
+    QString colorString(xml.attributes().value("bg").toString());
+    QColor bg(colorString);
+    if (bg.isValid())
+    {
+        setBackground(bg);
+    }
+    else if (!colorString.isEmpty())
+    {
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid console background color '%1'").arg(colorString));
+    }
+
+    while (!xml.atEnd())
+    {
+        xml.readNext();
+
+        if (xml.isEndElement() && xml.name() == "colors")
+        {
+            break;
+        }
+
+        if (xml.isStartElement())
+        {
+            if (xml.name() == "command")
+            {
+                // TODO
+            }
+            else if (xml.name() == "note")
+            {
+                // TODO
             }
         }
     }
