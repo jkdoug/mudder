@@ -662,7 +662,7 @@ QModelIndex Profile::deleteItem(const QModelIndex &index)
 
     if (row > 0)
     {
-        return createIndex(row - 1, 0, parentItem->item(row));
+        return createIndex(row - 1, 0, parentItem->item(row - 1));
     }
 
     if (parentItem != m_root)
