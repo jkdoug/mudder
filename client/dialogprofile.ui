@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Profile Preferences</string>
+   <string>Profile Options</string>
   </property>
   <property name="modal">
    <bool>true</bool>
