@@ -445,6 +445,14 @@ void ConsoleDocument::info(const QString &msg)
     appendText(m_formatInfo, msg);
 }
 
+void ConsoleDocument::append(const QString &msg, const QColor &fg, const QColor &bg)
+{
+    QTextCharFormat fmt;
+    fmt.setForeground(fg);
+    fmt.setBackground(bg);
+    appendText(fmt, msg);
+}
+
 void ConsoleDocument::optionChanged(const QString &key, const QVariant &val)
 {
     if (key == "outputFont")

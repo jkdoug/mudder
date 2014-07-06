@@ -355,6 +355,8 @@ void Engine::initialize(Console *c)
             .addVariable("enabled", &m_GMCP, false)
         .endNamespace()
         .addCFunction("print", Engine::print)
+        .addCFunction("ColorTell", Engine::colorTell)
+        .addCFunction("ColorNote", Engine::colorNote)
         .addCFunction("Send", Engine::send)
         .addCFunction("SendAlias", Engine::sendAlias)
         .addCFunction("SendGmcp", Engine::sendGmcp)
@@ -671,6 +673,39 @@ int Engine::print(lua_State *L)
 {
     Console *c = registryObject<Console>(L, "CONSOLE");
     c->printInfo(LuaState::concatArgs(L, " "));
+
+    return 0;
+}
+
+int Engine::colorTell(lua_State *L)
+{
+    Console *c = registryObject<Console>(L, "CONSOLE");
+
+    int numArgs = lua_gettop(L);
+    for (int n = 1; n <= numArgs; n += 3)
+    {
+        c->colorTell(luaL_checkstring(L, n), luaL_checkstring(L, n + 1), luaL_checkstring(L, n + 2));
+    }
+
+    return 0;
+}
+
+int Engine::colorNote(lua_State *L)
+{
+    Console *c = registryObject<Console>(L, "CONSOLE");
+
+    int numArgs = lua_gettop(L);
+    for (int n = 1; n <= numArgs; n += 3)
+    {
+        if (n + 2 < numArgs)
+        {
+            c->colorTell(luaL_checkstring(L, n), luaL_checkstring(L, n + 1), luaL_checkstring(L, n + 2));
+        }
+        else
+        {
+            c->colorNote(luaL_checkstring(L, n), luaL_checkstring(L, n + 1), luaL_checkstring(L, n + 2));
+        }
+    }
 
     return 0;
 }

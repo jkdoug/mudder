@@ -240,6 +240,22 @@ void Console::printError(const QString &msg)
     scrollToBottom();
 }
 
+void Console::colorTell(const QColor &fg, const QColor &bg, const QString &text)
+{
+    m_document->append(text, fg, bg);
+    scrollToBottom();
+}
+
+void Console::colorNote(const QColor &fg, const QColor &bg, const QString &text)
+{
+    QString str(text);
+    if (!str.endsWith("\n"))
+    {
+        str.append("\n");
+    }
+    colorTell(fg, bg, str);
+}
+
 bool Console::send(const QString &cmd, bool show)
 {
     bool result = m_connection->send(cmd);

@@ -75,6 +75,9 @@ public:
     void printWarning(const QString &msg);
     void printError(const QString &msg);
 
+    void colorTell(const QColor &fg, const QColor &bg, const QString &text);
+    void colorNote(const QColor &fg, const QColor &bg, const QString &text);
+
     bool send(const QString &cmd, bool show = true);
     bool sendAlias(const QString &cmd);
     bool sendGmcp(const QString &msg, const QString &data = QString());
