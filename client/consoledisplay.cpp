@@ -84,3 +84,22 @@ void ConsoleDisplay::resizeEvent(QResizeEvent *e)
         documentLayout()->setTextWidth(e->size().width());
     }
 }
+
+void ConsoleDisplay::optionChanged(const QString &key, const QVariant &val)
+{
+    if (key == "backgroundColor")
+    {
+        QPalette pal(palette());
+        pal.setColor(QPalette::Base, val.value<QColor>());
+        pal.setColor(QPalette::Window, val.value<QColor>());
+        setPalette(pal);
+        update();
+    }
+    else if (key == "foregroundColor")
+    {
+        QPalette pal(palette());
+        pal.setColor(QPalette::Text, val.value<QColor>());
+        setPalette(pal);
+        update();
+    }
+}

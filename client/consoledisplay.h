@@ -25,6 +25,7 @@
 #define CONSOLEDISPLAY_H
 
 #include <QAbstractTextDocumentLayout>
+#include <QVariant>
 #include <QWidget>
 #include "consoledocument.h"
 #include "consoledocumentlayout.h"
@@ -45,6 +46,9 @@ public:
 protected:
     virtual void paintEvent(QPaintEvent *e);
     virtual void resizeEvent(QResizeEvent *e);
+
+private slots:
+    void optionChanged(const QString &key, const QVariant &val);
 
 private:
     ConsoleDocument *m_document;

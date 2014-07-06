@@ -355,6 +355,8 @@ void Engine::initialize(Console *c)
             .addVariable("enabled", &m_GMCP, false)
         .endNamespace()
         .addCFunction("print", Engine::print)
+        .addCFunction("Tell", Engine::tell)
+        .addCFunction("Note", Engine::note)
         .addCFunction("ColorTell", Engine::colorTell)
         .addCFunction("ColorNote", Engine::colorNote)
         .addCFunction("Send", Engine::send)
@@ -672,7 +674,27 @@ void Engine::clearCaptures()
 int Engine::print(lua_State *L)
 {
     Console *c = registryObject<Console>(L, "CONSOLE");
-    c->printInfo(LuaState::concatArgs(L, " "));
+    c->printInfo(LuaState::concatArgs(L));
+
+    return 0;
+}
+
+int Engine::note(lua_State *L)
+{
+    Console *c = registryObject<Console>(L, "CONSOLE");
+    Profile *p = c->profile();
+
+    c->colorNote(p->noteForeground(), p->noteBackground(), LuaState::concatArgs(L));
+
+    return 0;
+}
+
+int Engine::tell(lua_State *L)
+{
+    Console *c = registryObject<Console>(L, "CONSOLE");
+    Profile *p = c->profile();
+
+    c->colorTell(p->noteForeground(), p->noteBackground(), LuaState::concatArgs(L));
 
     return 0;
 }

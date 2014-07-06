@@ -78,6 +78,21 @@ void CommandLine::optionChanged(const QString &key, const QVariant &val)
     {
         m_commandSeparator = val.toString();
     }
+    else if (key == "inputBackgroundColor")
+    {
+        QPalette pal(palette());
+        pal.setColor(QPalette::Base, val.value<QColor>());
+        pal.setColor(QPalette::Window, val.value<QColor>());
+        setPalette(pal);
+        update();
+    }
+    else if (key == "inputForegroundColor")
+    {
+        QPalette pal(palette());
+        pal.setColor(QPalette::Text, val.value<QColor>());
+        setPalette(pal);
+        update();
+    }
 }
 
 void CommandLine::echoToggled(bool flag)

@@ -62,6 +62,8 @@ public:
     void clearCaptures();
 
     static int print(lua_State *L);
+    static int tell(lua_State *L);
+    static int note(lua_State *L);
     static int colorTell(lua_State *L);
     static int colorNote(lua_State *L);
     static int send(lua_State *L);

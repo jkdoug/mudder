@@ -72,6 +72,12 @@ Profile::Profile(QObject *parent) :
     m_options.insert("outputFont", outputFont);
 
     m_options.insert("backgroundColor", QColor(Qt::black));
+    m_options.insert("commandBackgroundColor", QColor());
+    m_options.insert("commandForegroundColor", QColor(Qt::darkYellow));
+    m_options.insert("inputBackgroundColor", QColor(Qt::white));
+    m_options.insert("inputForegroundColor", QColor(Qt::black));
+    m_options.insert("noteBackgroundColor", QColor());
+    m_options.insert("noteForegroundColor", QColor(Qt::blue));
 
     m_options.insert("scrollbackLines", 1000);
 }
@@ -304,6 +310,28 @@ void Profile::toXml(QXmlStreamWriter &xml)
 
     xml.writeStartElement("colors");
     xml.writeAttribute("bg", background().name());
+
+    xml.writeStartElement("command");
+    xml.writeAttribute("fg", commandForeground().name());
+    if (commandBackground().isValid())
+    {
+        xml.writeAttribute("bg", commandBackground().name());
+    }
+    xml.writeEndElement();
+
+    xml.writeStartElement("input");
+    xml.writeAttribute("fg", inputForeground().name());
+    xml.writeAttribute("bg", inputBackground().name());
+    xml.writeEndElement();
+
+    xml.writeStartElement("note");
+    xml.writeAttribute("fg", noteForeground().name());
+    if (noteBackground().isValid())
+    {
+        xml.writeAttribute("bg", noteBackground().name());
+    }
+    xml.writeEndElement();
+
     xml.writeEndElement();  // colors
 
     xml.writeEndElement();  // display
@@ -984,11 +1012,75 @@ void Profile::readColors(QXmlStreamReader &xml, QList<XmlError *> &errors)
         {
             if (xml.name() == "command")
             {
-                // TODO
+                colorString = xml.attributes().value("fg").toString();
+                QColor fg(colorString);
+                if (fg.isValid())
+                {
+                    setCommandForeground(fg);
+                }
+                else if (!colorString.isEmpty())
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid command foreground color '%1'").arg(colorString));
+                }
+
+                colorString = xml.attributes().value("bg").toString();
+                QColor bg(colorString);
+                if (bg.isValid())
+                {
+                    setCommandBackground(bg);
+                }
+                else if (!colorString.isEmpty())
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid command background color '%1'").arg(colorString));
+                }
+            }
+            else if (xml.name() == "input")
+            {
+                colorString = xml.attributes().value("fg").toString();
+                QColor fg(colorString);
+                if (fg.isValid())
+                {
+                    setInputForeground(fg);
+                }
+                else if (!colorString.isEmpty())
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid input foreground color '%1'").arg(colorString));
+                }
+
+                colorString = xml.attributes().value("bg").toString();
+                QColor bg(colorString);
+                if (bg.isValid())
+                {
+                    setInputBackground(bg);
+                }
+                else if (!colorString.isEmpty())
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid input background color '%1'").arg(colorString));
+                }
             }
             else if (xml.name() == "note")
             {
-                // TODO
+                colorString = xml.attributes().value("fg").toString();
+                QColor fg(colorString);
+                if (fg.isValid())
+                {
+                    setNoteForeground(fg);
+                }
+                else if (!colorString.isEmpty())
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid note foreground color '%1'").arg(colorString));
+                }
+
+                colorString = xml.attributes().value("bg").toString();
+                QColor bg(colorString);
+                if (bg.isValid())
+                {
+                    setNoteBackground(bg);
+                }
+                else if (!colorString.isEmpty())
+                {
+                    errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid note background color '%1'").arg(colorString));
+                }
             }
         }
     }

@@ -105,7 +105,6 @@ public slots:
 
 private slots:
     void contentsModified();
-    void optionChanged(const QString &key, const QVariant &val);
     void commandEntered(const QString &cmd);
     void scriptEntered(const QString &code);
     void connectionEstablished();

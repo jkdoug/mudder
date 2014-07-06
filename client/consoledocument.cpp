@@ -467,6 +467,52 @@ void ConsoleDocument::optionChanged(const QString &key, const QVariant &val)
     {
         setMaximumBlockCount(val.toInt() + 1);
     }
+    else if (key == "noteBackgroundColor")
+    {
+        QBrush b(m_formatInfo.background());
+        QColor c(val.value<QColor>());
+        if (c.isValid())
+        {
+            b.setColor(c);
+        }
+        else
+        {
+            b.setStyle(Qt::NoBrush);
+        }
+        m_formatInfo.setBackground(b);
+    }
+    else if (key == "noteForegroundColor")
+    {
+        QColor c(val.value<QColor>());
+        if (!c.isValid())
+        {
+            return;
+        }
+        m_formatInfo.setForeground(c);
+    }
+    else if (key == "commandBackgroundColor")
+    {
+        QBrush b(m_formatCommand.background());
+        QColor c(val.value<QColor>());
+        if (c.isValid())
+        {
+            b.setColor(c);
+        }
+        else
+        {
+            b.setStyle(Qt::NoBrush);
+        }
+        m_formatCommand.setBackground(b);
+    }
+    else if (key == "commandForegroundColor")
+    {
+        QColor c(val.value<QColor>());
+        if (!c.isValid())
+        {
+            return;
+        }
+        m_formatCommand.setForeground(c);
+    }
 }
 
 void ConsoleDocument::select(int start, int stop)

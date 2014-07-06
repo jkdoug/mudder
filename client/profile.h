@@ -89,6 +89,18 @@ public:
 
     QColor background() const { return m_options.value("backgroundColor").value<QColor>(); }
     void setBackground(const QColor &color) { changeOption("backgroundColor", color); }
+    QColor commandBackground() const { return m_options.value("commandBackgroundColor").value<QColor>(); }
+    void setCommandBackground(const QColor &color) { changeOption("commandBackgroundColor", color); }
+    QColor commandForeground() const { return m_options.value("commandForegroundColor").value<QColor>(); }
+    void setCommandForeground(const QColor &color) { changeOption("commandForegroundColor", color); }
+    QColor inputBackground() const { return m_options.value("inputBackgroundColor").value<QColor>(); }
+    void setInputBackground(const QColor &color) { changeOption("inputBackgroundColor", color); }
+    QColor inputForeground() const { return m_options.value("inputForegroundColor").value<QColor>(); }
+    void setInputForeground(const QColor &color) { changeOption("inputForegroundColor", color); }
+    QColor noteBackground() const { return m_options.value("noteBackgroundColor").value<QColor>(); }
+    void setNoteBackground(const QColor &color) { changeOption("noteBackgroundColor", color); }
+    QColor noteForeground() const { return m_options.value("noteForegroundColor").value<QColor>(); }
+    void setNoteForeground(const QColor &color) { changeOption("noteForegroundColor", color); }
 
     int scrollbackLines() const { return m_options.value("scrollbackLines").toInt(); }
     void setScrollbackLines(int max) { changeOption("scrollbackLines", max); }
