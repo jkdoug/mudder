@@ -450,7 +450,7 @@ void ConsoleDocument::append(const QString &msg, const QColor &fg, const QColor 
     QTextCharFormat fmt;
     fmt.setForeground(fg);
     fmt.setBackground(bg);
-    appendText(fmt, msg);
+    appendText(fmt, msg, false);
 }
 
 void ConsoleDocument::optionChanged(const QString &key, const QVariant &val)
