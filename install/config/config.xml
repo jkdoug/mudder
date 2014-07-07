@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+  <Name>Mudder</Name>
+  <Version>0.3</Version>
+  <Title>Mudder</Title>
+  <Publisher>Jason Douglas</Publisher>
+  <ProductUrl>http://github.com/jkdoug/mudder</ProductUrl>
+  <StartMenuDir>Mudder</StartMenuDir>
+  <TargetDir>@RootDir@Mudder</TargetDir>
+</Installer>

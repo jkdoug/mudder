@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Mudder client</DisplayName>
+    <Description>Install the client application.</Description>
+    <Version>0.3</Version>
+    <ReleaseDate>2014-07-07</ReleaseDate>
+    <Name>com.mudder.client</Name>
+    <Licenses>
+        <License name="GNU GPL Agreement" file="LICENSE" />
+    </Licenses>
+    <Default>script</Default>
+    <Script>install.qs</Script>
+</Package>
