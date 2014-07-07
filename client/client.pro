@@ -8,7 +8,7 @@ QT       += core gui network xmlpatterns
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = client
+TARGET = mudder
 TEMPLATE = app
 
 
@@ -111,6 +111,8 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     client.qrc
+
+include(../breakpad/breakpad.qri)
 
 win32-g++: QMAKE_CXXFLAGS += -Wno-ignored-qualifiers
 

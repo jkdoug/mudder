@@ -25,9 +25,16 @@
 #include <QApplication>
 #include <QDateTime>
 #include <QLoggingCategory>
+#include <QStandardPaths>
 #include "coreapplication.h"
 #include "coresettings.h"
+#include "crashhandler.h"
 //#include "logger.h"
+
+int buggyFunc() {
+    delete reinterpret_cast<QString*>(0xFEE1DEAD);
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -35,6 +42,10 @@ int main(int argc, char *argv[])
     a.setApplicationName("Mudder");
     a.setApplicationVersion("0.3");
     a.setOrganizationName("Iasmos");
+
+    CrashHandler::instance()->initialize(QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
+
+//    buggyFunc();
 
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true\nqt.*=false"));
 
