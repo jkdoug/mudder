@@ -1,3 +1,6 @@
 [submodule "luabridge"]
 	path = luabridge
 	url = git@github.com:vinniefalco/LuaBridge.git
+[submodule "breakpad"]
+	path = breakpad
+	url = git@github.com:svn2github/google-breakpad.git
