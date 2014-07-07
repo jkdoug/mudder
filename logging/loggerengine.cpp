@@ -33,7 +33,7 @@ LoggerEngine::LoggerEngine()
     connect(this, SIGNAL(destroyed()), SLOT(finalize()));
 
     installEventFilter(this);
-    enableAllMessageTypes();
+    setEnabledMessageTypes(Logger::AllLogLevels);
 }
 
 LoggerEngine::~LoggerEngine()
@@ -45,11 +45,6 @@ void LoggerEngine::setName(const QString &name)
 {
     setObjectName(name);
     m_engineName = name;
-}
-
-inline void LoggerEngine::enableAllMessageTypes()
-{
-    setEnabledMessageTypes(Logger::AllLogLevels);
 }
 
 void LoggerEngine::installFormattingEngine(FormattingEngine *engine)

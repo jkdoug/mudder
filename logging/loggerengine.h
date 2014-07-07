@@ -56,7 +56,6 @@ public:
 
     virtual void setEnabledMessageTypes(Logger::MessageTypeFlags types) { m_enabledMessageTypes = types; }
     Logger::MessageTypeFlags getEnabledMessageTypes() const { return m_enabledMessageTypes; }
-    virtual void enableAllMessageTypes();
 
     void installFormattingEngine(FormattingEngine * engine);
     FormattingEngine* getInstalledFormattingEngine() { return m_formattingEngine; }
