@@ -26,6 +26,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QTextCharFormat>
 #include "lua.hpp"
 
 class LuaState : public QObject
@@ -41,6 +42,7 @@ public:
     static int pcall(lua_State *L, int args, int rets);
 
     static QString concatArgs(lua_State *L, const QString &delimiter = " ", const int first = 1);
+    static QTextCharFormat parseFormat(lua_State *L, int arg);
 
 private:
     static void tracebackFunction(lua_State *L);

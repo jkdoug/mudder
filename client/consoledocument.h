@@ -57,6 +57,7 @@ public slots:
     void warning(const QString &msg);
     void info(const QString &msg);
     void append(const QString &msg, const QColor &fg, const QColor &bg);
+    void append(const QString &msg, const QTextCharFormat &fmt = QTextCharFormat());
     void optionChanged(const QString &key, const QVariant &val);
     void select(int start, int stop);
     void selectAll();

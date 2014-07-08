@@ -75,8 +75,8 @@ public:
     void printWarning(const QString &msg);
     void printError(const QString &msg);
 
-    void colorTell(const QColor &fg, const QColor &bg, const QString &text);
-    void colorNote(const QColor &fg, const QColor &bg, const QString &text);
+    void tell(const QString &text, const QTextCharFormat &fmt = QTextCharFormat());
+    void note(const QString &text, const QTextCharFormat &fmt = QTextCharFormat());
 
     bool send(const QString &cmd, bool show = true);
     bool sendAlias(const QString &cmd);

@@ -22,6 +22,10 @@
 
 
 #include "luastate.h"
+#include "LuaBridge.h"
+
+using namespace luabridge;
+
 
 LuaState::LuaState(QObject *parent) :
     QObject(parent)
@@ -114,4 +118,61 @@ QString LuaState::concatArgs(lua_State *L, const QString &delimiter, const int f
     lua_pop(L, 1);
 
     return output;
+}
+
+QTextCharFormat LuaState::parseFormat(lua_State *L, int arg)
+{
+    QTextCharFormat fmt;
+
+    LuaRef style(LuaRef::fromStack(L, arg));
+    if (style["fg"])
+    {
+        QColor fg(style["fg"].cast<QString>());
+        if (!fg.isValid())
+        {
+            luaL_argerror(L, arg, lua_pushfstring(L, qPrintable(tr("invalid color value in '%1'").arg("fg"))));
+            return QTextCharFormat();
+        }
+        fmt.setForeground(fg);
+    }
+
+    if (style["bg"])
+    {
+        QColor bg(style["bg"].cast<QString>());
+        if (!bg.isValid())
+        {
+            luaL_argerror(L, arg, lua_pushfstring(L, qPrintable(tr("invalid color value in '%1'").arg("bg"))));
+            return QTextCharFormat();
+        }
+        fmt.setBackground(bg);
+    }
+
+    if (style["font"])
+    {
+        QString fontFamily(style["font"].cast<QString>());
+        if (!fontFamily.isEmpty())
+        {
+            fmt.setFontFamily(fontFamily);
+        }
+    }
+
+    if (style["size"])
+    {
+        fmt.setFontPointSize(style["size"].cast<int>());
+    }
+
+    if (style["bold"])
+    {
+        fmt.setFontWeight(style["bold"].cast<bool>()?QFont::Bold:QFont::Normal);
+    }
+    if (style["italic"])
+    {
+        fmt.setFontItalic(style["italic"].cast<bool>());
+    }
+    if (style["underline"])
+    {
+        fmt.setFontUnderline(style["underline"].cast<bool>());
+    }
+
+    return fmt;
 }

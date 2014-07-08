@@ -682,9 +682,18 @@ int Engine::print(lua_State *L)
 int Engine::note(lua_State *L)
 {
     Console *c = registryObject<Console>(L, "CONSOLE");
-    Profile *p = c->profile();
 
-    c->colorNote(p->noteForeground(), p->noteBackground(), LuaState::concatArgs(L));
+    QTextCharFormat fmt;
+
+    int n = lua_gettop(L);
+    if (lua_istable(L, n))
+    {
+        fmt = LuaState::parseFormat(L, n);
+
+        lua_pop(L, 1);
+    }
+
+    c->note(LuaState::concatArgs(L), fmt);
 
     return 0;
 }
@@ -692,9 +701,18 @@ int Engine::note(lua_State *L)
 int Engine::tell(lua_State *L)
 {
     Console *c = registryObject<Console>(L, "CONSOLE");
-    Profile *p = c->profile();
 
-    c->colorTell(p->noteForeground(), p->noteBackground(), LuaState::concatArgs(L));
+    QTextCharFormat fmt;
+
+    int n = lua_gettop(L);
+    if (lua_istable(L, n))
+    {
+        fmt = LuaState::parseFormat(L, n);
+
+        lua_pop(L, 1);
+    }
+
+    c->tell(LuaState::concatArgs(L), fmt);
 
     return 0;
 }
@@ -706,7 +724,21 @@ int Engine::colorTell(lua_State *L)
     int numArgs = lua_gettop(L);
     for (int n = 1; n <= numArgs; n += 3)
     {
-        c->colorTell(luaL_checkstring(L, n), luaL_checkstring(L, n + 1), luaL_checkstring(L, n + 2));
+        QString fg(luaL_checkstring(L, n));
+        QString bg(luaL_checkstring(L, n + 1));
+        QString msg(luaL_checkstring(L, n + 2));
+
+        QTextCharFormat fmt;
+        if (!fg.isEmpty())
+        {
+            fmt.setForeground(QColor(fg));
+        }
+        if (!bg.isEmpty())
+        {
+            fmt.setBackground(QColor(bg));
+        }
+
+        c->tell(msg, fmt);
     }
 
     return 0;
@@ -719,13 +751,27 @@ int Engine::colorNote(lua_State *L)
     int numArgs = lua_gettop(L);
     for (int n = 1; n <= numArgs; n += 3)
     {
+        QString fg(luaL_checkstring(L, n));
+        QString bg(luaL_checkstring(L, n + 1));
+        QString msg(luaL_checkstring(L, n + 2));
+
+        QTextCharFormat fmt;
+        if (!fg.isEmpty())
+        {
+            fmt.setForeground(QColor(fg));
+        }
+        if (!bg.isEmpty())
+        {
+            fmt.setBackground(QColor(bg));
+        }
+
         if (n + 2 < numArgs)
         {
-            c->colorTell(luaL_checkstring(L, n), luaL_checkstring(L, n + 1), luaL_checkstring(L, n + 2));
+            c->tell(msg, fmt);
         }
         else
         {
-            c->colorNote(luaL_checkstring(L, n), luaL_checkstring(L, n + 1), luaL_checkstring(L, n + 2));
+            c->note(msg, fmt);
         }
     }
 

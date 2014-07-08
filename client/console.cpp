@@ -240,20 +240,20 @@ void Console::printError(const QString &msg)
     scrollToBottom();
 }
 
-void Console::colorTell(const QColor &fg, const QColor &bg, const QString &text)
+void Console::tell(const QString &text, const QTextCharFormat &fmt)
 {
-    m_document->append(text, fg, bg);
+    m_document->append(text, fmt);
     scrollToBottom();
 }
 
-void Console::colorNote(const QColor &fg, const QColor &bg, const QString &text)
+void Console::note(const QString &text, const QTextCharFormat &fmt)
 {
     QString str(text);
     if (!str.endsWith("\n"))
     {
         str.append("\n");
     }
-    colorTell(fg, bg, str);
+    tell(str, fmt);
 }
 
 bool Console::send(const QString &cmd, bool show)

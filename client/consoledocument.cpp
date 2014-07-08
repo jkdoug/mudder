@@ -417,30 +417,21 @@ void ConsoleDocument::command(const QString &cmd)
 
 void ConsoleDocument::error(const QString &msg)
 {
-    if (m_isPrompt)
-    {
-        newLine();
-    }
+    newLine();
 
     appendText(m_formatError, msg);
 }
 
 void ConsoleDocument::warning(const QString &msg)
 {
-    if (m_isPrompt)
-    {
-        newLine();
-    }
+    newLine();
 
     appendText(m_formatWarning, msg);
 }
 
 void ConsoleDocument::info(const QString &msg)
 {
-    if (m_isPrompt)
-    {
-        newLine();
-    }
+    newLine();
 
     appendText(m_formatInfo, msg);
 }
@@ -451,6 +442,18 @@ void ConsoleDocument::append(const QString &msg, const QColor &fg, const QColor 
     fmt.setForeground(fg);
     fmt.setBackground(bg);
     appendText(fmt, msg, false);
+}
+
+void ConsoleDocument::append(const QString &msg, const QTextCharFormat &fmt)
+{
+    if (fmt.isEmpty() || !fmt.isValid())
+    {
+        m_cursor.insertText(msg);
+    }
+    else
+    {
+        appendText(fmt, msg, false);
+    }
 }
 
 void ConsoleDocument::optionChanged(const QString &key, const QVariant &val)
