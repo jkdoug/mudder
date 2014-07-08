@@ -198,11 +198,12 @@ void CodeEditorWindow::actionSave()
 
 void CodeEditorWindow::actionSaveAs()
 {
-    if (activeEditor())
+    CodeEditorWidget *editor = activeEditor();
+    if (editor)
     {
-        if (activeEditor()->saveAs())
+        if (editor->saveAs())
         {
-            SETTINGS->addRecentFile(activeEditor()->fileName());
+            SETTINGS->addRecentFile(editor->fileName());
         }
     }
 }
@@ -214,48 +215,52 @@ void CodeEditorWindow::actionClose()
 
 void CodeEditorWindow::actionCopy()
 {
-    if (activeEditor())
+    CodeEditorWidget *editor = activeEditor();
+    if (editor)
     {
-        activeEditor()->copy();
+        editor->copy();
     }
 }
 
 void CodeEditorWindow::actionCut()
 {
-    if (activeEditor())
+    CodeEditorWidget *editor = activeEditor();
+    if (editor)
     {
-        activeEditor()->cut();
+        editor->cut();
     }
 }
 
 void CodeEditorWindow::actionPaste()
 {
-    if (activeEditor())
+    CodeEditorWidget *editor = activeEditor();
+    if (editor)
     {
-        activeEditor()->paste();
+        editor->paste();
     }
 }
 
 void CodeEditorWindow::actionPrint()
 {
 #ifndef QT_NO_PRINTER
-    if (!activeEditor())
+    CodeEditorWidget *editor = activeEditor();
+    if (!editor)
     {
         return;
     }
 
     QPrinter printer(QPrinter::HighResolution);
-    printer.setDocName(activeEditor()->fileName());
+    printer.setDocName(editor->fileName());
 
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
-    if (activeEditor()->textCursor().hasSelection())
+    if (editor->textCursor().hasSelection())
     {
         dlg->addEnabledOption(QAbstractPrintDialog::PrintSelection);
     }
     dlg->setWindowTitle(tr("Print Document"));
     if (dlg->exec() == QDialog::Accepted)
     {
-        activeEditor()->print(&printer);
+        editor->print(&printer);
     }
     delete dlg;
 #endif
@@ -264,13 +269,14 @@ void CodeEditorWindow::actionPrint()
 void CodeEditorWindow::actionPrintPreview()
 {
 #ifndef QT_NO_PRINTER
-    if (!activeEditor())
+    CodeEditorWidget *editor = activeEditor();
+    if (!editor)
     {
         return;
     }
 
     QPrinter printer(QPrinter::HighResolution);
-    printer.setDocName(activeEditor()->fileName());
+    printer.setDocName(editor->fileName());
 
     QPrintPreviewDialog preview(&printer, this);
     connect(&preview, SIGNAL(paintRequested(QPrinter *)), SLOT(printPreview(QPrinter *)));
@@ -283,9 +289,10 @@ void CodeEditorWindow::printPreview(QPrinter *printer)
 #ifdef QT_NO_PRINTER
     Q_UNUSED(printer);
 #else
-    if (activeEditor())
+    CodeEditorWidget *editor = activeEditor();
+    if (editor)
     {
-        activeEditor()->print(printer);
+        editor->print(printer);
     }
 #endif
 }
@@ -407,9 +414,10 @@ void CodeEditorWindow::openEditor(const QString &fileName)
 
 void CodeEditorWindow::saveEditor()
 {
-    if (activeEditor())
+    CodeEditorWidget *editor = activeEditor();
+    if (editor)
     {
-        activeEditor()->save();
+        editor->save();
     }
 }
 
@@ -425,7 +433,7 @@ void CodeEditorWindow::addEditor(CodeEditorWidget *editor)
 
 CodeEditorWidget * CodeEditorWindow::activeEditor()
 {
-    QMdiSubWindow * subWindow = m_mdi->activeSubWindow();
+    QMdiSubWindow *subWindow = m_mdi->activeSubWindow();
     if (subWindow)
     {
         return qobject_cast<CodeEditorWidget *>(subWindow->widget());
