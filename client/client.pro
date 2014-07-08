@@ -112,8 +112,6 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     client.qrc
 
-include(../breakpad/breakpad.qri)
-
 win32-g++: QMAKE_CXXFLAGS += -Wno-ignored-qualifiers
 
 INCLUDEPATH += $$PWD/../luabridge/Source/LuaBridge
