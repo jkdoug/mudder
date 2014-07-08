@@ -74,36 +74,36 @@ bool CodeEditorWidget::save()
 
 bool CodeEditorWidget::saveAs()
 {
-    QString fileName(QFileDialog::getSaveFileName(this, tr("Save File"), m_fileName, m_fileFilter));
-    LOG_TRACE("CodeEditorWidget::saveAs", fileName);
-    if (fileName.isEmpty())
+    QString filename(QFileDialog::getSaveFileName(this, tr("Save File"), m_fileName, m_fileFilter));
+    LOG_TRACE("CodeEditorWidget::saveAs", filename);
+    if (filename.isEmpty())
     {
         return false;
     }
 
-    return saveFile(fileName);
+    return saveFile(filename);
 }
 
 CodeEditorWidget * CodeEditorWidget::open(QWidget *parent)
 {
-    QString fileName(QFileDialog::getOpenFileName(parent, tr("Open File"), QString(), m_fileFilter));
-    LOG_TRACE("CodeEditorWidget::open", fileName);
-    if (fileName.isEmpty())
+    QString filename(QFileDialog::getOpenFileName(parent, tr("Open File"), QString(), m_fileFilter));
+    LOG_TRACE("CodeEditorWidget::open", filename);
+    if (filename.isEmpty())
     {
         return 0;
     }
 
-    return openFile(fileName, parent);
+    return openFile(filename, parent);
 }
 
-CodeEditorWidget * CodeEditorWidget::openFile(const QString &fileName, QWidget *parent)
+CodeEditorWidget * CodeEditorWidget::openFile(const QString &filename, QWidget *parent)
 {
-    LOG_TRACE("CodeEditorWidget::openFile", fileName);
+    LOG_TRACE("CodeEditorWidget::openFile", filename);
 
     CodeEditorWidget *editor = new CodeEditorWidget(parent);
-    if (editor->readFile(fileName))
+    if (editor->readFile(filename))
     {
-        editor->setCurrentFile(fileName);
+        editor->setCurrentFile(filename);
         return editor;
     }
 
@@ -205,27 +205,27 @@ bool CodeEditorWidget::okToContinue()
     return true;
 }
 
-bool CodeEditorWidget::saveFile(const QString &fileName)
+bool CodeEditorWidget::saveFile(const QString &filename)
 {
-    LOG_TRACE("CodeEditorWidget::saveFile", fileName);
+    LOG_TRACE("CodeEditorWidget::saveFile", filename);
 
-    if (writeFile(fileName))
+    if (writeFile(filename))
     {
-        setCurrentFile(fileName);
+        setCurrentFile(filename);
         return true;
     }
 
     return false;
 }
 
-void CodeEditorWidget::setCurrentFile(const QString &fileName)
+void CodeEditorWidget::setCurrentFile(const QString &filename)
 {
-    LOG_TRACE("CodeEditorWidget::setCurrentFile", fileName);
+    LOG_TRACE("CodeEditorWidget::setCurrentFile", filename);
 
-    m_fileName = fileName;
+    m_fileName = filename;
     m_isUntitled = false;
 
-    QString suffix(QFileInfo(fileName).suffix());
+    QString suffix(QFileInfo(filename).suffix());
     if (suffix.compare("lua", Qt::CaseInsensitive) == 0)
     {
         setSyntaxHighlighter(new LuaHighlighter);
@@ -236,15 +236,15 @@ void CodeEditorWidget::setCurrentFile(const QString &fileName)
         setSyntaxHighlighter(new XmlHighlighter);
     }
 
-    setWindowTitle(QFileInfo(fileName).fileName() + "[*]");
+    setWindowTitle(QFileInfo(filename).fileName() + "[*]");
     setWindowModified(false);
 }
 
-bool CodeEditorWidget::readFile(const QString &fileName)
+bool CodeEditorWidget::readFile(const QString &filename)
 {
-    LOG_TRACE("CodeEditorWidget::readFile", fileName);
+    LOG_TRACE("CodeEditorWidget::readFile", filename);
 
-    QFile file(fileName);
+    QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QMessageBox::warning(this, tr("Editor"),
@@ -252,7 +252,7 @@ bool CodeEditorWidget::readFile(const QString &fileName)
                              .arg(file.fileName())
                              .arg(file.errorString()));
 
-        LOG_WARNING("Cannot read file:", fileName, file.errorString());
+        LOG_WARNING("Cannot read file:", filename, file.errorString());
         return false;
     }
 
@@ -262,7 +262,7 @@ bool CodeEditorWidget::readFile(const QString &fileName)
     setWindowModified(false);
 
     QString previous(m_fileName);
-    m_fileName = fileName;
+    m_fileName = filename;
 
     if (m_watcher->files().contains(previous))
     {
@@ -275,9 +275,9 @@ bool CodeEditorWidget::readFile(const QString &fileName)
     return true;
 }
 
-bool CodeEditorWidget::writeFile(const QString &fileName)
+bool CodeEditorWidget::writeFile(const QString &filename)
 {
-    QFile file(fileName);
+    QFile file(filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QMessageBox::warning(this, tr("Editor"),
@@ -285,23 +285,23 @@ bool CodeEditorWidget::writeFile(const QString &fileName)
                              .arg(file.fileName())
                              .arg(file.errorString()));
 
-        LOG_WARNING("Cannot write file:", fileName, file.errorString());
+        LOG_WARNING("Cannot write file:", filename, file.errorString());
         return false;
     }
 
     CoreApplication::setApplicationBusy(true);
 
-    LOG_INFO("Writing file:", fileName);
+    LOG_INFO("Writing file:", filename);
 
-    if (m_watcher->files().contains(fileName))
+    if (m_watcher->files().contains(filename))
     {
-        m_watcher->removePath(fileName);
+        m_watcher->removePath(filename);
     }
 
     file.write(toPlainText().toUtf8());
     file.close();
 
-    m_fileName = fileName;
+    m_fileName = filename;
 
     m_watcher->addPath(m_fileName);
 

@@ -55,10 +55,10 @@ protected:
 
 private:
     bool okToContinue();
-    bool saveFile(const QString &fileName);
-    void setCurrentFile(const QString &fileName);
-    bool readFile(const QString &fileName);
-    bool writeFile(const QString &fileName);
+    bool saveFile(const QString &filename);
+    void setCurrentFile(const QString &filename);
+    bool readFile(const QString &filename);
+    bool writeFile(const QString &filename);
 
     static QString m_fileFilter;
 
