@@ -28,46 +28,23 @@
 #include <QStandardPaths>
 #include "coreapplication.h"
 #include "coresettings.h"
-//#include "crashhandler.h"
-//#include "logger.h"
-
-//int buggyFunc() {
-//    delete reinterpret_cast<QString*>(0xFEE1DEAD);
-//    return 0;
-//}
 
 int main(int argc, char *argv[])
 {
+    qSetMessagePattern("[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{category} - %{message}");
+
     CoreApplication a(argc, argv);
     a.setApplicationName("Mudder");
-    a.setApplicationVersion("0.3");
+    a.setApplicationVersion("0.4");
     a.setOrganizationName("Iasmos");
-
-//    CrashHandler::instance()->initialize(QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
-
-//    buggyFunc();
 
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true\nqt.*=false"));
 
     SETTINGS->setValue("LastRun", QDateTime::currentDateTime());
 
-//    LOG_INITIALIZE();
-
-//    LOG->setGlobalLogLevel(Logger::Trace);
-
-//    LOG->newFileEngine("Mudder XML", "mudder_log.xml");
-//    LOG->newFileEngine("Mudder Text", "mudder_log.txt");
-//    LOG->newFileEngine("Mudder HTML", "mudder_log.html");
-
-//    LOG->toggleQtMsgEngine(true);
-//    LOG->toggleConsoleEngine(true);
-
     MainWindow w;
     CoreApplication::setMainWindow(&w);
     w.show();
 
-    int result = a.exec();
-
-//    LOG_FINALIZE();
-    return result;
+    return a.exec();
 }
