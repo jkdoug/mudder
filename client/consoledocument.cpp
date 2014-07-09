@@ -417,21 +417,30 @@ void ConsoleDocument::command(const QString &cmd)
 
 void ConsoleDocument::error(const QString &msg)
 {
-    newLine();
+    if (!m_cursor.block().text().isEmpty())
+    {
+        newLine();
+    }
 
     appendText(m_formatError, msg);
 }
 
 void ConsoleDocument::warning(const QString &msg)
 {
-    newLine();
+    if (!m_cursor.block().text().isEmpty())
+    {
+        newLine();
+    }
 
     appendText(m_formatWarning, msg);
 }
 
 void ConsoleDocument::info(const QString &msg)
 {
-    newLine();
+    if (!m_cursor.block().text().isEmpty())
+    {
+        newLine();
+    }
 
     appendText(m_formatInfo, msg);
 }
@@ -441,7 +450,7 @@ void ConsoleDocument::append(const QString &msg, const QColor &fg, const QColor 
     QTextCharFormat fmt;
     fmt.setForeground(fg);
     fmt.setBackground(bg);
-    appendText(fmt, msg, false);
+    append(msg, fmt);
 }
 
 void ConsoleDocument::append(const QString &msg, const QTextCharFormat &fmt)
@@ -526,6 +535,9 @@ void ConsoleDocument::select(int start, int stop)
         return;
     }
 
+    start = qBound(0, start, characterCount());
+    stop = qBound(0, stop, characterCount());
+
     m_selection.setPosition(start);
     m_selection.setPosition(stop, QTextCursor::KeepAnchor);
 
@@ -552,6 +564,8 @@ void ConsoleDocument::clear()
 
     m_cursor = QTextCursor(this);
     m_cursor.setCharFormat(m_formatCurrent);
+
+    m_selection = QTextCursor(this);
 }
 
 void ConsoleDocument::newLine()
