@@ -383,8 +383,6 @@ void SettingsWindow::addVariable()
 
 void SettingsWindow::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
-    qCDebug(MUDDER_PROFILE) << "Current settings index changed:" << previous << current;
-
     int index = 0;
     if (current.isValid())
     {
@@ -405,8 +403,6 @@ void SettingsWindow::selectionChanged(const QItemSelection &selected, const QIte
 {
     Q_UNUSED(deselected)
 
-    qCDebug(MUDDER_PROFILE) << "selectionChanged";
-
     bool selection = !selected.isEmpty();
     ui->actionCopy->setEnabled(selection);
     ui->actionCut->setEnabled(selection);
@@ -420,7 +416,7 @@ void SettingsWindow::selectionChanged(const QItemSelection &selected, const QIte
 
 void SettingsWindow::showContextMenu(const QPoint &point)
 {
-    if (profile() == 0)
+    if (!profile())
     {
         return;
     }
