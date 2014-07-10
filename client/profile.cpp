@@ -719,6 +719,10 @@ void Profile::copyItem(const QModelIndex &index) const
 {
     ProfileItem *item = itemForIndex(index);
     Q_ASSERT(item);
+    if (!item)
+    {
+        return;
+    }
 
     QString output;
     QXmlStreamWriter xml(&output);

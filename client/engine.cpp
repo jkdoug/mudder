@@ -674,6 +674,7 @@ void Engine::clearCaptures()
 int Engine::print(lua_State *L)
 {
     Console *c = registryObject<Console>(L, "CONSOLE");
+
     c->printInfo(LuaState::concatArgs(L));
 
     return 0;

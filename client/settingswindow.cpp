@@ -383,6 +383,8 @@ void SettingsWindow::addVariable()
 
 void SettingsWindow::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
+    Q_UNUSED(previous)
+
     int index = 0;
     if (current.isValid())
     {
