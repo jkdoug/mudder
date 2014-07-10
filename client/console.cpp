@@ -795,7 +795,7 @@ bool Console::okToContinue()
     if (isWindowModified())
     {
         QMessageBox::StandardButton answer = QMessageBox::warning(this, tr("Console"),
-            tr("The profile has been modified.\nDo you want to save your changes?"),
+            tr("The profile '%1' has been modified.\nDo you want to save your changes?").arg(windowTitle().remove("[*]")),
             QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (answer == QMessageBox::Yes)
         {

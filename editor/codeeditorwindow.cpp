@@ -328,6 +328,19 @@ void CodeEditorWindow::showSearchBox()
 //    }
 }
 
+void CodeEditorWindow::closeEvent(QCloseEvent *e)
+{
+    m_mdi->closeAllSubWindows();
+    if (activeEditor())
+    {
+        e->ignore();
+    }
+    else
+    {
+        e->accept();
+    }
+}
+
 void CodeEditorWindow::focusInEvent(QFocusEvent *e)
 {
     LOG_TRACE("CodeEditorWindow::focusInEvent");

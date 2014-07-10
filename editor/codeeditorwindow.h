@@ -64,6 +64,7 @@ public slots:
     void showSearchBox();
 
 protected:
+    virtual void closeEvent(QCloseEvent *e);
     virtual void focusInEvent(QFocusEvent *e);
     virtual void focusOutEvent(QFocusEvent *e);
     bool eventFilter(QObject *obj, QEvent *e);
