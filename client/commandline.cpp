@@ -100,6 +100,18 @@ void CommandLine::echoToggled(bool flag)
     m_echoOn = flag;
 }
 
+void CommandLine::processNewBlock(const QTextBlock &block)
+{
+    if (m_recentLines.count() >= 100)
+    {
+        m_recentLines.pop_front();
+    }
+
+    m_recentLines.append(block.text());
+
+    updateCompletions();
+}
+
 void CommandLine::keyPressEvent(QKeyEvent *e)
 {
     if (m_completer->popup()->isVisible())
@@ -324,25 +336,25 @@ QString CommandLine::textUnderCursor() const
 
 void CommandLine::updateCompletions()
 {
-//    QStringList recentLines(console()->buffer()->lastLines(250));
-//    QStringList goodWords;
-//    foreach (QString line, recentLines)
-//    {
-//        QStringList words(line.split(QRegularExpression("\\b")));
-//        foreach (QString word, words)
-//        {
-//            if (word.length() > 3)
-//            {
-//                goodWords.append(word);
-//            }
-//        }
-//    }
+    // TODO: user-customizable tab completion list
+    // TODO: command history tab completion
 
-//    goodWords.removeDuplicates();
-//    goodWords.sort(Qt::CaseInsensitive);
-//    m_completionModel->setStringList(goodWords);
+    QStringList goodWords;
+    foreach (QString line, m_recentLines)
+    {
+        QStringList words(line.split(QRegularExpression("\\b")));
+        foreach (QString word, words)
+        {
+            if (word.length() > 3)
+            {
+                goodWords.append(word);
+            }
+        }
+    }
 
-    m_completionModel->setStringList(QStringList() << "sample one" << "sample two" << "samwise gamgee");
+    goodWords.removeDuplicates();
+    goodWords.sort(Qt::CaseInsensitive);
+    m_completionModel->setStringList(goodWords);
 }
 
 void CommandLine::processCommand(const QString &text)

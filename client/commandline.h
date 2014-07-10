@@ -28,6 +28,7 @@
 #include <QPlainTextEdit>
 #include <QStringList>
 #include <QStringListModel>
+#include <QTextBlock>
 #include <QVariant>
 
 class CommandLine : public QPlainTextEdit
@@ -41,6 +42,7 @@ public:
 public slots:
     void optionChanged(const QString &key, const QVariant &val);
     void echoToggled(bool flag);
+    void processNewBlock(const QTextBlock &block);
 
 signals:
     void command(const QString &cmd);
@@ -67,6 +69,7 @@ private:
     int m_historyPosition;
 
     QCompleter *m_completer;
+    QStringList m_recentLines;
     QStringListModel *m_completionModel;
 
     bool m_escapeClears;

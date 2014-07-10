@@ -92,6 +92,7 @@ Console::Console(QWidget *parent) :
 
     connect(ui->input, SIGNAL(accelerator(QKeySequence)), SLOT(processAccelerators(QKeySequence)));
     connect(m_document, SIGNAL(blockAdded(QTextBlock)), SLOT(processTriggers(QTextBlock)));
+    connect(m_document, SIGNAL(blockAdded(QTextBlock)), ui->input, SLOT(processNewBlock(QTextBlock)));
     connect(m_document, SIGNAL(contentsChanged()), ui->output, SLOT(update()));
     connect(m_document, SIGNAL(contentsChanged()), SLOT(updateScroll()));
     connect(ui->scrollbar, SIGNAL(valueChanged(int)), SLOT(scrollbarMoved(int)));
