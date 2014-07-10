@@ -278,32 +278,43 @@ void ConsoleDocument::deleteBlock(const QTextBlock &block)
         return;
     }
 
+    qCDebug(MUDDER_DOCUMENT) << "Deleting block" << block.blockNumber() << block.text();
+
+    // HACK: restore format
+    QTextCharFormat fmt(m_cursor.charFormat());
+
     cur.removeSelectedText();
+
+    m_cursor.setCharFormat(fmt);
 }
 
 void ConsoleDocument::deleteLines(int count)
 {
-    count = qBound(0, count, blockCount());
+    if (count < 1)
+    {
+        return;
+    }
 
-    QTextBlock block(lastBlock());
-    if (!m_isPrompt)
+    count = qMin(count, blockCount());
+
+    QTextBlock block(findBlockByNumber(blockCount() - count));
+    if (!m_isPrompt && block.isValid() && block.previous().isValid())
     {
         block = block.previous();
     }
 
-    for (int n = 0; n < count; n++)
-    {
-        if (!block.isValid())
-        {
-            return;
-        }
+    // HACK: restore format
+    QTextCharFormat fmt(m_cursor.charFormat());
 
-        QTextCursor cur(block);
-        cur.select(QTextCursor::BlockUnderCursor);
-        block = block.previous();
+    QTextCursor cur(this);
+    cur.setPosition(block.position());
+    cur.movePosition(QTextCursor::NextBlock, QTextCursor::KeepAnchor, count);
 
-        cur.removeSelectedText();
-    }
+    qCDebug(MUDDER_DOCUMENT) << "Delete lines" << cur.selectionStart() << cur.selectionEnd();
+
+    cur.removeSelectedText();
+
+    m_cursor.setCharFormat(fmt);
 }
 
 void ConsoleDocument::process(const QByteArray &data)
@@ -378,13 +389,13 @@ void ConsoleDocument::process(const QByteArray &data)
             m_text.clear();
 
 //            QTextBlock b(m_cursor.block());
-//            qCDebug(MUDDER_CONSOLE) << "Text line number:" << b.blockNumber();
+//            qCDebug(MUDDER_DOCUMENT) << "Text line number:" << b.blockNumber();
 //            for (QTextBlock::iterator it = b.begin(); !it.atEnd(); it++)
 //            {
 //                QTextFragment f(it.fragment());
 //                if (f.isValid())
 //                {
-//                    qCDebug(MUDDER_CONSOLE) << "Text fragment:" << f.text() << f.position() << f.length() << f.charFormat().foreground().color().name();
+//                    qCDebug(MUDDER_DOCUMENT) << "Text fragment:" << f.text() << f.position() << f.length() << f.charFormat().foreground().color().name();
 //                }
 //            }
 
@@ -412,11 +423,15 @@ void ConsoleDocument::process(const QByteArray &data)
 
 void ConsoleDocument::command(const QString &cmd)
 {
+    qCDebug(MUDDER_DOCUMENT) << "Command" << cmd;
+
     appendText(m_formatCommand, cmd);
 }
 
 void ConsoleDocument::error(const QString &msg)
 {
+    qCDebug(MUDDER_DOCUMENT) << "Error" << msg;
+
     if (!m_cursor.block().text().isEmpty())
     {
         newLine();
@@ -427,6 +442,8 @@ void ConsoleDocument::error(const QString &msg)
 
 void ConsoleDocument::warning(const QString &msg)
 {
+    qCDebug(MUDDER_DOCUMENT) << "Warning" << msg;
+
     if (!m_cursor.block().text().isEmpty())
     {
         newLine();
@@ -437,6 +454,8 @@ void ConsoleDocument::warning(const QString &msg)
 
 void ConsoleDocument::info(const QString &msg)
 {
+    qCDebug(MUDDER_DOCUMENT) << "Info" << msg;
+
     if (!m_cursor.block().text().isEmpty())
     {
         newLine();
@@ -455,6 +474,8 @@ void ConsoleDocument::append(const QString &msg, const QColor &fg, const QColor 
 
 void ConsoleDocument::append(const QString &msg, const QTextCharFormat &fmt)
 {
+    qCDebug(MUDDER_DOCUMENT) << "Append" << msg << "format valid" << fmt.isValid();
+
     if (fmt.isEmpty() || !fmt.isValid())
     {
         m_cursor.insertText(msg);
@@ -570,6 +591,8 @@ void ConsoleDocument::clear()
 
 void ConsoleDocument::newLine()
 {
+    qCDebug(MUDDER_DOCUMENT) << "New line";
+
     m_cursor.insertBlock();
     m_isPrompt = false;
 }
@@ -858,6 +881,8 @@ inline QColor ConsoleDocument::translateColor(const QString &name)
 
 inline void ConsoleDocument::appendText(const QTextCharFormat &fmt, const QString &text, bool newline)
 {
+    qCDebug(MUDDER_DOCUMENT) << "Appending text" << text << "format valid" << fmt.isValid();
+
     QTextCharFormat previousFormat(m_cursor.charFormat());
 
     m_cursor.mergeCharFormat(fmt);
