@@ -107,6 +107,7 @@ public:
 
     virtual void toXml(QXmlStreamWriter &xml);
     virtual void fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
+    virtual void importXml(QXmlStreamReader &xml, QList<XmlError *> &errors);
     static bool validateXml(const QString &text, QList<XmlError *> *errors = 0);
 
 

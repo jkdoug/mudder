@@ -360,21 +360,83 @@ void Profile::fromXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
             {
                 item->fromXml(xml, errors);
                 activeGroup()->addItem(item);
-            }
 
-            if (name == "group")
-            {
-                setActiveGroup(qobject_cast<Group *>(item));
-            }
-            else if (name == "timer")
-            {
-                Timer *timer = qobject_cast<Timer *>(item);
-                if (timer)
+                if (name == "group")
                 {
-                    connect(timer, SIGNAL(fired(Timer*)), SLOT(handleTimer(Timer*)));
+                    setActiveGroup(qobject_cast<Group *>(item));
+                }
+                else if (name == "timer")
+                {
+                    Timer *timer = qobject_cast<Timer *>(item);
+                    if (timer)
+                    {
+                        connect(timer, SIGNAL(fired(Timer*)), SLOT(handleTimer(Timer*)));
+                    }
                 }
             }
-            else if (name == "profile")
+
+            if (name == "profile")
+            {
+                readProfile(xml, errors);
+            }
+        }
+        else if (xml.isEndElement())
+        {
+            if (name == "group")
+            {
+                setActiveGroup(activeGroup()->group());
+            }
+        }
+    }
+    endResetModel();
+}
+
+void Profile::importXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
+{
+    beginResetModel();
+    while (!xml.atEnd())
+    {
+        xml.readNext();
+
+        QString name(xml.name().toString());
+        if (xml.isStartElement())
+        {
+            ProfileItem *item = 0;
+            if (!name.isEmpty())
+            {
+                QModelIndex itemIndex(indexForPath(QStringList() << activeGroup->path() << name));
+                if (itemIndex.isValid())
+                {
+                    item = itemForIndex(itemIndex);
+                    Q_ASSERT(item);
+                }
+            }
+
+            if (!item)
+            {
+                item = ProfileItemFactory::create(name, activeGroup());
+            }
+
+            if (item)
+            {
+                item->fromXml(xml, errors);
+                activeGroup()->addItem(item);
+
+                if (name == "group")
+                {
+                    setActiveGroup(qobject_cast<Group *>(item));
+                }
+                else if (name == "timer")
+                {
+                    Timer *timer = qobject_cast<Timer *>(item);
+                    if (timer)
+                    {
+                        connect(timer, SIGNAL(fired(Timer*)), SLOT(handleTimer(Timer*)));
+                    }
+                }
+            }
+
+            if (name == "profile")
             {
                 readProfile(xml, errors);
             }
