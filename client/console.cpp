@@ -781,7 +781,7 @@ void Console::copyHtml()
         .arg(font.pointSize())
         .arg(fg.name())
         .arg(bg.name())
-        .arg(windowTitle().replace("[*]", ""))
+        .arg(windowTitle().remove("[*]"))
         .arg(QDateTime::currentDateTime().toString())
         .arg(m_document->toHtml(m_document->selection(), fg, bg, font)));
 
