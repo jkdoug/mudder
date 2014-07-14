@@ -398,13 +398,13 @@ void Profile::importXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
     {
         xml.readNext();
 
-        QString name(xml.name().toString());
+        QString xmlName(xml.name().toString());
         if (xml.isStartElement())
         {
             ProfileItem *item = 0;
-            if (!name.isEmpty())
+            if (!xmlName.isEmpty())
             {
-                QModelIndex itemIndex(indexForPath(QStringList() << activeGroup->path() << name));
+                QModelIndex itemIndex(indexForPath(QStringList() << activeGroup()->path() << xmlName));
                 if (itemIndex.isValid())
                 {
                     item = itemForIndex(itemIndex);
@@ -414,7 +414,7 @@ void Profile::importXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
 
             if (!item)
             {
-                item = ProfileItemFactory::create(name, activeGroup());
+                item = ProfileItemFactory::create(xmlName, activeGroup());
             }
 
             if (item)
@@ -422,11 +422,11 @@ void Profile::importXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 item->fromXml(xml, errors);
                 activeGroup()->addItem(item);
 
-                if (name == "group")
+                if (xmlName == "group")
                 {
                     setActiveGroup(qobject_cast<Group *>(item));
                 }
-                else if (name == "timer")
+                else if (xmlName == "timer")
                 {
                     Timer *timer = qobject_cast<Timer *>(item);
                     if (timer)
@@ -436,14 +436,14 @@ void Profile::importXml(QXmlStreamReader &xml, QList<XmlError *> &errors)
                 }
             }
 
-            if (name == "profile")
+            if (xmlName == "profile")
             {
                 readProfile(xml, errors);
             }
         }
         else if (xml.isEndElement())
         {
-            if (name == "group")
+            if (xmlName == "group")
             {
                 setActiveGroup(activeGroup()->group());
             }
