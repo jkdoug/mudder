@@ -69,6 +69,13 @@ public:
     bool autoReconnect() const { return m_options.value("autoReconnect").toBool(); }
     void setAutoReconnect(bool flag = true) { changeOption("autoReconnect", flag); }
 
+    QString logFileName() const { return m_options.value("logFileName").toString(); }
+    void setLogFileName(const QString &fileName) { changeOption("logFileName", fileName); }
+    QString logPath() const { return m_options.value("logPath").toString(); }
+    void setLogPath(const QString &path) { changeOption("logPath", path); }
+    bool autoLog() const { return m_options.value("autoLog").toBool(); }
+    void setAutoLog(bool flag = true) { changeOption("autoLog", flag); }
+
     QString scriptFileName() const { return m_options.value("scriptFileName").toString(); }
     void setScriptFileName(const QString &fileName) { changeOption("scriptFileName", fileName); }
     QString scriptPrefix() const { return m_options.value("scriptPrefix").toString(); }
@@ -89,6 +96,8 @@ public:
 
     QColor background() const { return m_options.value("backgroundColor").value<QColor>(); }
     void setBackground(const QColor &color) { changeOption("backgroundColor", color); }
+    QColor foreground() const { return m_options.value("foregroundColor").value<QColor>(); }
+    void setForeground(const QColor &color) { changeOption("foregroundColor", color); }
     QColor commandBackground() const { return m_options.value("commandBackgroundColor").value<QColor>(); }
     void setCommandBackground(const QColor &color) { changeOption("commandBackgroundColor", color); }
     QColor commandForeground() const { return m_options.value("commandForegroundColor").value<QColor>(); }

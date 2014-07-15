@@ -72,6 +72,7 @@ Profile::Profile(QObject *parent) :
     m_options.insert("outputFont", outputFont);
 
     m_options.insert("backgroundColor", QColor(Qt::black));
+    m_options.insert("foregroundColor", QColor(Qt::lightGray));
     m_options.insert("commandBackgroundColor", QColor());
     m_options.insert("commandForegroundColor", QColor(Qt::darkYellow));
     m_options.insert("inputBackgroundColor", QColor(Qt::white));
@@ -309,6 +310,7 @@ void Profile::toXml(QXmlStreamWriter &xml)
     xml.writeEndElement();
 
     xml.writeStartElement("colors");
+    xml.writeAttribute("fg", foreground().name());
     xml.writeAttribute("bg", background().name());
 
     xml.writeStartElement("command");
@@ -1054,7 +1056,18 @@ void Profile::readDisplay(QXmlStreamReader &xml, QList<XmlError *> &errors)
 
 void Profile::readColors(QXmlStreamReader &xml, QList<XmlError *> &errors)
 {
-    QString colorString(xml.attributes().value("bg").toString());
+    QString colorString(xml.attributes().value("fg").toString());
+    QColor fg(colorString);
+    if (fg.isValid())
+    {
+        setForeground(fg);
+    }
+    else if (!colorString.isEmpty())
+    {
+        errors << new XmlError(xml.lineNumber(), xml.columnNumber(), tr("invalid console foreground color '%1'").arg(colorString));
+    }
+
+    colorString = xml.attributes().value("bg").toString();
     QColor bg(colorString);
     if (bg.isValid())
     {

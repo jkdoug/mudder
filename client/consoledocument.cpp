@@ -496,6 +496,15 @@ void ConsoleDocument::optionChanged(const QString &key, const QVariant &val)
         fmt.setFont(m_formatDefault.font());
         m_cursor.mergeCharFormat(fmt);
     }
+    else if (key == "foregroundColor")
+    {
+        QColor c(val.value<QColor>());
+        if (!c.isValid())
+        {
+            return;
+        }
+        m_formatDefault.setForeground(c);
+    }
     else if (key == "scrollbackLines")
     {
         setMaximumBlockCount(val.toInt() + 1);
