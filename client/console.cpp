@@ -754,9 +754,9 @@ void Console::copy()
 
 void Console::copyHtml()
 {
-    QFont font(profile()->outputFont());
-    QColor fg(Qt::lightGray);
-    QColor bg(profile()->background());
+    QFont font(m_profile->outputFont());
+    QColor fg(m_profile->foreground());
+    QColor bg(m_profile->background());
 
     QString html(QString("<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'>\n"
         "<html>\n"
