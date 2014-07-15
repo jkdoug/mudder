@@ -221,3 +221,5 @@ pip-log.txt
 
 *.user.*
 *.pro.*
+install/packages/com.mudder.client/data/*
+install/MudderInstall.exe
