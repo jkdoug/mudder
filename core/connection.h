@@ -26,8 +26,12 @@
 
 #include "core_global.h"
 #include <QBuffer>
+#include <QLoggingCategory>
 #include <QtNetwork>
 #include <QObject>
+
+Q_DECLARE_LOGGING_CATEGORY(CORE_CONNECTION)
+Q_DECLARE_LOGGING_CATEGORY(CORE_CONNECTION_TELNET)
 
 class CORESHARED_EXPORT Connection : public QObject
 {
@@ -53,12 +57,21 @@ public:
     quint64 connectDuration();
     int latency() const { return m_latency; }
 
+    static QString telnetString(const uchar option);
+
 private:
     void handleTelnetCommand(const QString &cmd);
     void handleData(const QByteArray &data);
     void handlePrompt(const QByteArray &data);
 
+    void sendDo(const uchar option);
+    void sendDont(const uchar option);
+    void sendWill(const uchar option);
+    void sendWont(const uchar option);
+
     void postData();
+
+    void reset();
 
 
     QTcpSocket m_socket;
@@ -83,13 +96,22 @@ private:
     bool m_IAC;
     bool m_IAC2;
     bool m_SB;
-    bool m_GMCP;
     bool m_receivedGA;
     bool m_driverGA;
     bool m_GAtoLF;
     bool m_forceOffGA;
     bool m_bugfixGA;
     bool m_waitResponse;
+
+    bool m_sentDo[256];
+    bool m_sentDont[256];
+    bool m_sentWill[256];
+    bool m_sentWont[256];
+
+    bool m_gotDo[256];
+    bool m_gotDont[256];
+    bool m_gotWill[256];
+    bool m_gotWont[256];
 
     double m_latency;
     double m_latencyMin;

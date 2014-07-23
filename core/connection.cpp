@@ -23,7 +23,7 @@
 
 #include "connection.h"
 #include <QApplication>
-#include "logger.h"
+#include <QDebug>
 
 static const QLatin1Char ESC('\x1B');
 static const QLatin1Char ANSI_START('[');
@@ -59,13 +59,25 @@ static const uchar TelnetOption_SuppressGoAhead = 3u;
 static const uchar TelnetOption_Status = 5u;
 static const uchar TelnetOption_TimingMark = 6u;
 static const uchar TelnetOption_TerminalType = 24u;
+static const uchar TelnetOption_EndOfRecord = 25u;
 static const uchar TelnetOption_NegotiateAboutWindowSize = 31u;
+static const uchar TelnetOption_TerminalSpeed = 32u;
+static const uchar TelnetOption_RemoteFlowControl = 33u;
+static const uchar TelnetOption_LineMode = 34u;
+static const uchar TelnetOption_EnvironmentVariables = 36;
+static const uchar TelnetOption_CharacterSet = 42;
+static const uchar TelnetOption_MudServerDataProtocol = 69u;
 static const uchar TelnetOption_CompressV1 = 85u;
 static const uchar TelnetOption_CompressV2 = 86u;
 static const uchar TelnetOption_MudSoundProtocol = 90u;
-static const uchar TelnetOption_MudExtentionProtocol = 91u;
+static const uchar TelnetOption_MudExtensionProtocol = 91u;
+static const uchar TelnetOption_ZenithMudProtocol = 93u;
+static const uchar TelnetOption_Aardwolf = 102u;
 static const uchar TelnetOption_ATCP = 200u;
 static const uchar TelnetOption_GMCP = 201u;
+
+Q_LOGGING_CATEGORY(CORE_CONNECTION, "core.connection")
+Q_LOGGING_CATEGORY(CORE_CONNECTION_TELNET, "core.connection.telnet")
 
 
 Connection::Connection(QObject *parent) :
@@ -78,26 +90,14 @@ Connection::Connection(QObject *parent) :
     setEncoding("UTF-8");
 
     m_port = 0;
-    m_commands = 0;
     m_lookup = 0;
 
-    m_IAC = false;
-    m_IAC2 = false;
-    m_SB = false;
-    m_GMCP = false;
-    m_receivedGA = false;
-    m_driverGA = true;
-    m_GAtoLF = false;
-    m_forceOffGA = false;
-    m_bugfixGA = true;
-    m_waitResponse = false;
-
-    m_latency = 0;
+    reset();
 }
 
 void Connection::setEncoding(const QString &encoding)
 {
-    m_codec = QTextCodec::codecForName(encoding.toLatin1().data());
+    m_codec = QTextCodec::codecForName(qPrintable(encoding));
 
     m_decoder = m_codec->makeDecoder();
     m_encoder = m_codec->makeEncoder();
@@ -115,6 +115,8 @@ void Connection::connectRemote(const QString &addr, int port)
     m_hostname = addr;
     m_port = port;
     m_lookup = QHostInfo::lookupHost(addr, this, SLOT(lookupComplete(QHostInfo)));
+
+    qCDebug(CORE_CONNECTION) << "Connecting" << addr << port;
 }
 
 void Connection::disconnectRemote()
@@ -124,6 +126,8 @@ void Connection::disconnectRemote()
         QHostInfo::abortHostLookup(m_lookup);
         m_lookup = 0;
     }
+
+    qCDebug(CORE_CONNECTION) << "Disconnecting";
 
     m_socket.disconnectFromHost();
 }
@@ -138,8 +142,10 @@ void Connection::lookupComplete(const QHostInfo &hostInfo)
     else
     {
         m_hostname = hostInfo.hostName();
-        m_socket.connectToHost(hostInfo.hostName(), m_port);
+        m_socket.connectToHost(m_hostname, m_port);
     }
+
+    qCDebug(CORE_CONNECTION) << "Host lookup complete" << m_hostname << m_address << m_port;
 
     emit hostFound(hostInfo);
 }
@@ -148,6 +154,8 @@ void Connection::connectionEstablished()
 {
     m_connectTime = QDateTime::currentDateTime();
 
+    qCDebug(CORE_CONNECTION) << "Connected" << m_connectTime;
+
     emit connected();
 }
 
@@ -155,8 +163,9 @@ void Connection::connectionLost()
 {
     postData();
 
-    m_GMCP = false;
-    m_receivedGA = false;
+    qCDebug(CORE_CONNECTION) << "Disconnected" << QDateTime::currentDateTime();
+
+    reset();
 
     emit disconnected();
 }
@@ -169,6 +178,96 @@ quint64 Connection::connectDuration()
     }
 
     return 0;
+}
+
+QString Connection::telnetString(const uchar option)
+{
+    switch (option)
+    {
+    case Telnet_ESC:
+        return "ESC";
+
+    case Telnet_SubnegotiationEnd:
+        return "SE";
+    case Telnet_NoOperation:
+        return "NOP";
+    case Telnet_DataMark:
+        return "DM";
+    case Telnet_Break:
+        return "BRK";
+    case Telnet_InterruptProcess:
+        return "IP";
+    case Telnet_AbortOutput:
+        return "AO";
+    case Telnet_AreYouThere:
+        return "AYT";
+    case Telnet_EraseCharacter:
+        return "EC";
+    case Telnet_EraseLine:
+        return "EL";
+    case Telnet_GoAhead:
+        return "GA";
+    case Telnet_SubnegotiationBegin:
+        return "SB";
+    case Telnet_Will:
+        return "WILL";
+    case Telnet_Wont:
+        return "WONT";
+    case Telnet_Do:
+        return "DO";
+    case Telnet_Dont:
+        return "DONT";
+    case Telnet_InterpretAsCommand:
+        return "IAC";
+
+    case TelnetOption_Echo:
+        return "ECHO";
+    case TelnetOption_SuppressGoAhead:
+        return "SGA";
+    case TelnetOption_Status:
+        return "STAT";
+    case TelnetOption_TimingMark:
+        return "TM";
+    case TelnetOption_TerminalType:
+        return "TERM";
+    case TelnetOption_EndOfRecord:
+        return "EOR";
+    case TelnetOption_NegotiateAboutWindowSize:
+        return "NAWS";
+    case TelnetOption_TerminalSpeed:
+        return "SPD";
+    case TelnetOption_RemoteFlowControl:
+        return "RFC";
+    case TelnetOption_LineMode:
+        return "LINE";
+    case TelnetOption_EnvironmentVariables:
+        return "EV";
+    case TelnetOption_CharacterSet:
+        return "CS";
+    case TelnetOption_MudServerDataProtocol:
+        return "MSDP";
+    case TelnetOption_CompressV1:
+        return "MCCP1";
+    case TelnetOption_CompressV2:
+        return "MCCP2";
+    case TelnetOption_MudSoundProtocol:
+        return "MSP";
+    case TelnetOption_MudExtensionProtocol:
+        return "MXP";
+    case TelnetOption_ZenithMudProtocol:
+        return "ZMP";
+    case TelnetOption_Aardwolf:
+        return "AARD";
+    case TelnetOption_ATCP:
+        return "ATCP";
+    case TelnetOption_GMCP:
+        return "GMCP";
+
+    default:
+        break;
+    }
+
+    return "?";
 }
 
 void Connection::readyToRead()
@@ -188,8 +287,6 @@ void Connection::readyToRead()
     {
         return;
     }
-
-//    qDebug() << "Bytes Read:" << amt;
 
     m_receivedGA = false;
 
@@ -322,6 +419,8 @@ void Connection::handleTelnetCommand(const QString &cmd)
     {
         case Telnet_GoAhead:
         {
+            qCDebug(CORE_CONNECTION_TELNET) << telnetString(ch);
+
             m_receivedGA = true;
             break;
         }
@@ -329,25 +428,26 @@ void Connection::handleTelnetCommand(const QString &cmd)
         case Telnet_Will:
         {
             option = cmd.at(2).toLatin1();
-            LOG_DEBUG(tr("Telnet WILL: %1 (%2)").arg(option).arg(TelnetOption_GMCP));
+
+            qCDebug(CORE_CONNECTION_TELNET) << telnetString(ch) << telnetString(option) << QString::number(option);
+
             switch (option)
             {
                 case TelnetOption_Echo:
                 {
+                    sendDo(option);
                     emit echo(false);
                     break;
                 }
 
                 case TelnetOption_GMCP:
                 {
-                    if (m_GMCP)
+                    if (m_sentDo[TelnetOption_GMCP])
                     {
                         break;
                     }
 
-                    m_GMCP = true;
-
-                    sendTelnetOption(Telnet_Do, TelnetOption_GMCP);
+                    sendDo(option);
                     emit toggleGMCP(true);
 
                     QByteArray hello;
@@ -364,7 +464,7 @@ void Connection::handleTelnetCommand(const QString &cmd)
                     supports.append(Telnet_InterpretAsCommand);
                     supports.append(Telnet_SubnegotiationBegin);
                     supports.append(TelnetOption_GMCP);
-                    supports.append("Core.Supports.Set [ \"Char 1\", \"Char.Skills 1\", \"Char.Items 1\", \"Room 1\" ]");
+                    supports.append("Core.Supports.Set [ \"Char 1\", \"Char.Skills 1\", \"Char.Items 1\", \"Room 1\", \"IRE.Rift 1\" ]");
                     supports.append(Telnet_InterpretAsCommand);
                     supports.append(Telnet_SubnegotiationEnd);
 
@@ -374,7 +474,7 @@ void Connection::handleTelnetCommand(const QString &cmd)
 
                 default:
                 {
-                    sendTelnetOption(Telnet_Dont, option);
+                    sendDont(option);
                 }
             }
             break;
@@ -383,7 +483,11 @@ void Connection::handleTelnetCommand(const QString &cmd)
         case Telnet_Wont:
         {
             option = cmd.at(2).toLatin1();
-            LOG_DEBUG(tr("Telnet WONT: %1 (%2)").arg(option).arg(TelnetOption_GMCP));
+
+            qCDebug(CORE_CONNECTION_TELNET) << telnetString(ch) << telnetString(option) << QString::number(option);
+
+            sendDont(option);
+
             switch (option)
             {
                 case TelnetOption_Echo:
@@ -399,32 +503,41 @@ void Connection::handleTelnetCommand(const QString &cmd)
         case Telnet_Do:
         {
             option = cmd.at(2).toLatin1();
-            LOG_DEBUG(tr("Telnet DO: %1 (%2)").arg(option).arg(TelnetOption_GMCP));
+
+            qCDebug(CORE_CONNECTION_TELNET) << telnetString(ch) << telnetString(option) << QString::number(option);
+
             if (option == TelnetOption_GMCP)
             {
-                m_GMCP = true;
-
-                sendTelnetOption(Telnet_Will, TelnetOption_GMCP);
+                sendWill(option);
                 emit toggleGMCP(true);
             }
             else
             {
-                sendTelnetOption(Telnet_Wont, option);
-                emit toggleGMCP(false);
+                sendWont(option);
             }
             break;
         }
 
         case Telnet_Dont:
         {
-            // TODO: Telnet Dont handling
-            LOG_DEBUG(tr("Telnet DONT: %1").arg(option));
+            option = cmd.at(2).toLatin1();
+
+            qCDebug(CORE_CONNECTION_TELNET) << telnetString(ch) << telnetString(option) << QString::number(option);
+
+            sendWont(option);
+            if (option == TelnetOption_GMCP)
+            {
+                emit toggleGMCP(false);
+            }
             break;
         }
 
         case Telnet_SubnegotiationBegin:
         {
             option = cmd.at(2).toLatin1();
+
+            qCDebug(CORE_CONNECTION_TELNET) << telnetString(ch) << telnetString(option) << QString::number(option);
+
             if (option == TelnetOption_GMCP)
             {
                 if (cmd.length() < 6)
@@ -446,6 +559,8 @@ void Connection::handleTelnetCommand(const QString &cmd)
                     name = msg.section(' ', 0, 0);
                     args = msg.section(' ', 1);
                 }
+
+                qCDebug(CORE_CONNECTION) << "GMCP" << name << args;
 
                 emit receivedGMCP(name, args);
             }
@@ -504,10 +619,94 @@ void Connection::handlePrompt(const QByteArray &data)
     postData();
 }
 
+void Connection::sendDo(const uchar option)
+{
+    if (m_sentDo[option])
+    {
+        return;
+    }
+
+    sendTelnetOption(Telnet_Do, option);
+
+    m_sentDo[option] = true;
+    m_sentDont[option] = false;
+}
+
+void Connection::sendDont(const uchar option)
+{
+    if (m_sentDont[option])
+    {
+        return;
+    }
+
+    sendTelnetOption(Telnet_Dont, option);
+
+    m_sentDo[option] = false;
+    m_sentDont[option] = true;
+}
+
+void Connection::sendWill(const uchar option)
+{
+    if (m_sentWill[option])
+    {
+        return;
+    }
+
+    sendTelnetOption(Telnet_Will, option);
+
+    m_sentWill[option] = true;
+    m_sentWont[option] = false;
+}
+
+void Connection::sendWont(const uchar option)
+{
+    if (m_sentWont[option])
+    {
+        return;
+    }
+
+    sendTelnetOption(Telnet_Wont, option);
+
+    m_sentWill[option] = false;
+    m_sentWont[option] = true;
+}
+
 void Connection::postData()
 {
     emit dataReceived(m_data);
     m_data.clear();
+}
+
+void Connection::reset()
+{
+    m_command.clear();
+    m_data.clear();
+    m_buffer.reset();
+
+    m_IAC = false;
+    m_IAC2 = false;
+    m_SB = false;
+    m_receivedGA = false;
+    m_driverGA = true;
+    m_GAtoLF = false;
+    m_forceOffGA = false;
+    m_bugfixGA = true;
+    m_waitResponse = false;
+
+    memset(&m_sentDo, false, sizeof(m_sentDo));
+    memset(&m_sentDont, false, sizeof(m_sentDont));
+    memset(&m_sentWill, false, sizeof(m_sentWill));
+    memset(&m_sentWont, false, sizeof(m_sentWont));
+
+    memset(&m_gotDo, false, sizeof(m_gotDo));
+    memset(&m_gotDont, false, sizeof(m_gotDont));
+    memset(&m_gotWill, false, sizeof(m_gotWill));
+    memset(&m_gotWont, false, sizeof(m_gotWont));
+
+    m_commands = 0;
+    m_latency = 0.0;
+    m_latencyMin = 0.0;
+    m_latencyMax = 0.0;
 }
 
 bool Connection::send(const QString &data)
